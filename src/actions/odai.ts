@@ -1,4 +1,5 @@
 import { App } from '@slack/bolt'
+import { OdaiService } from '../services/OdaiService'
 
 const CALLBACK_ID = 'create-odai'
 const BLOCK_ID = 'create-odai-block'
@@ -53,9 +54,23 @@ export const createOdai = (app: App) => {
     await ack()
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, logger }) => {
+  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     const newOdai = view.state.values[BLOCK_ID][ACTION_ID].value
     logger.info(`New odai: ${newOdai}`)
+    // NOTE: 型の絞り込みのため。slack側で必須入力になっている。
+    if (!newOdai) return
+
+    // NOTE: APIアクセスが起きる前に一度レスポンスを返しておく
+    // https://slack.dev/bolt-js/ja-jp/concepts#acknowledge
+    const odaiService = new OdaiService()
+    const result = await odaiService.create({
+      slackTeamId: view.team_id,
+      title: newOdai,
+      createdBy: body.user.id,
+    })
+    await ack()
+    console.log('👾 -> result', result)
+
     const blocks = [
       {
         type: 'section',
@@ -83,6 +98,5 @@ export const createOdai = (app: App) => {
       channel: 'C026ZJX56AC',
       blocks,
     })
-    await ack()
   })
 }
