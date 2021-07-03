@@ -23,6 +23,7 @@ module.exports = {
   ],
   plugins: ['@typescript-eslint', 'import'],
   rules: {
+    'require-jsdoc': 'off',
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
   },
 }

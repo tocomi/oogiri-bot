@@ -9,6 +9,23 @@ paths:
     post:
       tags: 
         - "odai"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - "title"
+                - "createdBy"
+              properties:
+                title:
+                  type: string
+                  description: "お題の内容"
+                  example: "こんなパン屋さんは嫌だ"
+                createdBy:
+                  type: string
+                  description: "お題を作成したユーザーのSlackID"
+                  example: "A123456"
       responses:
         '200':
           description: OK
