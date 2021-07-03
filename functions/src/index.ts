@@ -13,13 +13,23 @@ app.use(cors({ origin: true }))
 const odaiRepository: OdaiRepository = new OdaiRepositoryImpl()
 const odaiUseCase: OdaiUseCase = new OdaiUseCaseImpl(odaiRepository)
 
+const errorResponse = (res: express.Response, statusCode: number, message: string) => {
+  return res.status(statusCode).send({ error: true, message })
+}
+
 app.post('/odai', async (req: express.Request, res) => {
-  const { title, createdBy } = req.body as OdaiPostRequestParams
-  if (!title || !createdBy) {
-    return res.status(400).send({ message: 'Illegal Argument.' })
+  const { slackTeamId, title, createdBy } = req.body as OdaiPostRequestParams
+  if (!slackTeamId || !title || !createdBy) {
+    return errorResponse(res, 422, 'Illegal Argument')
   }
-  const result = await odaiUseCase.create({ title, createdBy })
-  return res.send(result)
+  const result = await odaiUseCase.create({ slackTeamId, title, createdBy })
+  if (result === 'error') {
+    return errorResponse(res, 500, 'Internal Server Error')
+  }
+  if (result === 'duplication') {
+    return errorResponse(res, 400, 'Odai Duplication')
+  }
+  return res.send({ error: false })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)
