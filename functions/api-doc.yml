@@ -1,0 +1,49 @@
+openapi: '3.0.2'
+info:
+  title: oogiri-bot
+  version: '1.0'
+servers:
+  - url: https://api.oogiri-bot/v1
+paths:
+  /odai:
+    post:
+      tags: 
+        - "odai"
+      responses:
+        '200':
+          description: OK
+  /odai/current:
+    get:
+      tags: 
+        - "odai"
+      responses:
+        '200':
+          description: OK
+  /odai/start-voting:
+    post:
+      tags: 
+        - "odai"
+      responses:
+        '200':
+          description: OK
+  /odai/finish:
+    post:
+      tags: 
+        - "odai"
+      responses:
+        '200':
+          description: OK
+  /kotae:
+    post:
+      tags:
+        - "kotae"
+      responses:
+        '200':
+          description: OK
+  /kotae/vote:
+    post:
+      tags:
+        - "kotae"
+      responses:
+        '200':
+          description: OK
