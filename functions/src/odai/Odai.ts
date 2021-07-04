@@ -1,4 +1,4 @@
-import { ApiStatus, SlackParams } from './Api'
+import { ApiStatus, SlackParams } from '../api/Api'
 
 export type OdaiApiStatus = 'duplication' | ApiStatus
 

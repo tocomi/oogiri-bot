@@ -1,10 +1,10 @@
-import { OdaiRepository } from '../repository/OdaiRepository'
+import { OdaiRepository } from './OdaiRepository'
 import {
   OdaiApiStatus,
   OdaiCurrentParams,
   OdaiCurrentResponse,
   OdaiPostRequestParams,
-} from '../types/Odai'
+} from './Odai'
 
 export interface OdaiUseCase {
   create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>

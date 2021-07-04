@@ -4,7 +4,7 @@ import {
   OdaiCurrentResponse,
   OdaiPostData,
   OdaiPostRequestParams,
-} from '../types/Odai'
+} from './Odai'
 import { db, createNewDoc, convertTimestamp } from '../firebase/firestore'
 
 export interface OdaiRepository {

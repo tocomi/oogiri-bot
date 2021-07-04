@@ -1,9 +1,9 @@
 import * as functions from 'firebase-functions'
 import * as express from 'express'
 import * as cors from 'cors'
-import { OdaiCurrentParams, OdaiPostRequestParams } from './types/Odai'
-import { OdaiRepository, OdaiRepositoryImpl } from './repository/OdaiRepository'
-import { OdaiUseCase, OdaiUseCaseImpl } from './usecase/OdaiUseCase'
+import { OdaiCurrentParams, OdaiPostRequestParams } from './odai/Odai'
+import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
+import { OdaiUseCase, OdaiUseCaseImpl } from './odai/OdaiUseCase'
 
 const REGION = 'asia-northeast1'
 
