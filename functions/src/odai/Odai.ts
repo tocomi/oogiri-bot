@@ -22,5 +22,6 @@ export type OdaiPostData = OdaiApiBase & {
 export type OdaiCurrentParams = SlackParams
 
 export type OdaiCurrentResponse = OdaiApiBase & {
+  docId: string
   createdAt: number
 }

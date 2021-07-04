@@ -31,8 +31,10 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       console.log('No active odai.')
       return null
     }
-    const data = snapshot.docs[0].data()
+    const doc = snapshot.docs[0]
+    const data = doc.data()
     return {
+      docId: doc.id,
       title: data.title,
       createdBy: data.createdBy,
       status: data.status,
