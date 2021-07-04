@@ -1,22 +1,44 @@
-import { OdaiApiStatus, OdaiPostData, OdaiPostRequestParams } from '../types/Odai'
-import * as firestore from '../firebase/firestore'
+import {
+  OdaiApiStatus,
+  OdaiCurrentParams,
+  OdaiCurrentResponse,
+  OdaiPostData,
+  OdaiPostRequestParams,
+} from '../types/Odai'
+import { db, createNewDoc, convertTimestamp } from '../firebase/firestore'
 
 export interface OdaiRepository {
-  create(data: OdaiPostRequestParams): Promise<OdaiApiStatus>
+  create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
+  getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
 }
 
 export class OdaiRepositoryImpl implements OdaiRepository {
-  async create(params: OdaiPostRequestParams): Promise<OdaiApiStatus> {
+  async create({ title, createdBy, slackTeamId }: OdaiPostRequestParams): Promise<OdaiApiStatus> {
     const data: OdaiPostData = {
-      title: params.title,
-      createdBy: params.createdBy,
+      title,
+      createdBy,
       status: 'posting',
       createdAt: new Date(),
     }
-    const result = await firestore.add({
-      collectionName: params.slackTeamId,
+    const result = await createNewDoc({
+      collectionName: slackTeamId,
       data,
     })
     return result ? 'ok' : 'error'
+  }
+
+  async getCurrent({ slackTeamId }: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
+    const snapshot = await db.collection(slackTeamId).where('status', '!=', 'finished').get()
+    if (snapshot.empty) {
+      console.log('No active odai.')
+      return null
+    }
+    const data = snapshot.docs[0].data()
+    return {
+      title: data.title,
+      createdBy: data.createdBy,
+      status: data.status,
+      createdAt: convertTimestamp(data.createdAt),
+    }
   }
 }

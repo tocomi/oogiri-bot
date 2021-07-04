@@ -9,9 +9,18 @@ export type OdaiPostRequestParams = {
 
 type OdaiStatus = 'posting' | 'voting' | 'finished'
 
-export type OdaiPostData = {
+type OdaiBase = {
   title: string
   createdBy: string
   status: OdaiStatus
+}
+
+export type OdaiPostData = OdaiBase & {
   createdAt: Date
+}
+
+export type OdaiCurrentParams = SlackParams
+
+export type OdaiCurrentResponse = OdaiBase & {
+  createdAt: number
 }

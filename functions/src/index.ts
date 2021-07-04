@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions'
 import * as express from 'express'
 import * as cors from 'cors'
-import { OdaiPostRequestParams } from './types/Odai'
+import { OdaiCurrentParams, OdaiPostRequestParams } from './types/Odai'
 import { OdaiRepository, OdaiRepositoryImpl } from './repository/OdaiRepository'
 import { OdaiUseCase, OdaiUseCaseImpl } from './usecase/OdaiUseCase'
 
@@ -30,6 +30,15 @@ app.post('/odai', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'Odai Duplication')
   }
   return res.send({ error: false })
+})
+
+app.get('/odai/current', async (req: express.Request, res) => {
+  const { slackTeamId } = req.body as OdaiCurrentParams
+  if (!slackTeamId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+  const result = await odaiUseCase.getCurrent({ slackTeamId })
+  return res.send({ odai: result })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)

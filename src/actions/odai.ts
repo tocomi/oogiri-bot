@@ -69,7 +69,7 @@ export const createOdai = (app: App) => {
       createdBy: body.user.id,
     })
     await ack()
-    console.log('👾 -> result', result)
+    logger.info('👾 -> result', result)
 
     const blocks = [
       {

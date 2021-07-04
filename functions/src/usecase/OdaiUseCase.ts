@@ -1,8 +1,14 @@
 import { OdaiRepository } from '../repository/OdaiRepository'
-import { OdaiApiStatus, OdaiPostRequestParams } from '../types/Odai'
+import {
+  OdaiApiStatus,
+  OdaiCurrentParams,
+  OdaiCurrentResponse,
+  OdaiPostRequestParams,
+} from '../types/Odai'
 
 export interface OdaiUseCase {
-  create(data: OdaiPostRequestParams): Promise<OdaiApiStatus>
+  create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
+  getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
 }
 
 export class OdaiUseCaseImpl implements OdaiUseCase {
@@ -14,5 +20,9 @@ export class OdaiUseCaseImpl implements OdaiUseCase {
 
   create(params: OdaiPostRequestParams): Promise<OdaiApiStatus> {
     return this.repository.create(params)
+  }
+
+  getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
+    return this.repository.getCurrent(params)
   }
 }

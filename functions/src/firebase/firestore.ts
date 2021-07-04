@@ -2,9 +2,9 @@ import * as admin from 'firebase-admin'
 
 admin.initializeApp()
 
-const db = admin.firestore()
+export const db = admin.firestore()
 
-export const add = async ({
+export const createNewDoc = async ({
   collectionName,
   data,
 }: {
@@ -19,4 +19,8 @@ export const add = async ({
       console.error(error)
       return false
     })
+}
+
+export const convertTimestamp = (firestoreTimestamp: admin.firestore.Timestamp): number => {
+  return firestoreTimestamp.toDate().getTime()
 }
