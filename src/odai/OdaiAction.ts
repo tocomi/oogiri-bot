@@ -1,5 +1,5 @@
 import { App } from '@slack/bolt'
-import { OdaiService } from '../services/OdaiService'
+import { OdaiUseCase } from './OdaiUseCase'
 
 const CALLBACK_ID = 'create-odai'
 const BLOCK_ID = 'create-odai-block'
@@ -62,7 +62,7 @@ export const createOdai = (app: App) => {
 
     // NOTE: APIアクセスが起きる前に一度レスポンスを返しておく
     // https://slack.dev/bolt-js/ja-jp/concepts#acknowledge
-    const odaiService = new OdaiService()
+    const odaiService = new OdaiUseCase()
     const result = await odaiService.create({
       slackTeamId: view.team_id,
       title: newOdai,

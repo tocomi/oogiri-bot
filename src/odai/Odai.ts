@@ -1,4 +1,4 @@
-import { SlackParams } from './Api'
+import { SlackParams } from '../api/Api'
 
 export type OdaiPostRequestParams = {
   title: string

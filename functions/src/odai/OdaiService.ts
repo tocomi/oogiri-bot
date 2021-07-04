@@ -6,12 +6,12 @@ import {
   OdaiPostRequestParams,
 } from './Odai'
 
-export interface OdaiUseCase {
+export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
 }
 
-export class OdaiUseCaseImpl implements OdaiUseCase {
+export class OdaiServiceImpl implements OdaiService {
   repository: OdaiRepository
 
   constructor(repository: OdaiRepository) {
