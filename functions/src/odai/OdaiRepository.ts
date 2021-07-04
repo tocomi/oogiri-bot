@@ -5,7 +5,7 @@ import {
   OdaiPostData,
   OdaiPostRequestParams,
 } from './Odai'
-import { db, createNewDoc, convertTimestamp } from '../firebase/firestore'
+import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 
 export interface OdaiRepository {
   create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
@@ -20,10 +20,8 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       status: 'posting',
       createdAt: new Date(),
     }
-    const result = await createNewDoc({
-      collectionName: slackTeamId,
-      data,
-    })
+    const docRef = db.collection(slackTeamId).doc()
+    const result = await createDoc<OdaiPostData>(docRef, data)
     return result ? 'ok' : 'error'
   }
 

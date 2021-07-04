@@ -4,14 +4,10 @@ admin.initializeApp()
 
 export const db = admin.firestore()
 
-export const createNewDoc = async ({
-  collectionName,
-  data,
-}: {
-  collectionName: string
-  data: any
-}): Promise<boolean> => {
-  const docRef = db.collection(collectionName).doc()
+export const createDoc = async <T>(
+  docRef: admin.firestore.DocumentReference,
+  data: T
+): Promise<boolean> => {
   return docRef
     .set(data)
     .then(() => true)
