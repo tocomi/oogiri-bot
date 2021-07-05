@@ -72,8 +72,9 @@ export const createKotae = (app: App) => {
         },
       },
     ]
-    await client.chat.postMessage({
-      channel: body.user.id,
+    await client.chat.postEphemeral({
+      channel: 'C026ZJX56AC',
+      user: body.user.id,
       blocks,
     })
     await ack()
