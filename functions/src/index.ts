@@ -4,6 +4,9 @@ import * as cors from 'cors'
 import { OdaiCurrentParams, OdaiPostRequestParams } from './odai/Odai'
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
+import { KotaePostRequestParams } from './kotae/Kotae'
+import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
+import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 
 const REGION = 'asia-northeast1'
 
@@ -12,6 +15,8 @@ app.use(cors({ origin: true }))
 
 const odaiRepository: OdaiRepository = new OdaiRepositoryImpl()
 const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
+const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
+const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
 
 const errorResponse = (res: express.Response, statusCode: number, message: string) => {
   return res.status(statusCode).send({ error: true, message })
@@ -39,6 +44,21 @@ app.get('/odai/current', async (req: express.Request, res) => {
   }
   const result = await odaiService.getCurrent({ slackTeamId })
   return res.send({ odai: result })
+})
+
+app.post('/kotae', async (req: express.Request, res) => {
+  const { slackTeamId, content, createdBy } = req.body as KotaePostRequestParams
+  if (!slackTeamId || !content || !createdBy) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+  const result = await kotaeService.create({ slackTeamId, content, createdBy })
+  if (result === 'error') {
+    return errorResponse(res, 500, 'Internal Server Error')
+  }
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  return res.send({ error: false })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)
