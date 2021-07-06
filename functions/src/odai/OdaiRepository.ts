@@ -4,12 +4,15 @@ import {
   OdaiCurrentResponse,
   OdaiPostData,
   OdaiPostRequestParams,
+  OdaiPutApiStatus,
+  OdaiPutStatusData,
 } from './Odai'
 import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 
 export interface OdaiRepository {
   create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
+  updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<OdaiPutApiStatus>
 }
 
 export class OdaiRepositoryImpl implements OdaiRepository {
@@ -40,5 +43,25 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       status: data.status,
       createdAt: convertTimestamp(data.createdAt),
     }
+  }
+
+  async updateStatus(
+    { slackTeamId, status }: OdaiPutStatusData,
+    odaiDocId: string
+  ): Promise<OdaiPutApiStatus> {
+    const docRef = db.collection(slackTeamId).doc(odaiDocId)
+    const result = await docRef
+      .set(
+        {
+          status,
+        },
+        { merge: true }
+      )
+      .then(() => true)
+      .catch((error) => {
+        console.error(error)
+        return false
+      })
+    return result ? 'ok' : 'error'
   }
 }

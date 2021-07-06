@@ -19,6 +19,12 @@ export type OdaiPostData = OdaiApiBase & {
   createdAt: Date
 }
 
+export type OdaiPutApiStatus = 'noPostingOdai' | 'noVotingOdai' | 'noOdai' | ApiStatus
+
+export type OdaiPutStatusParams = SlackParams
+
+export type OdaiPutStatusData = Pick<OdaiApiBase, 'status'> & SlackParams
+
 export type OdaiCurrentParams = SlackParams
 
 export type OdaiCurrentResponse = OdaiApiBase & {

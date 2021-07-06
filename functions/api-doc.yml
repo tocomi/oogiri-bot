@@ -15,9 +15,14 @@ paths:
             schema:
               type: object
               required:
+                - "slackTeamId"
                 - "title"
                 - "createdBy"
               properties:
+                slackTeamId:
+                  type: string
+                  description: SlackのTeamID
+                  example: "T123456"
                 title:
                   type: string
                   description: "お題の内容"
@@ -33,13 +38,63 @@ paths:
     get:
       tags: 
         - "odai"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - "slackTeamId"
+              properties:
+                slackTeamId:
+                  type: string
+                  description: SlackのTeamID
+                  example: "T123456"
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  odai:
+                    type: object
+                    properties:
+                      docId:
+                        type: string
+                        example: "l8aI77E2C4wRLBCP5qoo"
+                      title:
+                        type: string
+                        example: "こんな結婚式は嫌だ"
+                      createdBy:
+                        type: string
+                        example: "A123456"
+                      status:
+                        type: string
+                        enum:
+                          - posting
+                          - voting
+                          - finished
+                      createdAt:
+                        type: number
+                        example: 1625382421758
   /odai/start-voting:
     post:
       tags: 
         - "odai"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - "slackTeamId"
+              properties:
+                slackTeamId:
+                  type: string
+                  description: SlackのTeamID
+                  example: "T123456"
       responses:
         '200':
           description: OK
@@ -54,6 +109,28 @@ paths:
     post:
       tags:
         - "kotae"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - "slackTeamId"
+                - "content"
+                - "createdBy"
+              properties:
+                slackTeamId:
+                  type: string
+                  description: SlackのTeamID
+                  example: "T123456"
+                content:
+                  type: string
+                  description: "お題への回答"
+                  example: "シンプルにまずい"
+                createdBy:
+                  type: string
+                  description: "お題を作成したユーザーのSlackID"
+                  example: "A123456"
       responses:
         '200':
           description: OK

@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions'
 import * as express from 'express'
 import * as cors from 'cors'
-import { OdaiCurrentParams, OdaiPostRequestParams } from './odai/Odai'
+import { OdaiCurrentParams, OdaiPostRequestParams, OdaiPutStatusParams } from './odai/Odai'
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import { KotaePostRequestParams } from './kotae/Kotae'
@@ -59,6 +59,56 @@ app.post('/kotae', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'No Active Odai')
   }
   return res.send({ error: false })
+})
+
+app.post('/odai/start-voting', async (req: express.Request, res) => {
+  const { slackTeamId } = req.body as OdaiPutStatusParams
+  if (!slackTeamId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+
+  const result = await kotaeService.getAllOfCurrentOdai({ slackTeamId })
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+
+  const putResult = await odaiService.startVoting({ slackTeamId })
+  if (putResult === 'error') {
+    return errorResponse(res, 500, 'Internal Server Error')
+  }
+  if (putResult === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  if (putResult === 'noPostingOdai') {
+    return errorResponse(res, 400, 'No Posting Odai')
+  }
+
+  return res.send({ kotaeList: result })
+})
+
+app.post('/odai/finish', async (req: express.Request, res) => {
+  const { slackTeamId } = req.body as OdaiPutStatusParams
+  if (!slackTeamId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+
+  const result = await kotaeService.getAllOfCurrentOdai({ slackTeamId })
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+
+  const putResult = await odaiService.finish({ slackTeamId })
+  if (putResult === 'error') {
+    return errorResponse(res, 500, 'Internal Server Error')
+  }
+  if (putResult === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  if (putResult === 'noVotingOdai') {
+    return errorResponse(res, 400, 'No Voting Odai')
+  }
+
+  return res.send({ kotaeList: result })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)

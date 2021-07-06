@@ -9,6 +9,8 @@ type KotaeBase = {
 
 export type KotaePostRequestParams = KotaeBase & SlackParams
 
+export type KotaeOfCurrentOdaiParamas = SlackParams
+
 type KotaeApiBase = KotaeBase & {
   votedCount: number
 }
