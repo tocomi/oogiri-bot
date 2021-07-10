@@ -1,7 +1,7 @@
 import { App } from '@slack/bolt'
 import * as dotenv from 'dotenv'
 import { createKotae } from './kotae/KotaeAction'
-import { createOdai } from './odai/OdaiAction'
+import { createOdai, startVoting } from './odai/OdaiAction'
 
 dotenv.config()
 
@@ -20,6 +20,7 @@ app.message('こんにちは', async ({ message, say }) => {
 
 createOdai(app)
 createKotae(app)
+startVoting(app)
 
 const main = async () => {
   await app.start()

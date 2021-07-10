@@ -1,4 +1,5 @@
 import { PostResponse, SlackParams } from '../api/Api'
+import { Kotae } from '../kotae/Kotae'
 
 export type OdaiPostRequestParams = {
   title: string
@@ -6,3 +7,9 @@ export type OdaiPostRequestParams = {
 } & SlackParams
 
 export type OdaiPostResponse = PostResponse
+
+export type OdaiStartVotingRequestParams = SlackParams
+
+export type OdaiStartVotingResponse = {
+  kotaeList: Kotae[]
+}

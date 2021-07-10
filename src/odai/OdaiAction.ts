@@ -1,11 +1,18 @@
 import { App } from '@slack/bolt'
+import { KnownBlock, WebClient } from '@slack/web-api'
 import { OdaiUseCase } from './OdaiUseCase'
 
-const CALLBACK_ID = 'create-odai'
-const BLOCK_ID = 'create-odai-block'
-const ACTION_ID = 'input'
+const postMessage = async (client: WebClient, blocks: KnownBlock[]) => {
+  await client.chat.postMessage({
+    channel: 'C026ZJX56AC',
+    blocks,
+  })
+}
 
 export const createOdai = (app: App) => {
+  const CALLBACK_ID = 'create-odai'
+  const BLOCK_ID = 'create-odai-block'
+  const ACTION_ID = 'input'
   app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
     const result = await client.views
       .open({
@@ -74,12 +81,19 @@ export const createOdai = (app: App) => {
     await ack()
     if (!success) return
 
-    const blocks = [
+    const blocks: KnownBlock[] = [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `<!here> 新しいお題が設定されました！`,
+          text: `<!here>`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:mega: :mega: :mega: 新しいお題が設定されました！ :mega: :mega: :mega:`,
         },
       },
       {
@@ -97,9 +111,134 @@ export const createOdai = (app: App) => {
         },
       },
     ]
-    await client.chat.postMessage({
-      channel: 'C026ZJX56AC',
-      blocks,
-    })
+    await postMessage(client, blocks)
+  })
+}
+
+export const startVoting = (app: App) => {
+  const CALLBACK_ID = 'start-voting'
+  const ACTION_ID = 'vote-kotae'
+  app.shortcut('oogiri-start-voting', async ({ ack, body, client, logger }) => {
+    const result = await client.views
+      .open({
+        trigger_id: body.trigger_id,
+        view: {
+          type: 'modal',
+          callback_id: CALLBACK_ID,
+          title: {
+            type: 'plain_text',
+            text: '投票の開始 :ticket:',
+          },
+          submit: {
+            type: 'plain_text',
+            text: 'OK',
+          },
+          close: {
+            type: 'plain_text',
+            text: 'キャンセル',
+          },
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: '投票を開始します。お題への回答は締め切られます。',
+              },
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: 'よろしいですか？',
+              },
+            },
+          ],
+        },
+      })
+      .catch(async (e) => {
+        logger.error(e)
+      })
+    if (result && result.error) {
+      logger.error(result.error)
+    }
+    await ack()
+  })
+
+  app.view(CALLBACK_ID, async ({ ack, view, client, logger }) => {
+    const odaiUseCase = new OdaiUseCase()
+    const kotaeList = await odaiUseCase
+      .startVoting({
+        slackTeamId: view.team_id,
+      })
+      .then(({ kotaeList }) => kotaeList)
+      .catch((error) => {
+        logger.error(error)
+        return []
+      })
+    await ack()
+    if (!kotaeList.length) return
+
+    const blocks: KnownBlock[] = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '<!here>',
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: ':mega: :mega: :mega: *投票が開始されました！* :mega: :mega: :mega:',
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '面白いと思った回答に投票しましょう！',
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '回答の右のボタンを押すと投票できます :punch:',
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '---',
+        },
+      },
+    ]
+    await postMessage(client, blocks)
+
+    // NOTE: 答えの一覧をチャンネルに投稿
+    await Promise.all(
+      kotaeList.map(async (kotae) => {
+        const blocks: KnownBlock[] = [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:speaking_head_in_silhouette: *${kotae.content}*`,
+            },
+            accessory: {
+              type: 'button',
+              action_id: ACTION_ID,
+              text: {
+                type: 'plain_text',
+                text: '草',
+              },
+            },
+          },
+        ]
+        await postMessage(client, blocks)
+      })
+    )
   })
 }
