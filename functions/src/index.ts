@@ -83,7 +83,7 @@ app.post('/odai/start-voting', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'No Posting Odai')
   }
 
-  return res.send({ kotaeList: result })
+  return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
 })
 
 app.post('/odai/finish', async (req: express.Request, res) => {

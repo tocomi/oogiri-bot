@@ -1,15 +1,15 @@
 import { OdaiService } from '../odai/OdaiService'
 import {
   KotaeApiStatus,
+  KotaeGetAllResponse,
   KotaeOfCurrentOdaiParamas,
   KotaePostRequestParams,
-  KotaeResponse,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
 
 export interface KotaeService {
   create(params: KotaePostRequestParams): Promise<KotaeApiStatus>
-  getAllOfCurrentOdai(params: KotaeOfCurrentOdaiParamas): Promise<KotaeResponse[] | 'noOdai'>
+  getAllOfCurrentOdai(params: KotaeOfCurrentOdaiParamas): Promise<KotaeGetAllResponse | 'noOdai'>
 }
 
 export class KotaeServiceImpl implements KotaeService {
@@ -29,9 +29,13 @@ export class KotaeServiceImpl implements KotaeService {
 
   async getAllOfCurrentOdai(
     params: KotaeOfCurrentOdaiParamas
-  ): Promise<KotaeResponse[] | 'noOdai'> {
+  ): Promise<KotaeGetAllResponse | 'noOdai'> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
     if (!currentOdai) return 'noOdai'
-    return this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
+    const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
+    return {
+      odaiTitle: currentOdai.title,
+      kotaeList,
+    }
   }
 }

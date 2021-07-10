@@ -22,3 +22,8 @@ export type KotaePostData = KotaeApiBase & {
 export type KotaeResponse = KotaeApiBase & {
   createdAt: number
 }
+
+export type KotaeGetAllResponse = {
+  odaiTitle: string
+  kotaeList: KotaeResponse[]
+}
