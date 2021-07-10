@@ -1,4 +1,5 @@
 import { App } from '@slack/bolt'
+import { KotaeUseCase } from './KotaeUseCase'
 
 const CALLBACK_ID = 'create-kotae'
 const BLOCK_ID = 'create-kotae-block'
@@ -55,7 +56,23 @@ export const createKotae = (app: App) => {
 
   app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     const kotae = view.state.values[BLOCK_ID][ACTION_ID].value
-    logger.info(`kotae: ${kotae}`)
+    if (!kotae) return
+
+    const kotaeUseCase = new KotaeUseCase()
+    const success = await kotaeUseCase
+      .create({
+        slackTeamId: view.team_id,
+        content: kotae,
+        createdBy: body.user.id,
+      })
+      .then(() => true)
+      .catch((error) => {
+        logger.error(error)
+        return false
+      })
+    await ack()
+    if (!success) return
+
     const blocks = [
       {
         type: 'section',
@@ -77,6 +94,5 @@ export const createKotae = (app: App) => {
       user: body.user.id,
       blocks,
     })
-    await ack()
   })
 }
