@@ -11,5 +11,6 @@ export type OdaiPostResponse = PostResponse
 export type OdaiStartVotingRequestParams = SlackParams
 
 export type OdaiStartVotingResponse = {
+  odaiTitle: string
   kotaeList: Kotae[]
 }

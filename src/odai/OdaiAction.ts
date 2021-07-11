@@ -166,17 +166,17 @@ export const startVoting = (app: App) => {
 
   app.view(CALLBACK_ID, async ({ ack, view, client, logger }) => {
     const odaiUseCase = new OdaiUseCase()
-    const kotaeList = await odaiUseCase
+    const result = await odaiUseCase
       .startVoting({
         slackTeamId: view.team_id,
       })
-      .then(({ kotaeList }) => kotaeList)
+      .then((result) => result)
       .catch((error) => {
         logger.error(error)
-        return []
+        return undefined
       })
     await ack()
-    if (!kotaeList.length) return
+    if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
     const blocks: KnownBlock[] = [
       {
@@ -211,6 +211,13 @@ export const startVoting = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
+          text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
           text: '---',
         },
       },
@@ -219,7 +226,7 @@ export const startVoting = (app: App) => {
 
     // NOTE: 答えの一覧をチャンネルに投稿
     await Promise.all(
-      kotaeList.map(async (kotae) => {
+      result.kotaeList.map(async (kotae) => {
         const blocks: KnownBlock[] = [
           {
             type: 'section',
