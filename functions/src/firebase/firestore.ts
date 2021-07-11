@@ -4,6 +4,8 @@ admin.initializeApp()
 
 export const db = admin.firestore()
 
+export const firestore = admin.firestore
+
 export const createDoc = async <T>(
   docRef: admin.firestore.DocumentReference,
   data: T

@@ -34,10 +34,9 @@ export class KotaeRepositoryImpl implements KotaeRepository {
   }
 
   async getAllOfCurrentOdai(
-    params: KotaeOfCurrentOdaiParamas,
+    { slackTeamId }: KotaeOfCurrentOdaiParamas,
     odaiDocId: string
   ): Promise<KotaeResponse[]> {
-    const { slackTeamId } = params
     const snapshot = await db
       .collection(slackTeamId)
       .doc(odaiDocId)

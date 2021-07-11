@@ -7,6 +7,9 @@ import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import { KotaePostRequestParams } from './kotae/Kotae'
 import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
+import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
+import { VoteService, VoteServiceImpl } from './vote/VoteService'
+import { VoteRequestParams } from './vote/Vote'
 
 const REGION = 'asia-northeast1'
 
@@ -17,6 +20,8 @@ const odaiRepository: OdaiRepository = new OdaiRepositoryImpl()
 const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
 const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
+const voteRepository: VoteRepository = new VoteRepositoryImpl()
+const voteService: VoteService = new VoteServiceImpl(voteRepository, odaiService)
 
 const errorResponse = (res: express.Response, statusCode: number, message: string) => {
   return res.status(statusCode).send({ error: true, message })
@@ -44,21 +49,6 @@ app.get('/odai/current', async (req: express.Request, res) => {
   }
   const result = await odaiService.getCurrent({ slackTeamId })
   return res.send({ odai: result })
-})
-
-app.post('/kotae', async (req: express.Request, res) => {
-  const { slackTeamId, content, createdBy } = req.body as KotaePostRequestParams
-  if (!slackTeamId || !content || !createdBy) {
-    return errorResponse(res, 422, 'Illegal Argument')
-  }
-  const result = await kotaeService.create({ slackTeamId, content, createdBy })
-  if (result === 'error') {
-    return errorResponse(res, 500, 'Internal Server Error')
-  }
-  if (result === 'noOdai') {
-    return errorResponse(res, 400, 'No Active Odai')
-  }
-  return res.send({ error: false })
 })
 
 app.post('/odai/start-voting', async (req: express.Request, res) => {
@@ -109,6 +99,42 @@ app.post('/odai/finish', async (req: express.Request, res) => {
   }
 
   return res.send({ kotaeList: result })
+})
+
+app.post('/kotae', async (req: express.Request, res) => {
+  const { slackTeamId, content, createdBy } = req.body as KotaePostRequestParams
+  if (!slackTeamId || !content || !createdBy) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+  const result = await kotaeService.create({ slackTeamId, content, createdBy })
+  if (result === 'error') {
+    return errorResponse(res, 500, 'Internal Server Error')
+  }
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  return res.send({ error: false })
+})
+
+app.post('/kotae/vote', async (req: express.Request, res) => {
+  const { slackTeamId, content, votedBy } = req.body as VoteRequestParams
+  if (!slackTeamId || !content || !votedBy) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+  const result = await voteService.create({ slackTeamId, content, votedBy })
+  if (result === 'error') {
+    return errorResponse(res, 500, 'Internal Server Error')
+  }
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  if (result === 'noKotae') {
+    return errorResponse(res, 400, 'No Target Kotae')
+  }
+  if (result === 'alreadyVoted') {
+    return errorResponse(res, 400, 'Already Voted')
+  }
+  return res.send({ error: false })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)
