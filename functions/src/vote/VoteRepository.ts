@@ -2,6 +2,7 @@ import { createDoc, db, firestore } from '../firebase/firestore'
 import { VoteApiStatus, VotePostData, VoteRequestParams } from './Vote'
 
 const VOTE_COLLECTION_NAME = 'vote'
+const KOTAE_COLLECTION_NAME = 'kotae'
 
 export interface VoteRepository {
   create(params: VoteRequestParams, odaiDocId: string): Promise<VoteApiStatus>
@@ -15,11 +16,12 @@ export class VoteRepositoryImpl implements VoteRepository {
     const kotaeSnapshot = await db
       .collection(slackTeamId)
       .doc(odaiDocId)
-      .collection(VOTE_COLLECTION_NAME)
+      .collection(KOTAE_COLLECTION_NAME)
       .where('content', '==', content)
       .get()
     if (kotaeSnapshot.empty) {
       console.log('No target kotae.')
+      console.log({ slackTeamId, content, votedBy })
       return 'noKotae'
     }
     // NOTE: 同じ内容の回答がある可能性は考慮していない
