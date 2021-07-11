@@ -1,11 +1,20 @@
 import { App } from '@slack/bolt'
 import { KnownBlock, WebClient } from '@slack/web-api'
+import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
 
 const postMessage = async (client: WebClient, blocks: KnownBlock[]) => {
   await client.chat.postMessage({
     channel: 'C026ZJX56AC',
     blocks,
+  })
+}
+
+const postEphemeral = async (client: WebClient, user: string, text: string) => {
+  await client.chat.postEphemeral({
+    channel: 'C026ZJX56AC',
+    user,
+    text,
   })
 }
 
@@ -247,5 +256,34 @@ export const startVoting = (app: App) => {
         await postMessage(client, blocks)
       })
     )
+  })
+
+  app.action(ACTION_ID, async ({ ack, body, client, logger }) => {
+    // NOTE: 投票ボタンが押された回答のテキストを抽出
+    // 何故か型が無いので仕方なくts-ignoreを仕様
+    // text -> ':speaking_head_in_silhouette: *kotae*'
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const text: string = body.message.blocks[0].text.text
+    // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
+    const content = text.replace(':speaking_head_in_silhouette: ', '').replace(/\*/g, '')
+    const voteUseCase = new VoteUseCase()
+    const slackTeamId = body.team?.id || ''
+    const user = body.user.id
+    const result = await voteUseCase.create({
+      slackTeamId,
+      content,
+      votedBy: user,
+    })
+    await ack()
+    if (result.message === 'Already Voted') {
+      await postEphemeral(client, user, `この回答は投票済みです :sunglasses:`)
+      return
+    }
+    if (result.error) {
+      logger.error(result.message)
+      return
+    }
+    await postEphemeral(client, user, `投票を受け付けました！ 回答: ${content}`)
   })
 }
