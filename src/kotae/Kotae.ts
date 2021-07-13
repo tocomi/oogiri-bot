@@ -7,6 +7,10 @@ export type Kotae = {
   createdAt: number
 }
 
+export type RankedKotae = Kotae & {
+  rank: 1 | 2 | 3
+}
+
 export type KotaePostRequestParams = {
   content: string
   createdBy: string

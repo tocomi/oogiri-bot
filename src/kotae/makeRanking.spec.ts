@@ -74,7 +74,7 @@ test('投票数順に並び替えとランク付けが行われる', () => {
       rank: 3,
     },
   ]
-  expect(result).toBe(expected)
+  expect(result).toStrictEqual(expected)
 })
 
 test('0票の回答は除外される', () => {
@@ -89,7 +89,7 @@ test('0票の回答は除外される', () => {
       rank: 2,
     },
   ]
-  expect(result).toBe(expected)
+  expect(result).toStrictEqual(expected)
 })
 
 test('票数が同数の場合は同じ順位になる', () => {
@@ -121,5 +121,5 @@ test('票数が同数の場合は同じ順位になる', () => {
       rank: 3,
     },
   ]
-  expect(result).toBe(expected)
+  expect(result).toStrictEqual(expected)
 })
