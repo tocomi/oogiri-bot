@@ -1,11 +1,12 @@
 import { App } from '@slack/bolt'
+import { KotaeUseCase } from './KotaeUseCase'
 
-const CALLBACK_ID = 'create-odai'
-const BLOCK_ID = 'create-odai-block'
+const CALLBACK_ID = 'create-kotae'
+const BLOCK_ID = 'create-kotae-block'
 const ACTION_ID = 'input'
 
-export const createOdai = (app: App) => {
-  app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
+export const createKotae = (app: App) => {
+  app.shortcut('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
     const result = await client.views
       .open({
         trigger_id: body.trigger_id,
@@ -14,7 +15,7 @@ export const createOdai = (app: App) => {
           callback_id: CALLBACK_ID,
           title: {
             type: 'plain_text',
-            text: 'お題の設定',
+            text: 'お題への回答',
           },
           submit: {
             type: 'plain_text',
@@ -33,12 +34,12 @@ export const createOdai = (app: App) => {
                 action_id: ACTION_ID,
                 placeholder: {
                   type: 'plain_text',
-                  text: '例: こんな結婚式は嫌だ',
+                  text: '例: 〇〇が□□だ',
                 },
               },
               label: {
                 type: 'plain_text',
-                text: 'お題',
+                text: '答え',
               },
             },
           ],
@@ -53,36 +54,45 @@ export const createOdai = (app: App) => {
     await ack()
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, logger }) => {
-    const newOdai = view.state.values[BLOCK_ID][ACTION_ID].value
-    logger.info(`New odai: ${newOdai}`)
+  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+    const kotae = view.state.values[BLOCK_ID][ACTION_ID].value
+    if (!kotae) return
+
+    const kotaeUseCase = new KotaeUseCase()
+    const success = await kotaeUseCase
+      .create({
+        slackTeamId: view.team_id,
+        content: kotae,
+        createdBy: body.user.id,
+      })
+      .then(() => true)
+      .catch((error) => {
+        logger.error(error)
+        return false
+      })
+    await ack()
+    if (!success) return
+
     const blocks = [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `<!here> 新しいお題が設定されました！`,
+          text: `*回答が投稿されました* :tada:`,
         },
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:speech_balloon: *お題: ${newOdai}*`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: 'お題に回答するには入力欄左の :zap: マークから *お題に回答する* を選んでください！',
+          text: `あなたの回答: ${kotae}`,
         },
       },
     ]
-    await client.chat.postMessage({
+    await client.chat.postEphemeral({
       channel: 'C026ZJX56AC',
+      user: body.user.id,
       blocks,
     })
-    await ack()
   })
 }
