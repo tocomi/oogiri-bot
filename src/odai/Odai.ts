@@ -14,3 +14,10 @@ export type OdaiStartVotingResponse = {
   odaiTitle: string
   kotaeList: Kotae[]
 }
+
+export type OdaiFinishRequestParams = SlackParams
+
+export type OdaiFinishResponse = {
+  odaiTitle: string
+  kotaeList: Kotae[]
+}

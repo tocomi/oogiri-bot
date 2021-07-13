@@ -1,5 +1,6 @@
 import { App } from '@slack/bolt'
 import { KnownBlock, WebClient } from '@slack/web-api'
+import { makeRanking } from '../kotae/makeRanking'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
 
@@ -285,5 +286,166 @@ export const startVoting = (app: App) => {
       return
     }
     await postEphemeral(client, user, `投票を受け付けました！ 回答: ${content}`)
+  })
+}
+
+export const finish = (app: App) => {
+  const CALLBACK_ID = 'finish'
+  app.shortcut('oogiri-finish', async ({ ack, body, client, logger }) => {
+    const result = await client.views
+      .open({
+        trigger_id: body.trigger_id,
+        view: {
+          type: 'modal',
+          callback_id: CALLBACK_ID,
+          title: {
+            type: 'plain_text',
+            text: '結果発表 :mega:',
+          },
+          submit: {
+            type: 'plain_text',
+            text: 'OK',
+          },
+          close: {
+            type: 'plain_text',
+            text: 'キャンセル',
+          },
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: '結果発表をします。回答への投票は締め切られます。',
+              },
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: 'よろしいですか？',
+              },
+            },
+          ],
+        },
+      })
+      .catch(async (e) => {
+        logger.error(e)
+      })
+    if (result && result.error) {
+      logger.error(result.error)
+    }
+    await ack()
+  })
+
+  app.view(CALLBACK_ID, async ({ ack, view, client, logger }) => {
+    const odaiUseCase = new OdaiUseCase()
+    const result = await odaiUseCase
+      .finish({
+        slackTeamId: view.team_id,
+      })
+      .then((result) => result)
+      .catch((error) => {
+        logger.error(error)
+        return undefined
+      })
+    await ack()
+    if (!result || !result.odaiTitle || !result.kotaeList.length) return
+
+    const rankedList = makeRanking(result.kotaeList)
+    rankedList.map((ranked) => logger.info(ranked))
+
+    const headerBlocks: KnownBlock[] = [
+      {
+        type: 'image',
+        image_url:
+          'https://stat.ameba.jp/user_images/20200706/09/lymph2/9e/3e/j/o1280072014784922530.jpg',
+        alt_text: 'inspiration',
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '---',
+        },
+      },
+    ]
+    const footerBlocks: KnownBlock[] = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '入賞者の方々おめでとうございます！ :clap: :clap: :clap:',
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: 'みなさんお疲れさまでした〜 :beers: :beers: :beers:',
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '次回も奮ってご参加ください！ :muscle: :muscle: :muscle:',
+        },
+      },
+    ]
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const rankingBlocks: KnownBlock[] = rankedList
+      .map((ranked) => {
+        const medalEmoji = () => {
+          switch (ranked.rank) {
+            case 1:
+              return ':first_place_medal:'
+            case 2:
+              return ':second_place_medal:'
+            case 3:
+              return ':third_place_medal:'
+          }
+        }
+        return [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `${medalEmoji()} *第${ranked.rank}位* <@${ranked.createdBy}>`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:point_up: 票数 *${ranked.votedCount}票*`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:speaking_head_in_silhouette: *${ranked.content}*`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `-`,
+            },
+          },
+        ]
+      })
+      .flat()
+    const blocks = [...headerBlocks, ...rankingBlocks, ...footerBlocks]
+    await postMessage(client, blocks)
   })
 }

@@ -1,5 +1,7 @@
 import { api } from '../api/axios'
 import {
+  OdaiFinishRequestParams,
+  OdaiFinishResponse,
   OdaiPostRequestParams,
   OdaiPostResponse,
   OdaiStartVotingRequestParams,
@@ -13,6 +15,10 @@ export class OdaiUseCase {
   }
   async startVoting(data: OdaiStartVotingRequestParams) {
     const result = await api.post<OdaiStartVotingResponse>('/odai/start-voting', data)
+    return result.data
+  }
+  async finish(data: OdaiFinishRequestParams) {
+    const result = await api.post<OdaiFinishResponse>('/odai/finish', data)
     return result.data
   }
 }
