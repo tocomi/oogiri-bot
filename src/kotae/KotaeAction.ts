@@ -1,4 +1,4 @@
-import { App } from '@slack/bolt'
+import { App, KnownBlock } from '@slack/bolt'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { KotaeUseCase } from './KotaeUseCase'
 
@@ -71,15 +71,24 @@ export const createKotae = (app: App) => {
       .catch((error) => {
         logger.error(error)
         if (error.response.data.message === 'No Active Odai') {
-          postEphemeral(client, body.user.id, ':warning: お題が開始されていません :warning:')
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':warning: お題が開始されていません :warning:',
+              },
+            },
+          ]
+          postEphemeral({ client, user: body.user.id, blocks })
         } else {
-          postInternalErrorMessage(client, body.user.id)
+          postInternalErrorMessage({ client, user: body.user.id })
         }
         return false
       })
     if (!success) return
 
-    const blocks = [
+    const blocks: KnownBlock[] = [
       {
         type: 'section',
         text: {
@@ -95,8 +104,8 @@ export const createKotae = (app: App) => {
         },
       },
     ]
-    await client.chat.postEphemeral({
-      channel: 'C026ZJX56AC',
+    await postEphemeral({
+      client,
       user: body.user.id,
       blocks,
     })
