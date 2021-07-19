@@ -1,23 +1,9 @@
 import { App } from '@slack/bolt'
-import { KnownBlock, WebClient } from '@slack/web-api'
+import { KnownBlock } from '@slack/web-api'
 import { makeRanking } from '../kotae/makeRanking'
+import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
-
-const postMessage = async (client: WebClient, blocks: KnownBlock[]) => {
-  await client.chat.postMessage({
-    channel: 'C026ZJX56AC',
-    blocks,
-  })
-}
-
-const postEphemeral = async (client: WebClient, user: string, text: string) => {
-  await client.chat.postEphemeral({
-    channel: 'C026ZJX56AC',
-    user,
-    text,
-  })
-}
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
@@ -76,6 +62,7 @@ export const createOdai = (app: App) => {
     // NOTE: 型の絞り込みのため。slack側で必須入力になっている。
     if (!newOdai) return
 
+    await ack()
     const odaiUseCase = new OdaiUseCase()
     const success = await odaiUseCase
       .create({
@@ -86,9 +73,13 @@ export const createOdai = (app: App) => {
       .then(() => true)
       .catch((error) => {
         logger.error(error)
+        if (error.response.data.message === 'Odai Duplication') {
+          postEphemeral(client, body.user.id, ':warning: 他のお題がオープンされています :warning:')
+        } else {
+          postInternalErrorMessage(client, body.user.id)
+        }
         return false
       })
-    await ack()
     if (!success) return
 
     const blocks: KnownBlock[] = [
@@ -174,7 +165,8 @@ export const startVoting = (app: App) => {
     await ack()
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, logger }) => {
+  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+    await ack()
     const odaiUseCase = new OdaiUseCase()
     const result = await odaiUseCase
       .startVoting({
@@ -183,9 +175,16 @@ export const startVoting = (app: App) => {
       .then((result) => result)
       .catch((error) => {
         logger.error(error)
+        if (
+          error.response.data.message === 'No Active Odai' ||
+          error.response.data.message === 'No Posting Odai'
+        ) {
+          postEphemeral(client, body.user.id, ':warning: お題が開始されていません :warning:')
+        } else {
+          postInternalErrorMessage(client, body.user.id)
+        }
         return undefined
       })
-    await ack()
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
     const blocks: KnownBlock[] = [
@@ -268,24 +267,28 @@ export const startVoting = (app: App) => {
     const text: string = body.message.blocks[0].text.text
     // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
     const content = text.replace(':speaking_head_in_silhouette: ', '').replace(/\*/g, '')
+
+    await ack()
     const voteUseCase = new VoteUseCase()
     const slackTeamId = body.team?.id || ''
     const user = body.user.id
-    const result = await voteUseCase.create({
-      slackTeamId,
-      content,
-      votedBy: user,
-    })
-    await ack()
-    if (result.message === 'Already Voted') {
-      await postEphemeral(client, user, `この回答は投票済みです :sunglasses:`)
-      return
-    }
-    if (result.error) {
-      logger.error(result.message)
-      return
-    }
-    await postEphemeral(client, user, `投票を受け付けました！ 回答: ${content}`)
+    const result = await voteUseCase
+      .create({
+        slackTeamId,
+        content,
+        votedBy: user,
+      })
+      .catch((error) => {
+        logger.error(error)
+        if (error.response.data.message === 'Already Voted') {
+          postEphemeral(client, user, `:warning: この答えは既に投票済みです :warning:`)
+        } else {
+          postInternalErrorMessage(client, body.user.id)
+        }
+        return undefined
+      })
+    if (!result) return
+    await postEphemeral(client, user, `:point_up: 投票を受け付けました！ 回答: ${content}`)
   })
 }
 
@@ -337,7 +340,8 @@ export const finish = (app: App) => {
     await ack()
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, logger }) => {
+  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+    await ack()
     const odaiUseCase = new OdaiUseCase()
     const result = await odaiUseCase
       .finish({
@@ -346,9 +350,16 @@ export const finish = (app: App) => {
       .then((result) => result)
       .catch((error) => {
         logger.error(error)
+        if (
+          error.response.data.message === 'No Active Odai' ||
+          error.response.data.message === 'No Voting Odai'
+        ) {
+          postEphemeral(client, body.user.id, `:warning: 投票受付中のお題がありません :warning:`)
+        } else {
+          postInternalErrorMessage(client, body.user.id)
+        }
         return undefined
       })
-    await ack()
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
     const rankedList = makeRanking(result.kotaeList)

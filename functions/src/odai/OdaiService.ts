@@ -22,11 +22,13 @@ export class OdaiServiceImpl implements OdaiService {
     this.repository = repository
   }
 
-  create(params: OdaiPostRequestParams): Promise<OdaiApiStatus> {
+  async create(params: OdaiPostRequestParams): Promise<OdaiApiStatus> {
+    const currentOdai = await this.getCurrent({ slackTeamId: params.slackTeamId })
+    if (currentOdai) return 'duplication'
     return this.repository.create(params)
   }
 
-  getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
+  async getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
     return this.repository.getCurrent(params)
   }
 

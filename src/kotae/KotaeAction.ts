@@ -1,4 +1,5 @@
 import { App } from '@slack/bolt'
+import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { KotaeUseCase } from './KotaeUseCase'
 
 const CALLBACK_ID = 'create-kotae'
@@ -58,6 +59,7 @@ export const createKotae = (app: App) => {
     const kotae = view.state.values[BLOCK_ID][ACTION_ID].value
     if (!kotae) return
 
+    await ack()
     const kotaeUseCase = new KotaeUseCase()
     const success = await kotaeUseCase
       .create({
@@ -68,9 +70,13 @@ export const createKotae = (app: App) => {
       .then(() => true)
       .catch((error) => {
         logger.error(error)
+        if (error.response.data.message === 'No Active Odai') {
+          postEphemeral(client, body.user.id, ':warning: お題が開始されていません :warning:')
+        } else {
+          postInternalErrorMessage(client, body.user.id)
+        }
         return false
       })
-    await ack()
     if (!success) return
 
     const blocks = [
