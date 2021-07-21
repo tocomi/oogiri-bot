@@ -1,24 +1,64 @@
 import { KnownBlock, WebClient } from '@slack/web-api'
+import { config } from '../config'
 
-export const postMessage = async (client: WebClient, blocks: KnownBlock[]) => {
+const CHANNEL_ID = config.slack.channelId
+
+export const postMessage = async ({
+  client,
+  blocks,
+}: {
+  client: WebClient
+  blocks: KnownBlock[]
+}) => {
   await client.chat.postMessage({
-    channel: 'C026ZJX56AC',
+    channel: CHANNEL_ID,
     blocks,
   })
 }
 
-export const postEphemeral = async (client: WebClient, user: string, text: string) => {
+export const postEphemeral = async ({
+  client,
+  user,
+  blocks,
+}: {
+  client: WebClient
+  user: string
+  blocks: KnownBlock[]
+}) => {
   await client.chat.postEphemeral({
-    channel: 'C026ZJX56AC',
+    channel: CHANNEL_ID,
     user,
-    text,
+    blocks,
   })
 }
 
-export const postInternalErrorMessage = async (client: WebClient, user: string) => {
-  await postEphemeral(
+const errorMessageBlocks: KnownBlock[] = [
+  {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: 'おや、何かがおかしいようです:thinking_face:',
+    },
+  },
+  {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: '時間をおいて再度お試しください:pray:',
+    },
+  },
+]
+
+export const postInternalErrorMessage = async ({
+  client,
+  user,
+}: {
+  client: WebClient
+  user: string
+}) => {
+  await postEphemeral({
     client,
     user,
-    'おや、何かがおかしいようです:thinking_face:  時間をおいて再度お試しください:pray:'
-  )
+    blocks: errorMessageBlocks,
+  })
 }

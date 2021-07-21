@@ -74,9 +74,18 @@ export const createOdai = (app: App) => {
       .catch((error) => {
         logger.error(error)
         if (error.response.data.message === 'Odai Duplication') {
-          postEphemeral(client, body.user.id, ':warning: 他のお題がオープンされています :warning:')
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':warning: 他のお題がオープンされています :warning:',
+              },
+            },
+          ]
+          postEphemeral({ client, user: body.user.id, blocks })
         } else {
-          postInternalErrorMessage(client, body.user.id)
+          postInternalErrorMessage({ client, user: body.user.id })
         }
         return false
       })
@@ -112,7 +121,7 @@ export const createOdai = (app: App) => {
         },
       },
     ]
-    await postMessage(client, blocks)
+    await postMessage({ client, blocks })
   })
 }
 
@@ -179,9 +188,18 @@ export const startVoting = (app: App) => {
           error.response.data.message === 'No Active Odai' ||
           error.response.data.message === 'No Posting Odai'
         ) {
-          postEphemeral(client, body.user.id, ':warning: お題が開始されていません :warning:')
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':warning: 他のお題がオープンされています :warning:',
+              },
+            },
+          ]
+          postEphemeral({ client, user: body.user.id, blocks })
         } else {
-          postInternalErrorMessage(client, body.user.id)
+          postInternalErrorMessage({ client, user: body.user.id })
         }
         return undefined
       })
@@ -231,7 +249,7 @@ export const startVoting = (app: App) => {
         },
       },
     ]
-    await postMessage(client, blocks)
+    await postMessage({ client, blocks })
 
     // NOTE: 答えの一覧をチャンネルに投稿
     await Promise.all(
@@ -253,7 +271,7 @@ export const startVoting = (app: App) => {
             },
           },
         ]
-        await postMessage(client, blocks)
+        await postMessage({ client, blocks })
       })
     )
   })
@@ -281,14 +299,36 @@ export const startVoting = (app: App) => {
       .catch((error) => {
         logger.error(error)
         if (error.response.data.message === 'Already Voted') {
-          postEphemeral(client, user, `:warning: この答えは既に投票済みです :warning:`)
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':warning: この答えは既に投票済みです :warning:',
+              },
+            },
+          ]
+          postEphemeral({
+            client,
+            user,
+            blocks,
+          })
         } else {
-          postInternalErrorMessage(client, body.user.id)
+          postInternalErrorMessage({ client, user })
         }
         return undefined
       })
     if (!result) return
-    await postEphemeral(client, user, `:point_up: 投票を受け付けました！ 回答: ${content}`)
+    const blocks: KnownBlock[] = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: ':point_up: 投票を受け付けました！ 回答: ${content}',
+        },
+      },
+    ]
+    await postEphemeral({ client, user, blocks })
   })
 }
 
@@ -354,9 +394,18 @@ export const finish = (app: App) => {
           error.response.data.message === 'No Active Odai' ||
           error.response.data.message === 'No Voting Odai'
         ) {
-          postEphemeral(client, body.user.id, `:warning: 投票受付中のお題がありません :warning:`)
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':warning: 投票受付中のお題がありません :warning:',
+              },
+            },
+          ]
+          postEphemeral({ client, user: body.user.id, blocks })
         } else {
-          postInternalErrorMessage(client, body.user.id)
+          postInternalErrorMessage({ client, user: body.user.id })
         }
         return undefined
       })
@@ -457,6 +506,6 @@ export const finish = (app: App) => {
       })
       .flat()
     const blocks = [...headerBlocks, ...rankingBlocks, ...footerBlocks]
-    await postMessage(client, blocks)
+    await postMessage({ client, blocks })
   })
 }
