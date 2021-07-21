@@ -1,1 +1,1 @@
-web: yarn deploy
+worker: yarn deploy
