@@ -18,7 +18,8 @@
     "@slack/bolt": "3",
     "@slack/web-api": "^6.2.4",
     "axios": "^0.21.1",
-    "dotenv": "^10.0.0"
+    "dotenv": "^10.0.0",
+    "typescript": "^4.3.4"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
@@ -31,7 +32,6 @@
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
     "ts-jest": "^27.0.3",
-    "tsc-watch": "^4.4.0",
-    "typescript": "^4.3.4"
+    "tsc-watch": "^4.4.0"
   }
 }
