@@ -1,1 +1,1 @@
-worker: yarn deploy:heroku
+web: yarn deploy:heroku
