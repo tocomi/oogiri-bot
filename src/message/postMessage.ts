@@ -1,4 +1,7 @@
 import { KnownBlock, WebClient } from '@slack/web-api'
+import { config } from '../config'
+
+const CHANNEL_ID = config.slack.channelId
 
 export const postMessage = async ({
   client,
@@ -8,7 +11,7 @@ export const postMessage = async ({
   blocks: KnownBlock[]
 }) => {
   await client.chat.postMessage({
-    channel: 'C026ZJX56AC',
+    channel: CHANNEL_ID,
     blocks,
   })
 }
@@ -23,7 +26,7 @@ export const postEphemeral = async ({
   blocks: KnownBlock[]
 }) => {
   await client.chat.postEphemeral({
-    channel: 'C026ZJX56AC',
+    channel: CHANNEL_ID,
     user,
     blocks,
   })
