@@ -7,11 +7,12 @@
   "license": "MIT",
   "scripts": {
     "start": "node ./dist/index.js",
-    "deploy:heroku": "tsc && yarn start",
     "watch": "tsc-watch --onSuccess 'yarn start'",
     "lint": "eslint --ext .js,.ts ./src",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
-    "test": "jest"
+    "test": "jest",
+    "tsc": "tsc",
+    "deploy:heroku": "yarn tsc && yarn start"
   },
   "dependencies": {
     "@slack/bolt": "3",
