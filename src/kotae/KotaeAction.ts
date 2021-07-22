@@ -144,7 +144,7 @@ export const countKotae = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: ':mega: *現在の状況* :mega:',
+          text: ':mega: *現在の回答状況* :mega:',
         },
       },
       {

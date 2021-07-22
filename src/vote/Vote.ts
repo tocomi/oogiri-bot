@@ -6,3 +6,10 @@ export type VotePostRequestParams = {
 } & SlackParams
 
 export type VotePostResponse = PostResponse
+
+export type VoteCountRequestParams = SlackParams
+
+export type VoteCount = {
+  odaiTitle: string
+  voteCount: number
+}
