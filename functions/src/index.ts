@@ -4,7 +4,7 @@ import * as cors from 'cors'
 import { OdaiCurrentParams, OdaiPostRequestParams, OdaiPutStatusParams } from './odai/Odai'
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
-import { KotaePostRequestParams } from './kotae/Kotae'
+import { KotaeOfCurrentOdaiParamas, KotaePostRequestParams } from './kotae/Kotae'
 import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
@@ -117,7 +117,7 @@ app.post('/kotae', async (req: express.Request, res) => {
 })
 
 app.get('/kotae/current', async (req: express.Request, res) => {
-  const { slackTeamId } = req.body as OdaiPutStatusParams
+  const { slackTeamId } = req.query as KotaeOfCurrentOdaiParamas
   if (!slackTeamId) {
     return errorResponse(res, 422, 'Illegal Argument')
   }
