@@ -304,7 +304,7 @@ export const startVoting = (app: App) => {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: ':warning: この答えは既に投票済みです :warning:',
+                text: `:warning: この答えは既に投票済みです :warning: 回答: ${content}`,
               },
             },
           ]
@@ -324,7 +324,7 @@ export const startVoting = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: ':point_up: 投票を受け付けました！ 回答: ${content}',
+          text: `:point_up: 投票を受け付けました！ 回答: ${content}`,
         },
       },
     ]
