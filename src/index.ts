@@ -9,13 +9,15 @@ const app = new App({
   appToken: config.slack.appToken,
 })
 
+const PORT = 5000
+
 createOdai(app)
 createKotae(app)
 startVoting(app)
 finish(app)
 
 const main = async () => {
-  await app.start()
+  await app.start(PORT)
   console.log('⚡️ Bolt app started')
 }
 
