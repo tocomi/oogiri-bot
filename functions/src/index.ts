@@ -116,6 +116,19 @@ app.post('/kotae', async (req: express.Request, res) => {
   return res.send({ error: false })
 })
 
+app.get('/kotae/current', async (req: express.Request, res) => {
+  const { slackTeamId } = req.body as OdaiPutStatusParams
+  if (!slackTeamId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+
+  const result = await kotaeService.getAllOfCurrentOdai({ slackTeamId })
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  return res.send({ result })
+})
+
 app.post('/kotae/vote', async (req: express.Request, res) => {
   const { slackTeamId, content, votedBy } = req.body as VoteRequestParams
   if (!slackTeamId || !content || !votedBy) {
