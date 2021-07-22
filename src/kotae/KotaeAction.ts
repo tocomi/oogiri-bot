@@ -69,8 +69,8 @@ export const createKotae = (app: App) => {
       })
       .then(() => true)
       .catch((error) => {
-        logger.error(error)
         if (error.response.data.message === 'No Active Odai') {
+          logger.warn(error.response.data.message)
           const blocks: KnownBlock[] = [
             {
               type: 'section',
@@ -82,6 +82,7 @@ export const createKotae = (app: App) => {
           ]
           postEphemeral({ client, user: body.user.id, blocks })
         } else {
+          logger.error(error.response.config)
           postInternalErrorMessage({ client, user: body.user.id })
         }
         return false

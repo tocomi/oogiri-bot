@@ -72,8 +72,8 @@ export const createOdai = (app: App) => {
       })
       .then(() => true)
       .catch((error) => {
-        logger.error(error)
         if (error.response.data.message === 'Odai Duplication') {
+          logger.warn(error.response.data.message)
           const blocks: KnownBlock[] = [
             {
               type: 'section',
@@ -85,6 +85,7 @@ export const createOdai = (app: App) => {
           ]
           postEphemeral({ client, user: body.user.id, blocks })
         } else {
+          logger.error(error.response.config)
           postInternalErrorMessage({ client, user: body.user.id })
         }
         return false
@@ -183,11 +184,11 @@ export const startVoting = (app: App) => {
       })
       .then((result) => result)
       .catch((error) => {
-        logger.error(error)
         if (
           error.response.data.message === 'No Active Odai' ||
           error.response.data.message === 'No Posting Odai'
         ) {
+          logger.warn(error.response.data.message)
           const blocks: KnownBlock[] = [
             {
               type: 'section',
@@ -199,6 +200,7 @@ export const startVoting = (app: App) => {
           ]
           postEphemeral({ client, user: body.user.id, blocks })
         } else {
+          logger.error(error.response.config)
           postInternalErrorMessage({ client, user: body.user.id })
         }
         return undefined
@@ -297,8 +299,8 @@ export const startVoting = (app: App) => {
         votedBy: user,
       })
       .catch((error) => {
-        logger.error(error)
         if (error.response.data.message === 'Already Voted') {
+          logger.warn(error.response.data.message)
           const blocks: KnownBlock[] = [
             {
               type: 'section',
@@ -314,6 +316,7 @@ export const startVoting = (app: App) => {
             blocks,
           })
         } else {
+          logger.error(error.response.config)
           postInternalErrorMessage({ client, user })
         }
         return undefined
@@ -389,11 +392,11 @@ export const finish = (app: App) => {
       })
       .then((result) => result)
       .catch((error) => {
-        logger.error(error)
         if (
           error.response.data.message === 'No Active Odai' ||
           error.response.data.message === 'No Voting Odai'
         ) {
+          logger.warn(error.response.data.message)
           const blocks: KnownBlock[] = [
             {
               type: 'section',
@@ -405,6 +408,7 @@ export const finish = (app: App) => {
           ]
           postEphemeral({ client, user: body.user.id, blocks })
         } else {
+          logger.error(error.response.config)
           postInternalErrorMessage({ client, user: body.user.id })
         }
         return undefined
@@ -412,7 +416,6 @@ export const finish = (app: App) => {
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
     const rankedList = makeRanking(result.kotaeList)
-    rankedList.map((ranked) => logger.info(ranked))
 
     const headerBlocks: KnownBlock[] = [
       {
