@@ -17,3 +17,15 @@ export type KotaePostRequestParams = {
 } & SlackParams
 
 export type KotaePostResponse = PostResponse
+
+export type KotaeListRequestParams = SlackParams
+
+export type KotaeListResponse = {
+  odaiTitle: string
+  kotaeList: Kotae[]
+}
+
+export type KotaeCount = {
+  odaiTitle: string
+  kotaeCount: number
+}
