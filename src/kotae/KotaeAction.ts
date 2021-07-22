@@ -1,5 +1,5 @@
 import { App, KnownBlock } from '@slack/bolt'
-import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { postEphemeral, postInternalErrorMessage, postMessage } from '../message/postMessage'
 import { KotaeUseCase } from './KotaeUseCase'
 
 const CALLBACK_ID = 'create-kotae'
@@ -110,5 +110,58 @@ export const createKotae = (app: App) => {
       user: body.user.id,
       blocks,
     })
+  })
+}
+
+export const countKotae = (app: App) => {
+  app.command('/oogiri-count-kotae', async ({ ack, body, client, logger }) => {
+    await ack()
+    const kotaeUseCase = new KotaeUseCase()
+    const result = await kotaeUseCase
+      .getKotaeCount({ slackTeamId: body.team_id })
+      .catch((error) => {
+        if (error.response.data.message === 'No Active Odai') {
+          logger.warn(error.response.data.message)
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':warning: お題が開始されていません :warning:',
+              },
+            },
+          ]
+          postEphemeral({ client, user: body.user.id, blocks })
+        } else {
+          logger.error(error.response.config)
+          postInternalErrorMessage({ client, user: body.user.id })
+        }
+        return undefined
+      })
+    if (!result) return
+    const blocks: KnownBlock[] = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: ':mega: *現在の状況* :mega:',
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:speech_balloon: お題: ${result.odaiTitle}`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:speaking_head_in_silhouette: *回答数: ${result.kotaeCount}*`,
+        },
+      },
+    ]
+    await postMessage({ client, blocks })
   })
 }

@@ -4,7 +4,7 @@ import * as cors from 'cors'
 import { OdaiCurrentParams, OdaiPostRequestParams, OdaiPutStatusParams } from './odai/Odai'
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
-import { KotaePostRequestParams } from './kotae/Kotae'
+import { KotaeOfCurrentOdaiParamas, KotaePostRequestParams } from './kotae/Kotae'
 import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
@@ -114,6 +114,19 @@ app.post('/kotae', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'No Active Odai')
   }
   return res.send({ error: false })
+})
+
+app.get('/kotae/current', async (req: express.Request, res) => {
+  const { slackTeamId } = req.query as KotaeOfCurrentOdaiParamas
+  if (!slackTeamId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+
+  const result = await kotaeService.getAllOfCurrentOdai({ slackTeamId })
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
 })
 
 app.post('/kotae/vote', async (req: express.Request, res) => {
