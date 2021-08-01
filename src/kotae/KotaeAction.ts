@@ -1,4 +1,12 @@
-import { App, KnownBlock } from '@slack/bolt'
+import {
+  App,
+  BlockAction,
+  InteractiveMessage,
+  KnownBlock,
+  SlackShortcut,
+  WorkflowStepEdit,
+} from '@slack/bolt'
+import { Logger, WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage, postMessage } from '../message/postMessage'
 import { KotaeUseCase } from './KotaeUseCase'
 
@@ -6,51 +14,71 @@ const CALLBACK_ID = 'create-kotae'
 const BLOCK_ID = 'create-kotae-block'
 const ACTION_ID = 'input'
 
-export const createKotae = (app: App) => {
-  app.shortcut('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
-    const result = await client.views
-      .open({
-        trigger_id: body.trigger_id,
-        view: {
-          type: 'modal',
-          callback_id: CALLBACK_ID,
-          title: {
-            type: 'plain_text',
-            text: 'お題への回答',
-          },
-          submit: {
-            type: 'plain_text',
-            text: '送信',
-          },
-          close: {
-            type: 'plain_text',
-            text: 'キャンセル',
-          },
-          blocks: [
-            {
-              type: 'input',
-              block_id: BLOCK_ID,
-              element: {
-                type: 'plain_text_input',
-                action_id: ACTION_ID,
-                placeholder: {
-                  type: 'plain_text',
-                  text: '例: 〇〇が□□だ',
-                },
-              },
-              label: {
+const create = async ({
+  body,
+  client,
+  logger,
+}: {
+  body: SlackShortcut | BlockAction | InteractiveMessage | WorkflowStepEdit
+  client: WebClient
+  logger: Logger
+}) => {
+  const result = await client.views
+    .open({
+      trigger_id: body.trigger_id,
+      view: {
+        type: 'modal',
+        callback_id: CALLBACK_ID,
+        title: {
+          type: 'plain_text',
+          text: 'お題への回答',
+        },
+        submit: {
+          type: 'plain_text',
+          text: '送信',
+        },
+        close: {
+          type: 'plain_text',
+          text: 'キャンセル',
+        },
+        blocks: [
+          {
+            type: 'input',
+            block_id: BLOCK_ID,
+            element: {
+              type: 'plain_text_input',
+              action_id: ACTION_ID,
+              placeholder: {
                 type: 'plain_text',
-                text: '答え',
+                text: '例: 〇〇が□□だ',
               },
             },
-          ],
-        },
-      })
-      .catch(async (e) => {
-        logger.error(e)
-      })
-    if (result && result.error) {
-      logger.error(result.error)
+            label: {
+              type: 'plain_text',
+              text: '答え',
+            },
+          },
+        ],
+      },
+    })
+    .catch(async (e) => {
+      logger.error(e)
+    })
+  if (result && result.error) {
+    logger.error(result.error)
+  }
+}
+
+export const createKotae = (app: App) => {
+  // NOTE: ショートカットからの回答
+  app.shortcut('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
+    await create({ body, client, logger })
+    await ack()
+  })
+  // NOTE: ボタンからの回答
+  app.action('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
+    if ('trigger_id' in body) {
+      await create({ body, client, logger })
     }
     await ack()
   })
@@ -160,6 +188,20 @@ export const countKotae = (app: App) => {
           type: 'mrkdwn',
           text: `:speaking_head_in_silhouette: *回答数: ${result.kotaeCount}*`,
         },
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'お題に回答する',
+            },
+            style: 'primary',
+            action_id: 'oogiri-create-kotae',
+          },
+        ],
       },
     ]
     await postMessage({ client, blocks })
