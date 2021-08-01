@@ -115,11 +115,18 @@ export const createOdai = (app: App) => {
         },
       },
       {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: 'お題に回答するには入力欄左の :zap: マークから *お題に回答する* を選んでください！',
-        },
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'お題に回答する',
+            },
+            style: 'primary',
+            action_id: 'oogiri-create-kotae',
+          },
+        ],
       },
     ]
     await postMessage({ client, blocks })
