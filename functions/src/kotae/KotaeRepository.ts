@@ -2,6 +2,7 @@ import { convertTimestamp, createDoc, db } from '../firebase/firestore'
 import {
   KotaeApiStatus,
   KotaeOfCurrentOdaiParamas,
+  KotaePersonalResultParams,
   KotaePostData,
   KotaePostRequestParams,
   KotaeResponse,
@@ -15,6 +16,7 @@ export interface KotaeRepository {
     params: KotaeOfCurrentOdaiParamas,
     odaiDocId: string
   ): Promise<KotaeResponse[]>
+  getPersonalResult(params: KotaePersonalResultParams, odaiDocId: string): Promise<KotaeResponse[]>
 }
 
 export class KotaeRepositoryImpl implements KotaeRepository {
@@ -42,17 +44,36 @@ export class KotaeRepositoryImpl implements KotaeRepository {
       .doc(odaiDocId)
       .collection(KOTAE_COLLECTION_NAME)
       .get()
-    const kotaeList: KotaeResponse[] = []
-    snapshot.forEach((doc) => {
+    return snapshot.docs.map((doc) => {
       const data = doc.data()
-      const kotae: KotaeResponse = {
+      return {
         content: data.content,
         createdBy: data.createdBy,
         votedCount: data.votedCount,
         createdAt: convertTimestamp(data.createdAt),
       }
-      kotaeList.push(kotae)
     })
-    return kotaeList
+  }
+
+  async getPersonalResult(
+    { slackTeamId, userId }: KotaePersonalResultParams,
+    odaiDocId: string
+  ): Promise<KotaeResponse[]> {
+    const snapshot = await db
+      .collection(slackTeamId)
+      .doc(odaiDocId)
+      .collection(KOTAE_COLLECTION_NAME)
+      .where('createdBy', '==', userId)
+      .orderBy('votedCount', 'desc')
+      .get()
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        content: data.content,
+        createdBy: data.createdBy,
+        votedCount: data.votedCount,
+        createdAt: convertTimestamp(data.createdAt),
+      }
+    })
   }
 }

@@ -27,3 +27,9 @@ export type KotaeGetAllResponse = {
   odaiTitle: string
   kotaeList: KotaeResponse[]
 }
+
+export type KotaePersonalResultParams = SlackParams & {
+  userId: string
+}
+
+export type KotaePersonalResultResponse = KotaeGetAllResponse

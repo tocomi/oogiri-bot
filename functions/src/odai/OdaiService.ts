@@ -6,11 +6,14 @@ import {
   OdaiPostRequestParams,
   OdaiPutApiStatus,
   OdaiPutStatusParams,
+  OdaiRecentFinishedParams,
+  OdaiRecentFinishedResponse,
 } from './Odai'
 
 export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
+  getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
   startVoting(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus>
   finish(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus>
 }
@@ -30,6 +33,12 @@ export class OdaiServiceImpl implements OdaiService {
 
   async getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
     return this.repository.getCurrent(params)
+  }
+
+  async getRecentFinished(
+    params: OdaiRecentFinishedParams
+  ): Promise<OdaiRecentFinishedResponse | null> {
+    return this.repository.getRecentFinished(params)
   }
 
   async startVoting(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus> {
