@@ -11,5 +11,6 @@ export type VoteCountRequestParams = SlackParams
 
 export type VoteCount = {
   odaiTitle: string
+  uniqueUserCount: number
   voteCount: number
 }
