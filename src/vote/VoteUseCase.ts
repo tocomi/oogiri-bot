@@ -13,6 +13,7 @@ export class VoteUseCase {
     const result = await kotaeUseCase.getAllOfCurrentOdai(data)
     return {
       odaiTitle: result.odaiTitle,
+      uniqueUserCount: [...new Set(result.kotaeList.map((k) => k.createdBy))].length,
       voteCount: result.kotaeList.reduce((totalCount, { votedCount }) => {
         return totalCount + votedCount
       }, 0),
