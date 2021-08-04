@@ -27,5 +27,6 @@ export type KotaeListResponse = {
 
 export type KotaeCount = {
   odaiTitle: string
+  uniqueUserCount: number
   kotaeCount: number
 }
