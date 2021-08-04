@@ -121,7 +121,7 @@ export const createOdai = (app: App) => {
             type: 'button',
             text: {
               type: 'plain_text',
-              text: 'お題に回答する',
+              text: 'お題に回答する (複数回答可)',
             },
             style: 'primary',
             action_id: 'oogiri-create-kotae',
@@ -240,7 +240,7 @@ export const startVoting = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: '回答の右のボタンを押すと投票できます :punch:',
+          text: '回答の右のボタンを押すと投票できます:punch: (複数投票可)',
         },
       },
       {
@@ -458,14 +458,14 @@ export const finish = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: 'みなさんお疲れさまでした〜 :beers: :beers: :beers:',
+          text: '次回も奮ってご参加ください！ :muscle: :muscle: :muscle:',
         },
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: '次回も奮ってご参加ください！ :muscle: :muscle: :muscle:',
+          text: '個人の結果はコマンド `/oogiri-check-my-result` で確認できます。(他の人には見えません)',
         },
       },
     ]
