@@ -3,6 +3,8 @@ import {
   KotaeCount,
   KotaeListRequestParams,
   KotaeListResponse,
+  KotaePersonalResultParams,
+  KotaePersonalResultResponse,
   KotaePostRequestParams,
   KotaePostResponse,
 } from './Kotae'
@@ -27,5 +29,12 @@ export class KotaeUseCase {
       uniqueUserCount: [...new Set(result.kotaeList.map((k) => k.createdBy))].length,
       kotaeCount: result.kotaeList.length,
     }
+  }
+
+  async getPersonalResult(data: KotaePersonalResultParams): Promise<KotaePersonalResultResponse> {
+    const result = await api.get<KotaePersonalResultResponse>('/kotae/personal-result', {
+      params: data,
+    })
+    return result.data
   }
 }

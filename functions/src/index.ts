@@ -4,7 +4,11 @@ import * as cors from 'cors'
 import { OdaiCurrentParams, OdaiPostRequestParams, OdaiPutStatusParams } from './odai/Odai'
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
-import { KotaeOfCurrentOdaiParamas, KotaePostRequestParams } from './kotae/Kotae'
+import {
+  KotaeOfCurrentOdaiParamas,
+  KotaePersonalResultParams,
+  KotaePostRequestParams,
+} from './kotae/Kotae'
 import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
@@ -125,6 +129,19 @@ app.get('/kotae/current', async (req: express.Request, res) => {
   const result = await kotaeService.getAllOfCurrentOdai({ slackTeamId })
   if (result === 'noOdai') {
     return errorResponse(res, 400, 'No Active Odai')
+  }
+  return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+})
+
+app.get('/kotae/personal-result', async (req: express.Request, res) => {
+  const { slackTeamId, userId } = req.query as KotaePersonalResultParams
+  if (!slackTeamId || !userId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+
+  const result = await kotaeService.getPersonalResult({ slackTeamId, userId })
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Finished Odai')
   }
   return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
 })

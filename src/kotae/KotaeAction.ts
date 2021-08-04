@@ -207,3 +207,65 @@ export const countKotae = (app: App) => {
     await postMessage({ client, blocks })
   })
 }
+
+export const checkResult = (app: App) => {
+  app.command('/oogiri-check-my-result', async ({ ack, body, client, logger }) => {
+    await ack()
+    const kotaeUseCase = new KotaeUseCase()
+    const result = await kotaeUseCase
+      .getPersonalResult({ slackTeamId: body.team_id, userId: body.user_id })
+      .catch((error) => {
+        if (error.response.data.message === 'No Finished Odai') {
+          logger.warn(error.response.data.message)
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':warning: 結果を表示するお題がありません :warning:',
+              },
+            },
+          ]
+          postEphemeral({ client, user: body.user.id, blocks })
+        } else {
+          logger.error(error.response.config)
+          postInternalErrorMessage({ client, user: body.user.id })
+        }
+        return undefined
+      })
+    if (!result || !result.kotaeList.length) return
+    const headerBlocks: KnownBlock[] = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:bar_chart: :bar_chart: :bar_chart: *直近のあなたの回答結果* :bar_chart: :bar_chart: :bar_chart:`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
+        },
+      },
+    ]
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const resultBlocks: KnownBlock[] = result.kotaeList
+      .map((kotae) => {
+        return [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:point_up: *投票数: ${kotae.votedCount}* - ${kotae.content}`,
+            },
+          },
+        ]
+      })
+      .flat()
+    const blocks = [...headerBlocks, ...resultBlocks]
+    await postEphemeral({ client, user: body.user_id, blocks })
+  })
+}

@@ -31,3 +31,7 @@ export type OdaiCurrentResponse = OdaiApiBase & {
   docId: string
   createdAt: number
 }
+
+export type OdaiRecentFinishedParams = SlackParams
+
+export type OdaiRecentFinishedResponse = OdaiCurrentResponse

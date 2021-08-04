@@ -3,6 +3,8 @@ import {
   KotaeApiStatus,
   KotaeGetAllResponse,
   KotaeOfCurrentOdaiParamas,
+  KotaePersonalResultParams,
+  KotaePersonalResultResponse,
   KotaePostRequestParams,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
@@ -10,6 +12,9 @@ import { KotaeRepository } from './KotaeRepository'
 export interface KotaeService {
   create(params: KotaePostRequestParams): Promise<KotaeApiStatus>
   getAllOfCurrentOdai(params: KotaeOfCurrentOdaiParamas): Promise<KotaeGetAllResponse | 'noOdai'>
+  getPersonalResult(
+    params: KotaePersonalResultParams
+  ): Promise<KotaePersonalResultResponse | 'noOdai'>
 }
 
 export class KotaeServiceImpl implements KotaeService {
@@ -35,6 +40,20 @@ export class KotaeServiceImpl implements KotaeService {
     const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
     return {
       odaiTitle: currentOdai.title,
+      kotaeList,
+    }
+  }
+
+  async getPersonalResult(
+    params: KotaePersonalResultParams
+  ): Promise<KotaePersonalResultResponse | 'noOdai'> {
+    const recentFinishedOdai = await this.odaiService.getRecentFinished({
+      slackTeamId: params.slackTeamId,
+    })
+    if (!recentFinishedOdai) return 'noOdai'
+    const kotaeList = await this.repository.getPersonalResult(params, recentFinishedOdai.docId)
+    return {
+      odaiTitle: recentFinishedOdai.title,
       kotaeList,
     }
   }

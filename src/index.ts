@@ -1,6 +1,6 @@
 import { App } from '@slack/bolt'
 import { config } from './config'
-import { countKotae, createKotae } from './kotae/KotaeAction'
+import { checkResult, countKotae, createKotae } from './kotae/KotaeAction'
 import { createOdai, finish, startVoting } from './odai/OdaiAction'
 import { countVote } from './vote/VoteAction'
 
@@ -18,6 +18,7 @@ startVoting(app)
 finish(app)
 countKotae(app)
 countVote(app)
+checkResult(app)
 
 const main = async () => {
   await app.start(PORT)

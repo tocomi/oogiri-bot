@@ -30,3 +30,9 @@ export type KotaeCount = {
   uniqueUserCount: number
   kotaeCount: number
 }
+
+export type KotaePersonalResultParams = SlackParams & {
+  userId: string
+}
+
+export type KotaePersonalResultResponse = KotaeListResponse
