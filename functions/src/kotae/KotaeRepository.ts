@@ -1,7 +1,7 @@
 import { convertTimestamp, createDoc, db } from '../firebase/firestore'
 import {
   KotaeApiStatus,
-  KotaeOfCurrentOdaiParamas,
+  KotaeOfCurrentOdaiParams,
   KotaePersonalResultParams,
   KotaePostData,
   KotaePostRequestParams,
@@ -12,10 +12,7 @@ const KOTAE_COLLECTION_NAME = 'kotae'
 
 export interface KotaeRepository {
   create(params: KotaePostRequestParams, odaiDocId: string): Promise<KotaeApiStatus>
-  getAllOfCurrentOdai(
-    params: KotaeOfCurrentOdaiParamas,
-    odaiDocId: string
-  ): Promise<KotaeResponse[]>
+  getAllOfCurrentOdai(params: KotaeOfCurrentOdaiParams, odaiDocId: string): Promise<KotaeResponse[]>
   getPersonalResult(params: KotaePersonalResultParams, odaiDocId: string): Promise<KotaeResponse[]>
 }
 
@@ -36,7 +33,7 @@ export class KotaeRepositoryImpl implements KotaeRepository {
   }
 
   async getAllOfCurrentOdai(
-    { slackTeamId }: KotaeOfCurrentOdaiParamas,
+    { slackTeamId }: KotaeOfCurrentOdaiParams,
     odaiDocId: string
   ): Promise<KotaeResponse[]> {
     const snapshot = await db

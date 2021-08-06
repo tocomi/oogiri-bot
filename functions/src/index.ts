@@ -5,7 +5,7 @@ import { OdaiCurrentParams, OdaiPostRequestParams, OdaiPutStatusParams } from '.
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import {
-  KotaeOfCurrentOdaiParamas,
+  KotaeOfCurrentOdaiParams,
   KotaePersonalResultParams,
   KotaePostRequestParams,
 } from './kotae/Kotae'
@@ -121,7 +121,7 @@ app.post('/kotae', async (req: express.Request, res) => {
 })
 
 app.get('/kotae/current', async (req: express.Request, res) => {
-  const { slackTeamId } = req.query as KotaeOfCurrentOdaiParamas
+  const { slackTeamId } = req.query as KotaeOfCurrentOdaiParams
   if (!slackTeamId) {
     return errorResponse(res, 422, 'Illegal Argument')
   }
