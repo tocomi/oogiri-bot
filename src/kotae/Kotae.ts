@@ -22,11 +22,13 @@ export type KotaeListRequestParams = SlackParams
 
 export type KotaeListResponse = {
   odaiTitle: string
+  odaiDueDate: number
   kotaeList: Kotae[]
 }
 
 export type KotaeCount = {
   odaiTitle: string
+  odaiDueDate: number
   uniqueUserCount: number
   kotaeCount: number
 }
