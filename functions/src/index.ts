@@ -130,7 +130,11 @@ app.get('/kotae/current', async (req: express.Request, res) => {
   if (result === 'noOdai') {
     return errorResponse(res, 400, 'No Active Odai')
   }
-  return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+  return res.send({
+    odaiTitle: result.odaiTitle,
+    odaiDueDate: result.odaiDueDate,
+    kotaeList: result.kotaeList,
+  })
 })
 
 app.get('/kotae/personal-result', async (req: express.Request, res) => {

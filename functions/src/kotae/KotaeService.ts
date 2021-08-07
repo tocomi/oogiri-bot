@@ -40,6 +40,7 @@ export class KotaeServiceImpl implements KotaeService {
     const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
     return {
       odaiTitle: currentOdai.title,
+      odaiDueDate: currentOdai.dueDate,
       kotaeList,
     }
   }
@@ -54,6 +55,7 @@ export class KotaeServiceImpl implements KotaeService {
     const kotaeList = await this.repository.getPersonalResult(params, recentFinishedOdai.docId)
     return {
       odaiTitle: recentFinishedOdai.title,
+      odaiDueDate: recentFinishedOdai.dueDate,
       kotaeList,
     }
   }
