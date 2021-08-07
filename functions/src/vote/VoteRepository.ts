@@ -1,5 +1,5 @@
 import { createDoc, db, firestore } from '../firebase/firestore'
-import { VoteApiStatus, VotePostData, VoteRequestParams } from './Vote'
+import { Vote, VoteApiStatus, VoteRequestParams } from './Vote'
 
 const VOTE_COLLECTION_NAME = 'vote'
 const KOTAE_COLLECTION_NAME = 'kotae'
