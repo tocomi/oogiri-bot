@@ -5,7 +5,7 @@ import { OdaiCurrentParams, OdaiPostRequestParams, OdaiPutStatusParams } from '.
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import {
-  KotaeOfCurrentOdaiParamas,
+  KotaeOfCurrentOdaiParams,
   KotaePersonalResultParams,
   KotaePostRequestParams,
 } from './kotae/Kotae'
@@ -13,7 +13,7 @@ import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
-import { VoteRequestParams } from './vote/Vote'
+import { VoteCountParams, VoteRequestParams } from './vote/Vote'
 
 const REGION = 'asia-northeast1'
 
@@ -121,7 +121,7 @@ app.post('/kotae', async (req: express.Request, res) => {
 })
 
 app.get('/kotae/current', async (req: express.Request, res) => {
-  const { slackTeamId } = req.query as KotaeOfCurrentOdaiParamas
+  const { slackTeamId } = req.query as KotaeOfCurrentOdaiParams
   if (!slackTeamId) {
     return errorResponse(res, 422, 'Illegal Argument')
   }
@@ -158,6 +158,9 @@ app.post('/kotae/vote', async (req: express.Request, res) => {
   if (result === 'noOdai') {
     return errorResponse(res, 400, 'No Active Odai')
   }
+  if (result === 'noVotingOdai') {
+    return errorResponse(res, 400, 'No Voting Odai')
+  }
   if (result === 'noKotae') {
     return errorResponse(res, 400, 'No Target Kotae')
   }
@@ -165,6 +168,22 @@ app.post('/kotae/vote', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'Already Voted')
   }
   return res.send({ error: false })
+})
+
+app.get('/vote/count', async (req: express.Request, res) => {
+  const { slackTeamId } = req.query as VoteCountParams
+  if (!slackTeamId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+
+  const result = await voteService.getVoteCount({ slackTeamId })
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  if (result === 'noVotingOdai') {
+    return errorResponse(res, 400, 'No Voting Odai')
+  }
+  return res.send({ ...result })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)

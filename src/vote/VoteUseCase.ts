@@ -1,5 +1,4 @@
 import { api } from '../api/axios'
-import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { VoteCount, VoteCountRequestParams, VotePostRequestParams, VotePostResponse } from './Vote'
 
 export class VoteUseCase {
@@ -9,14 +8,9 @@ export class VoteUseCase {
   }
 
   async getVoteCount(data: VoteCountRequestParams): Promise<VoteCount> {
-    const kotaeUseCase = new KotaeUseCase()
-    const result = await kotaeUseCase.getAllOfCurrentOdai(data)
-    return {
-      odaiTitle: result.odaiTitle,
-      uniqueUserCount: [...new Set(result.kotaeList.map((k) => k.createdBy))].length,
-      voteCount: result.kotaeList.reduce((totalCount, { votedCount }) => {
-        return totalCount + votedCount
-      }, 0),
-    }
+    const result = await api.get<VoteCount>('/vote/count', {
+      params: data,
+    })
+    return result.data
   }
 }

@@ -19,6 +19,21 @@ export const countVote = (app: App) => {
           },
         ]
         postEphemeral({ client, user: body.user.id, blocks })
+      } else if (
+        error.response.data.message === 'No Voting Odai' ||
+        error.response.data.message === 'No Target Kotae'
+      ) {
+        logger.warn(error.response.data.message)
+        const blocks: KnownBlock[] = [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':warning: この投票は締め切られています :warning:',
+            },
+          },
+        ]
+        postEphemeral({ client, user: body.user.id, blocks })
       } else {
         logger.error(error.response.config)
         postInternalErrorMessage({ client, user: body.user.id })
