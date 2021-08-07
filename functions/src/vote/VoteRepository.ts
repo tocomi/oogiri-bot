@@ -1,11 +1,12 @@
-import { createDoc, db, firestore } from '../firebase/firestore'
-import { Vote, VoteApiStatus, VoteRequestParams } from './Vote'
+import { convertTimestamp, createDoc, db, firestore } from '../firebase/firestore'
+import { Vote, VoteApiStatus, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
 
 const VOTE_COLLECTION_NAME = 'vote'
 const KOTAE_COLLECTION_NAME = 'kotae'
 
 export interface VoteRepository {
   create(params: VoteRequestParams, odaiDocId: string): Promise<VoteApiStatus>
+  getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiDocId: string): Promise<Vote[]>
 }
 
 export class VoteRepositoryImpl implements VoteRepository {
@@ -59,5 +60,25 @@ export class VoteRepositoryImpl implements VoteRepository {
     const newKotaeVoteRef = voteCollection.doc()
     const result = await createDoc<Vote>(newKotaeVoteRef, data)
     return result ? 'ok' : 'error'
+  }
+
+  async getAllOfCurrentOdai(
+    { slackTeamId }: VoteOfCurrentOdaiParams,
+    odaiDocId: string
+  ): Promise<Vote[]> {
+    const snapshot = await db
+      .collection(slackTeamId)
+      .doc(odaiDocId)
+      .collection(VOTE_COLLECTION_NAME)
+      .get()
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        votedBy: data.votedBy,
+        createdAt: convertTimestamp(data.createdAt),
+        kotaeId: data.kotaeId,
+        kotaeContent: data.kotaeContent,
+      }
+    })
   }
 }

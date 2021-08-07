@@ -13,7 +13,7 @@ import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
-import { VoteRequestParams } from './vote/Vote'
+import { VoteCountParams, VoteRequestParams } from './vote/Vote'
 
 const REGION = 'asia-northeast1'
 
@@ -168,6 +168,22 @@ app.post('/kotae/vote', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'Already Voted')
   }
   return res.send({ error: false })
+})
+
+app.get('/vote/count', async (req: express.Request, res) => {
+  const { slackTeamId } = req.query as VoteCountParams
+  if (!slackTeamId) {
+    return errorResponse(res, 422, 'Illegal Argument')
+  }
+
+  const result = await voteService.getVoteCount({ slackTeamId })
+  if (result === 'noOdai') {
+    return errorResponse(res, 400, 'No Active Odai')
+  }
+  if (result === 'noVotingOdai') {
+    return errorResponse(res, 400, 'No Voting Odai')
+  }
+  return res.send({ ...result })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)

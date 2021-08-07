@@ -19,10 +19,12 @@ export type Vote = VoteBase & {
 
 export type VoteOfCurrentOdaiParams = SlackParams
 
-export type VoteOfCurrentOdaiResponse = Vote[]
-
 export type VoteCount = {
   odaiTitle: string
   uniqueUserCount: number
   voteCount: number
 }
+
+export type VoteCountParams = SlackParams
+
+export type VoteCountResponse = VoteCount | 'noOdai' | 'noVotingOdai'
