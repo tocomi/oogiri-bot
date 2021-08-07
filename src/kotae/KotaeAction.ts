@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import {
   App,
   BlockAction,
@@ -180,6 +181,13 @@ export const countKotae = (app: App) => {
         text: {
           type: 'mrkdwn',
           text: `:speech_balloon: お題: ${result.odaiTitle}`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:calendar: 回答期限: ${dayjs(result.odaiDueDate).format('YYYY/MM/DD')}`,
         },
       },
       {
