@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { App } from '@slack/bolt'
 import { KnownBlock } from '@slack/web-api'
 import { makeRanking } from '../kotae/makeRanking'
@@ -138,6 +139,13 @@ export const createOdai = (app: App) => {
         text: {
           type: 'mrkdwn',
           text: `:speech_balloon: *お題: ${title}*`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:calendar: *回答期限: ${dayjs(dueDate).format('YYYY/MM/DD')}*`,
         },
       },
       {
