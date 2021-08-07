@@ -43,6 +43,8 @@ export class VoteRepositoryImpl implements VoteRepository {
     const data: Vote = {
       votedBy,
       createdAt: new Date(),
+      kotaeId: kotaeRef.id,
+      kotaeContent: content,
     }
 
     // NOTE: odaiのサブコレクションvoteにドキュメント追加(投票参加者のカウント用)
