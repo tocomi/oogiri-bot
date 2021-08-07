@@ -58,11 +58,11 @@ export const createOdai = (app: App) => {
   })
 
   app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+    await ack()
     const newOdai = view.state.values[BLOCK_ID][ACTION_ID].value
     // NOTE: 型の絞り込みのため。slack側で必須入力になっている。
     if (!newOdai) return
 
-    await ack()
     const odaiUseCase = new OdaiUseCase()
     const success = await odaiUseCase
       .create({
@@ -286,6 +286,7 @@ export const startVoting = (app: App) => {
   })
 
   app.action(ACTION_ID, async ({ ack, body, client, logger }) => {
+    await ack()
     // NOTE: 投票ボタンが押された回答のテキストを抽出
     // 何故か型が無いので仕方なくts-ignoreを仕様
     // text -> ':speaking_head_in_silhouette: *kotae*'
@@ -295,7 +296,6 @@ export const startVoting = (app: App) => {
     // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
     const content = text.replace(':speaking_head_in_silhouette: ', '').replace(/\*/g, '')
 
-    await ack()
     const voteUseCase = new VoteUseCase()
     const slackTeamId = body.team?.id || ''
     const user = body.user.id
