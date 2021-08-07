@@ -72,22 +72,22 @@ const create = async ({
 export const createKotae = (app: App) => {
   // NOTE: ショートカットからの回答
   app.shortcut('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
-    await create({ body, client, logger })
     await ack()
+    await create({ body, client, logger })
   })
   // NOTE: ボタンからの回答
   app.action('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
+    await ack()
     if ('trigger_id' in body) {
       await create({ body, client, logger })
     }
-    await ack()
   })
 
   app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+    await ack()
     const kotae = view.state.values[BLOCK_ID][ACTION_ID].value
     if (!kotae) return
 
-    await ack()
     const kotaeUseCase = new KotaeUseCase()
     const success = await kotaeUseCase
       .create({
