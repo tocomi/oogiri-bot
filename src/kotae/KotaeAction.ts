@@ -187,14 +187,14 @@ export const countKotae = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:calendar: 回答期限: ${dayjs(result.odaiDueDate).format('YYYY/MM/DD')}`,
+          text: `:ninja: *参加者: ${result.uniqueUserCount}人*  :speaking_head_in_silhouette: *回答数: ${result.kotaeCount}*`,
         },
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:ninja: *参加者: ${result.uniqueUserCount}人*  :speaking_head_in_silhouette: *回答数: ${result.kotaeCount}*`,
+          text: `:calendar: 回答期限: ${dayjs(result.odaiDueDate).format('YYYY/MM/DD')}`,
         },
       },
       {
