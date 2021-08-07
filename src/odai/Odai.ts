@@ -3,6 +3,7 @@ import { KotaeListResponse } from '../kotae/Kotae'
 
 export type OdaiPostRequestParams = {
   title: string
+  dueDate: number
   createdBy: string
 } & SlackParams
 

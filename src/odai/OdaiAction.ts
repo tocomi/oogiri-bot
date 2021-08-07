@@ -7,8 +7,10 @@ import { OdaiUseCase } from './OdaiUseCase'
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
-  const BLOCK_ID = 'create-odai-block'
-  const ACTION_ID = 'input'
+  const TITLE_ACTION_ID = 'title'
+  const TITLE_BLOCK_ID = 'title-block'
+  const DUE_DATE_ACTION_ID = 'due-date'
+  const DUE_DATE_BLOCK_ID = 'due-date-block'
   app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
     const result = await client.views
       .open({
@@ -31,10 +33,10 @@ export const createOdai = (app: App) => {
           blocks: [
             {
               type: 'input',
-              block_id: BLOCK_ID,
+              block_id: TITLE_BLOCK_ID,
               element: {
                 type: 'plain_text_input',
-                action_id: ACTION_ID,
+                action_id: TITLE_ACTION_ID,
                 placeholder: {
                   type: 'plain_text',
                   text: '例: こんな結婚式は嫌だ',
@@ -43,6 +45,24 @@ export const createOdai = (app: App) => {
               label: {
                 type: 'plain_text',
                 text: 'お題',
+              },
+            },
+            {
+              type: 'input',
+              block_id: DUE_DATE_BLOCK_ID,
+              element: {
+                type: 'datepicker',
+                action_id: DUE_DATE_ACTION_ID,
+                placeholder: {
+                  type: 'plain_text',
+                  text: 'いつまで回答を受け付けますか？',
+                  emoji: true,
+                },
+              },
+              label: {
+                type: 'plain_text',
+                text: '回答期限(目安。自動的に回答が締め切られることはありません)',
+                emoji: true,
               },
             },
           ],
@@ -59,15 +79,21 @@ export const createOdai = (app: App) => {
 
   app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
-    const newOdai = view.state.values[BLOCK_ID][ACTION_ID].value
-    // NOTE: 型の絞り込みのため。slack側で必須入力になっている。
-    if (!newOdai) return
+    const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
+    const dueDate = view.state.values[DUE_DATE_BLOCK_ID][DUE_DATE_ACTION_ID].selected_date
+
+    if (!title || !dueDate) {
+      logger.error(view.state.values)
+      postInternalErrorMessage({ client, user: body.user.id })
+      return
+    }
 
     const odaiUseCase = new OdaiUseCase()
     const success = await odaiUseCase
       .create({
         slackTeamId: view.team_id,
-        title: newOdai,
+        title,
+        dueDate: new Date(dueDate).getTime(),
         createdBy: body.user.id,
       })
       .then(() => true)
@@ -111,7 +137,7 @@ export const createOdai = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:speech_balloon: *お題: ${newOdai}*`,
+          text: `:speech_balloon: *お題: ${title}*`,
         },
       },
       {
