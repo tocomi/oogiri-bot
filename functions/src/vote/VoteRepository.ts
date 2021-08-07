@@ -40,13 +40,22 @@ export class VoteRepositoryImpl implements VoteRepository {
       votedCount: firestore.FieldValue.increment(1),
     })
 
-    // NOTE: kotaeのサブコレクションvoteにドキュメントを追加
-    const data: VotePostData = {
+    const data: Vote = {
       votedBy,
       createdAt: new Date(),
     }
-    const newVoteRef = voteCollection.doc()
-    const result = await createDoc<VotePostData>(newVoteRef, data)
+
+    // NOTE: odaiのサブコレクションvoteにドキュメント追加(投票参加者のカウント用)
+    const newOdaiVoteRef = await db
+      .collection(slackTeamId)
+      .doc(odaiDocId)
+      .collection(VOTE_COLLECTION_NAME)
+      .doc()
+    await createDoc<Vote>(newOdaiVoteRef, data)
+
+    // NOTE: kotaeのサブコレクションvoteにドキュメントを追加(重複投票のチェック用)
+    const newKotaeVoteRef = voteCollection.doc()
+    const result = await createDoc<Vote>(newKotaeVoteRef, data)
     return result ? 'ok' : 'error'
   }
 }
