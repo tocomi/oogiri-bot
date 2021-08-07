@@ -18,6 +18,7 @@ export class VoteServiceImpl implements VoteService {
   async create(params: VoteRequestParams): Promise<VoteApiStatus> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
     if (!currentOdai) return 'noOdai'
+    if (currentOdai.status !== 'voting') return 'noVotingOdai'
     return this.repository.create(params, currentOdai.docId)
   }
 }

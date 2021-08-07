@@ -158,6 +158,9 @@ app.post('/kotae/vote', async (req: express.Request, res) => {
   if (result === 'noOdai') {
     return errorResponse(res, 400, 'No Active Odai')
   }
+  if (result === 'noVotingOdai') {
+    return errorResponse(res, 400, 'No Voting Odai')
+  }
   if (result === 'noKotae') {
     return errorResponse(res, 400, 'No Target Kotae')
   }

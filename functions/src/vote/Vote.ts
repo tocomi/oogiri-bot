@@ -1,6 +1,6 @@
 import { ApiStatus, SlackParams } from '../api/Api'
 
-export type VoteApiStatus = ApiStatus | 'noKotae' | 'noOdai' | 'alreadyVoted'
+export type VoteApiStatus = ApiStatus | 'noKotae' | 'noOdai' | 'alreadyVoted' | 'noVotingOdai'
 
 type VoteBase = {
   votedBy: string
@@ -12,7 +12,7 @@ export type VoteRequestParams = SlackParams &
   }
 
 export type Vote = VoteBase & {
-  createdAt: Date
+  createdAt: Date | number
   kotaeId: string
   kotaeContent: string
 }
@@ -20,3 +20,9 @@ export type Vote = VoteBase & {
 export type VoteOfCurrentOdaiParams = SlackParams
 
 export type VoteOfCurrentOdaiResponse = Vote[]
+
+export type VoteCount = {
+  odaiTitle: string
+  uniqueUserCount: number
+  voteCount: number
+}
