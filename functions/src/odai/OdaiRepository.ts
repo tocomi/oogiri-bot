@@ -19,9 +19,15 @@ export interface OdaiRepository {
 }
 
 export class OdaiRepositoryImpl implements OdaiRepository {
-  async create({ title, createdBy, slackTeamId }: OdaiPostRequestParams): Promise<OdaiApiStatus> {
+  async create({
+    title,
+    dueDate,
+    createdBy,
+    slackTeamId,
+  }: OdaiPostRequestParams): Promise<OdaiApiStatus> {
     const data: OdaiPostData = {
       title,
+      dueDate: new Date(dueDate),
       createdBy,
       status: 'posting',
       createdAt: new Date(),
@@ -42,6 +48,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     return {
       docId: doc.id,
       title: data.title,
+      dueDate: convertTimestamp(data.dueDate),
       createdBy: data.createdBy,
       status: data.status,
       createdAt: convertTimestamp(data.createdAt),
@@ -65,6 +72,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     return {
       docId: doc.id,
       title: data.title,
+      dueDate: convertTimestamp(data.dueDate),
       createdBy: data.createdBy,
       status: data.status,
       createdAt: convertTimestamp(data.createdAt),

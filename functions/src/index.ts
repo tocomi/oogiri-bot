@@ -32,11 +32,11 @@ const errorResponse = (res: express.Response, statusCode: number, message: strin
 }
 
 app.post('/odai', async (req: express.Request, res) => {
-  const { slackTeamId, title, createdBy } = req.body as OdaiPostRequestParams
-  if (!slackTeamId || !title || !createdBy) {
+  const params = req.body as OdaiPostRequestParams
+  if (!params.slackTeamId || !params.title || !params.dueDate || !params.createdBy) {
     return errorResponse(res, 422, 'Illegal Argument')
   }
-  const result = await odaiService.create({ slackTeamId, title, createdBy })
+  const result = await odaiService.create(params)
   if (result === 'error') {
     return errorResponse(res, 500, 'Internal Server Error')
   }

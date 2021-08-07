@@ -4,6 +4,7 @@ export type OdaiApiStatus = 'duplication' | ApiStatus
 
 type OdaiBase = {
   title: string
+  dueDate: number
   createdBy: string
 }
 
@@ -15,7 +16,8 @@ type OdaiApiBase = OdaiBase & {
   status: OdaiStatus
 }
 
-export type OdaiPostData = OdaiApiBase & {
+export type OdaiPostData = Omit<OdaiApiBase, 'dueDate'> & {
+  dueDate: Date
   createdAt: Date
 }
 
