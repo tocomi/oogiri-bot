@@ -160,10 +160,10 @@ export const countKotae = (app: App) => {
               },
             },
           ]
-          postEphemeral({ client, user: body.user.id, blocks })
+          postEphemeral({ client, user: body.user_id, blocks })
         } else {
           logger.error(error.response.config)
-          postInternalErrorMessage({ client, user: body.user.id })
+          postInternalErrorMessage({ client, user: body.user_id })
         }
         return undefined
       })
@@ -234,14 +234,26 @@ export const checkResult = (app: App) => {
               },
             },
           ]
-          postEphemeral({ client, user: body.user.id, blocks })
+          postEphemeral({ client, user: body.user_id, blocks })
         } else {
           logger.error(error.response.config)
           postInternalErrorMessage({ client, user: body.user.id })
         }
         return undefined
       })
-    if (!result || !result.kotaeList.length) return
+    if (!result || !result.kotaeList.length) {
+      const blocks: KnownBlock[] = [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: ':warning: 直近のお題の結果がありません :warning:',
+          },
+        },
+      ]
+      postEphemeral({ client, user: body.user_id, blocks })
+      return
+    }
     const headerBlocks: KnownBlock[] = [
       {
         type: 'section',
