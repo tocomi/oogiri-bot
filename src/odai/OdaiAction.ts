@@ -1,10 +1,10 @@
-import dayjs from 'dayjs'
 import { App } from '@slack/bolt'
 import { KnownBlock } from '@slack/web-api'
 import { makeRanking } from '../kotae/makeRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
+import { milliSecondsToYYYYMMDD } from '../util/DateUtil'
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
@@ -145,7 +145,7 @@ export const createOdai = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:calendar: *回答期限: ${dayjs(dueDate).format('YYYY/MM/DD')}*`,
+          text: `:calendar: *回答期限: ${milliSecondsToYYYYMMDD(dueDate)}*`,
         },
       },
       {
