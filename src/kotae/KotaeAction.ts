@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import {
   App,
   BlockAction,
@@ -10,6 +9,7 @@ import {
 import { Logger, WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage, postMessage } from '../message/postMessage'
 import { KotaeUseCase } from './KotaeUseCase'
+import { diffMessageFromCurrent, milliSecondsToYYYYMMDD } from '../util/DateUtil'
 
 const CALLBACK_ID = 'create-kotae'
 const BLOCK_ID = 'create-kotae-block'
@@ -194,7 +194,9 @@ export const countKotae = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:calendar: 回答期限: ${dayjs(result.odaiDueDate).format('YYYY/MM/DD')}`,
+          text: `:calendar: 回答期限: ${milliSecondsToYYYYMMDD(
+            result.odaiDueDate
+          )} (${diffMessageFromCurrent(result.odaiDueDate)})`,
         },
       },
       {
