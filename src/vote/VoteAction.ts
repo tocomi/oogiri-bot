@@ -18,7 +18,7 @@ export const countVote = (app: App) => {
             },
           },
         ]
-        postEphemeral({ client, user: body.user.id, blocks })
+        postEphemeral({ client, user: body.user_id, blocks })
       } else if (
         error.response.data.message === 'No Voting Odai' ||
         error.response.data.message === 'No Target Kotae'
@@ -33,10 +33,10 @@ export const countVote = (app: App) => {
             },
           },
         ]
-        postEphemeral({ client, user: body.user.id, blocks })
+        postEphemeral({ client, user: body.user_id, blocks })
       } else {
         logger.error(error.response.config)
-        postInternalErrorMessage({ client, user: body.user.id })
+        postInternalErrorMessage({ client, user: body.user_id })
       }
       return undefined
     })
