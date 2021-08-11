@@ -20,6 +20,12 @@ const REGION = 'asia-northeast1'
 const app = express()
 app.use(cors({ origin: true }))
 
+app.use((req, _res, next) => {
+  console.log(`endpoint: ${req.url}`)
+  console.log(`params: ${JSON.stringify(req.body)}`)
+  next()
+})
+
 const odaiRepository: OdaiRepository = new OdaiRepositoryImpl()
 const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
 const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
@@ -28,7 +34,13 @@ const voteRepository: VoteRepository = new VoteRepositoryImpl()
 const voteService: VoteService = new VoteServiceImpl(voteRepository, odaiService)
 
 const errorResponse = (res: express.Response, statusCode: number, message: string) => {
+  console.log(`ERROR: ${message}`)
   return res.status(statusCode).send({ error: true, message })
+}
+
+const sendResponse = (res: express.Response, result: Record<string, unknown>) => {
+  console.log(`response: ${JSON.stringify(result)}`)
+  return res.send(result)
 }
 
 app.post('/odai', async (req: express.Request, res) => {
@@ -43,7 +55,7 @@ app.post('/odai', async (req: express.Request, res) => {
   if (result === 'duplication') {
     return errorResponse(res, 400, 'Odai Duplication')
   }
-  return res.send({ error: false })
+  return sendResponse(res, { error: false })
 })
 
 app.get('/odai/current', async (req: express.Request, res) => {
@@ -52,7 +64,7 @@ app.get('/odai/current', async (req: express.Request, res) => {
     return errorResponse(res, 422, 'Illegal Argument')
   }
   const result = await odaiService.getCurrent({ slackTeamId })
-  return res.send({ odai: result })
+  return sendResponse(res, { odai: result })
 })
 
 app.post('/odai/start-voting', async (req: express.Request, res) => {
@@ -77,7 +89,7 @@ app.post('/odai/start-voting', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'No Posting Odai')
   }
 
-  return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+  return sendResponse(res, { odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
 })
 
 app.post('/odai/finish', async (req: express.Request, res) => {
@@ -102,7 +114,7 @@ app.post('/odai/finish', async (req: express.Request, res) => {
     return errorResponse(res, 400, 'No Voting Odai')
   }
 
-  return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+  return sendResponse(res, { odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
 })
 
 app.post('/kotae', async (req: express.Request, res) => {
@@ -117,7 +129,7 @@ app.post('/kotae', async (req: express.Request, res) => {
   if (result === 'noOdai') {
     return errorResponse(res, 400, 'No Active Odai')
   }
-  return res.send({ error: false })
+  return sendResponse(res, { error: false })
 })
 
 app.get('/kotae/current', async (req: express.Request, res) => {
@@ -130,7 +142,7 @@ app.get('/kotae/current', async (req: express.Request, res) => {
   if (result === 'noOdai') {
     return errorResponse(res, 400, 'No Active Odai')
   }
-  return res.send({
+  return sendResponse(res, {
     odaiTitle: result.odaiTitle,
     odaiDueDate: result.odaiDueDate,
     kotaeList: result.kotaeList,
@@ -147,7 +159,7 @@ app.get('/kotae/personal-result', async (req: express.Request, res) => {
   if (result === 'noOdai') {
     return errorResponse(res, 400, 'No Finished Odai')
   }
-  return res.send({ odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+  return sendResponse(res, { odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
 })
 
 app.post('/kotae/vote', async (req: express.Request, res) => {
@@ -171,7 +183,7 @@ app.post('/kotae/vote', async (req: express.Request, res) => {
   if (result === 'alreadyVoted') {
     return errorResponse(res, 400, 'Already Voted')
   }
-  return res.send({ error: false })
+  return sendResponse(res, { error: false })
 })
 
 app.get('/vote/count', async (req: express.Request, res) => {
@@ -187,7 +199,7 @@ app.get('/vote/count', async (req: express.Request, res) => {
   if (result === 'noVotingOdai') {
     return errorResponse(res, 400, 'No Voting Odai')
   }
-  return res.send({ ...result })
+  return sendResponse(res, { ...result })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)
