@@ -60,7 +60,7 @@ export const countVote = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:ninja: *参加者: ${result.uniqueUserCount}人*  :point_up: *投票数: ${result.voteCount}*`,
+          text: `:male_genie: *参加者: ${result.uniqueUserCount}人* :point_up: *投票数: ${result.voteCount}*`,
         },
       },
     ]
