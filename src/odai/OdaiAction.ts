@@ -5,6 +5,7 @@ import { postMessage, postEphemeral, postInternalErrorMessage } from '../message
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
 import { milliSecondsToYYYYMMDD } from '../util/DateUtil'
+import { KotaeUseCase } from '../kotae/KotaeUseCase'
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
@@ -450,11 +451,17 @@ export const finish = (app: App) => {
       return undefined
     }
 
+    const kotaeUseCase = new KotaeUseCase()
+    const kotaeCount = await kotaeUseCase
+      .getKotaeCount({ slackTeamId: view.team_id })
+      .catch(handleError)
+    if (!kotaeCount) return
+
     const voteUseCase = new VoteUseCase()
-    const voteResult = await voteUseCase
+    const voteCount = await voteUseCase
       .getVoteCount({ slackTeamId: view.team_id })
       .catch(handleError)
-    if (!voteResult) return
+    if (!voteCount) return
 
     const odaiUseCase = new OdaiUseCase()
     const result = await odaiUseCase
@@ -485,7 +492,14 @@ export const finish = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:ninja: 参加者: ${voteResult.uniqueUserCount}人  :point_up: 投票数: ${voteResult.voteCount}`,
+          text: `:ninja: 回答参加者: ${kotaeCount.uniqueUserCount}人 :speaking_head_in_silhouette: 総回答数: ${kotaeCount.kotaeCount}`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:male_genie: 投票参加者: ${voteCount.uniqueUserCount}人 :point_up: 総投票数: ${voteCount.voteCount}`,
         },
       },
       {

@@ -187,7 +187,7 @@ export const countKotae = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:ninja: *参加者: ${result.uniqueUserCount}人*  :speaking_head_in_silhouette: *回答数: ${result.kotaeCount}*`,
+          text: `:ninja: *参加者: ${result.uniqueUserCount}人* :speaking_head_in_silhouette: *回答数: ${result.kotaeCount}*`,
         },
       },
       {
