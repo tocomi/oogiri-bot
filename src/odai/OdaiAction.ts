@@ -426,6 +426,8 @@ export const finish = (app: App) => {
 
   app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
+    const voteUseCase = new VoteUseCase()
+    const voteResult = await voteUseCase.getVoteCount({ slackTeamId: view.team_id })
     const odaiUseCase = new OdaiUseCase()
     const result = await odaiUseCase
       .finish({
@@ -470,6 +472,13 @@ export const finish = (app: App) => {
         text: {
           type: 'mrkdwn',
           text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:ninja: 参加者: ${voteResult.uniqueUserCount}人  :point_up: 投票数: ${voteResult.voteCount}`,
         },
       },
       {
