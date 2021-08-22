@@ -7,6 +7,8 @@ export type OdaiPostRequestParams = {
   createdBy: string
 } & SlackParams
 
+export type OdaiStatus = 'posting' | 'voting' | 'finished'
+
 export type OdaiPostResponse = PostResponse
 
 export type OdaiStartVotingRequestParams = SlackParams
