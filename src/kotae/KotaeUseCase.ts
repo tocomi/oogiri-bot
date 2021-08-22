@@ -27,6 +27,7 @@ export class KotaeUseCase {
     return {
       odaiTitle: result.odaiTitle,
       odaiDueDate: result.odaiDueDate,
+      odaiStatus: result.odaiStatus,
       uniqueUserCount: [...new Set(result.kotaeList.map((k) => k.createdBy))].length,
       kotaeCount: result.kotaeList.length,
     }

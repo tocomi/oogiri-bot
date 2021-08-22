@@ -145,6 +145,7 @@ app.get('/kotae/current', async (req: express.Request, res) => {
   return sendResponse(res, {
     odaiTitle: result.odaiTitle,
     odaiDueDate: result.odaiDueDate,
+    odaiStatus: result.odaiStatus,
     kotaeList: result.kotaeList,
   })
 })

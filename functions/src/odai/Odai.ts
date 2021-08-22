@@ -10,7 +10,7 @@ type OdaiBase = {
 
 export type OdaiPostRequestParams = OdaiBase & SlackParams
 
-type OdaiStatus = 'posting' | 'voting' | 'finished'
+export type OdaiStatus = 'posting' | 'voting' | 'finished'
 
 type OdaiApiBase = OdaiBase & {
   status: OdaiStatus

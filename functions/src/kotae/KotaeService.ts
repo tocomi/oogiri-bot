@@ -41,6 +41,7 @@ export class KotaeServiceImpl implements KotaeService {
     return {
       odaiTitle: currentOdai.title,
       odaiDueDate: currentOdai.dueDate,
+      odaiStatus: currentOdai.status,
       kotaeList,
     }
   }
@@ -56,6 +57,7 @@ export class KotaeServiceImpl implements KotaeService {
     return {
       odaiTitle: recentFinishedOdai.title,
       odaiDueDate: recentFinishedOdai.dueDate,
+      odaiStatus: recentFinishedOdai.status,
       kotaeList,
     }
   }

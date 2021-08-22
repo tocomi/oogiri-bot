@@ -7,9 +7,9 @@ import {
   WorkflowStepEdit,
 } from '@slack/bolt'
 import { Logger, WebClient } from '@slack/web-api'
-import { postEphemeral, postInternalErrorMessage, postMessage } from '../message/postMessage'
+import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { countKotae } from './action/countKotae'
 import { KotaeUseCase } from './KotaeUseCase'
-import { diffMessageFromCurrent, milliSecondsToYYYYMMDD } from '../util/DateUtil'
 
 const CALLBACK_ID = 'create-kotae'
 const BLOCK_ID = 'create-kotae-block'
@@ -142,79 +142,10 @@ export const createKotae = (app: App) => {
   })
 }
 
-export const countKotae = (app: App) => {
-  app.command('/oogiri-count-kotae', async ({ ack, body, client, logger }) => {
+export const countKotaeAction = (app: App) => {
+  app.command('/oogiri-count-kotae', async ({ ack, body, client }) => {
     await ack()
-    const kotaeUseCase = new KotaeUseCase()
-    const result = await kotaeUseCase
-      .getKotaeCount({ slackTeamId: body.team_id })
-      .catch((error) => {
-        if (error.response.data.message === 'No Active Odai') {
-          logger.warn(error.response.data.message)
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: ':warning: お題が開始されていません :warning:',
-              },
-            },
-          ]
-          postEphemeral({ client, user: body.user_id, blocks })
-        } else {
-          logger.error(error.response.config)
-          postInternalErrorMessage({ client, user: body.user_id })
-        }
-        return undefined
-      })
-    if (!result) return
-    const blocks: KnownBlock[] = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: ':mega: *現在の回答状況* :mega:',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:speech_balloon: お題: ${result.odaiTitle}`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:ninja: *参加者: ${result.uniqueUserCount}人* :speaking_head_in_silhouette: *回答数: ${result.kotaeCount}*`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:calendar: 回答期限: ${milliSecondsToYYYYMMDD(
-            result.odaiDueDate
-          )} (${diffMessageFromCurrent(result.odaiDueDate)})`,
-        },
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'お題に回答する (複数回答可)',
-            },
-            style: 'primary',
-            action_id: 'oogiri-create-kotae',
-          },
-        ],
-      },
-    ]
-    await postMessage({ client, blocks })
+    await countKotae({ slackTeamId: body.team_id, userId: body.user_id, client })
   })
 }
 

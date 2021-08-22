@@ -1,4 +1,5 @@
 import { PostResponse, SlackParams } from '../api/Api'
+import { OdaiStatus } from '../odai/Odai'
 
 export type Kotae = {
   content: string
@@ -23,12 +24,14 @@ export type KotaeListRequestParams = SlackParams
 export type KotaeListResponse = {
   odaiTitle: string
   odaiDueDate: number
+  odaiStatus: OdaiStatus
   kotaeList: Kotae[]
 }
 
 export type KotaeCount = {
   odaiTitle: string
   odaiDueDate: number
+  odaiStatus: OdaiStatus
   uniqueUserCount: number
   kotaeCount: number
 }
