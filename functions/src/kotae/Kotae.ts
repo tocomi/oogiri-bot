@@ -1,4 +1,5 @@
 import { ApiStatus, SlackParams } from '../api/Api'
+import { OdaiStatus } from '../odai/Odai'
 
 export type KotaeApiStatus = ApiStatus | 'noOdai'
 
@@ -26,6 +27,7 @@ export type KotaeResponse = KotaeApiBase & {
 export type KotaeGetAllResponse = {
   odaiTitle: string
   odaiDueDate: number
+  odaiStatus: OdaiStatus
   kotaeList: KotaeResponse[]
 }
 
