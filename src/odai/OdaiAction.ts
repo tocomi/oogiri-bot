@@ -426,34 +426,43 @@ export const finish = (app: App) => {
 
   app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleError = (error: any) => {
+      if (
+        error.response.data.message === 'No Active Odai' ||
+        error.response.data.message === 'No Voting Odai'
+      ) {
+        logger.warn(error.response.data.message)
+        const blocks: KnownBlock[] = [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':warning: 投票受付中のお題がありません :warning:',
+            },
+          },
+        ]
+        postEphemeral({ client, user: body.user.id, blocks })
+      } else {
+        logger.error(error.response.config)
+        postInternalErrorMessage({ client, user: body.user.id })
+      }
+      return undefined
+    }
+
+    const voteUseCase = new VoteUseCase()
+    const voteResult = await voteUseCase
+      .getVoteCount({ slackTeamId: view.team_id })
+      .catch(handleError)
+    if (!voteResult) return
+
     const odaiUseCase = new OdaiUseCase()
     const result = await odaiUseCase
       .finish({
         slackTeamId: view.team_id,
       })
       .then((result) => result)
-      .catch((error) => {
-        if (
-          error.response.data.message === 'No Active Odai' ||
-          error.response.data.message === 'No Voting Odai'
-        ) {
-          logger.warn(error.response.data.message)
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: ':warning: 投票受付中のお題がありません :warning:',
-              },
-            },
-          ]
-          postEphemeral({ client, user: body.user.id, blocks })
-        } else {
-          logger.error(error.response.config)
-          postInternalErrorMessage({ client, user: body.user.id })
-        }
-        return undefined
-      })
+      .catch(handleError)
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
     const rankedList = makeRanking(result.kotaeList)
@@ -470,6 +479,13 @@ export const finish = (app: App) => {
         text: {
           type: 'mrkdwn',
           text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:ninja: 参加者: ${voteResult.uniqueUserCount}人  :point_up: 投票数: ${voteResult.voteCount}`,
         },
       },
       {
