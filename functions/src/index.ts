@@ -31,7 +31,7 @@ const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
 const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
 const voteRepository: VoteRepository = new VoteRepositoryImpl()
-const voteService: VoteService = new VoteServiceImpl(voteRepository, odaiService)
+const voteService: VoteService = new VoteServiceImpl(voteRepository, odaiService, kotaeService)
 
 const errorResponse = (res: express.Response, statusCode: number, message: string) => {
   console.log(`ERROR: ${message}`)

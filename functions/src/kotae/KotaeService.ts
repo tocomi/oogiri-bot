@@ -1,7 +1,10 @@
 import { OdaiService } from '../odai/OdaiService'
 import {
   KotaeApiStatus,
+  KotaeByContentParams,
+  KotaeByContentResponse,
   KotaeGetAllResponse,
+  KotaeIncrementVoteCountParams,
   KotaeOfCurrentOdaiParams as KotaeOfCurrentOdaiParams,
   KotaePersonalResultParams,
   KotaePersonalResultResponse,
@@ -15,6 +18,8 @@ export interface KotaeService {
   getPersonalResult(
     params: KotaePersonalResultParams
   ): Promise<KotaePersonalResultResponse | 'noOdai'>
+  getByContent(params: KotaeByContentParams): Promise<KotaeByContentResponse | 'noOdai' | 'noKotae'>
+  incrementVoteCount(params: KotaeIncrementVoteCountParams): Promise<boolean | 'noOdai' | 'noKotae'>
 }
 
 export class KotaeServiceImpl implements KotaeService {
@@ -60,5 +65,38 @@ export class KotaeServiceImpl implements KotaeService {
       odaiStatus: recentFinishedOdai.status,
       kotaeList,
     }
+  }
+
+  async getByContent({
+    slackTeamId,
+    content,
+  }: KotaeByContentParams): Promise<KotaeByContentResponse | 'noOdai' | 'noKotae'> {
+    const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
+    if (!currentOdai) return 'noOdai'
+    const kotae = await this.repository.getByContent({
+      slackTeamId,
+      content,
+      odaiDocId: currentOdai.docId,
+    })
+    if (!kotae) return 'noKotae'
+    return kotae
+  }
+
+  async incrementVoteCount({
+    slackTeamId,
+    content,
+  }: KotaeIncrementVoteCountParams): Promise<boolean | 'noOdai' | 'noKotae'> {
+    const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
+    if (!currentOdai) return 'noOdai'
+
+    const kotae = await this.getByContent({ slackTeamId, content })
+    if (kotae === 'noKotae') return 'noKotae'
+    if (kotae === 'noOdai') return 'noOdai'
+
+    return this.repository.incrementVoteCount({
+      slackTeamId,
+      odaiDocId: currentOdai.docId,
+      kotaeDocId: kotae.docId,
+    })
   }
 }

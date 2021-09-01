@@ -36,3 +36,15 @@ export type KotaePersonalResultParams = SlackParams & {
 }
 
 export type KotaePersonalResultResponse = KotaeGetAllResponse
+
+export type KotaeByContentParams = SlackParams & {
+  content: string
+}
+
+export type KotaeByContentResponse = KotaeResponse & {
+  docId: string
+}
+
+export type KotaeIncrementVoteCountParams = SlackParams & {
+  content: string
+}
