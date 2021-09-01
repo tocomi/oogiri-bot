@@ -3,6 +3,9 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 export const config = {
+  api: {
+    endpoint: process.env.API_ENDPOINT || '',
+  },
   slack: {
     botToken: process.env.SLACK_BOT_TOKEN || '',
     appToken: process.env.SLACK_APP_TOKEN || '',
