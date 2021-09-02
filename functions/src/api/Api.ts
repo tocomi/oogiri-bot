@@ -1,5 +1,7 @@
+import { ApiError } from './Error'
+
 export type SlackParams = {
   slackTeamId: string
 }
 
-export type ApiStatus = 'ok' | 'error'
+export type ApiPostStatus = 'ok' | ApiError

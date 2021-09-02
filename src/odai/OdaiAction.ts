@@ -107,7 +107,7 @@ export const createOdai = (app: App) => {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: ':warning: 他のお題がオープンされています :warning:',
+                text: ':warning: 他のお題がオープンしています :warning:',
               },
             },
           ]
@@ -236,7 +236,7 @@ export const startVoting = (app: App) => {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: ':warning: 他のお題がオープンされています :warning:',
+                text: ':warning: 他のお題がオープンしています :warning:',
               },
             },
           ]

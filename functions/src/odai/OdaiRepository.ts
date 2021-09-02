@@ -1,21 +1,24 @@
 import {
-  OdaiApiStatus,
   OdaiCurrentParams,
   OdaiCurrentResponse,
   OdaiPostData,
   OdaiPostRequestParams,
-  OdaiPutApiStatus,
   OdaiPutStatusData,
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
 } from './Odai'
 import { db, convertTimestamp, createDoc } from '../firebase/firestore'
+import { COLLECTION_NAME } from '../const'
 
 export interface OdaiRepository {
-  create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
+  create(params: OdaiPostRequestParams): Promise<boolean>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
-  updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<OdaiPutApiStatus>
+  updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<boolean>
+}
+
+const odaiCollection = (slackTeamId: string) => {
+  return db.collection(COLLECTION_NAME.ROOT).doc(slackTeamId).collection(COLLECTION_NAME.ODAI)
 }
 
 export class OdaiRepositoryImpl implements OdaiRepository {
@@ -24,7 +27,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     dueDate,
     createdBy,
     slackTeamId,
-  }: OdaiPostRequestParams): Promise<OdaiApiStatus> {
+  }: OdaiPostRequestParams): Promise<boolean> {
     const data: OdaiPostData = {
       title,
       dueDate: new Date(dueDate),
@@ -32,13 +35,13 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       status: 'posting',
       createdAt: new Date(),
     }
-    const docRef = db.collection(slackTeamId).doc()
+    const docRef = odaiCollection(slackTeamId).doc()
     const result = await createDoc<OdaiPostData>(docRef, data)
-    return result ? 'ok' : 'error'
+    return result
   }
 
   async getCurrent({ slackTeamId }: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
-    const snapshot = await db.collection(slackTeamId).where('status', '!=', 'finished').get()
+    const snapshot = await odaiCollection(slackTeamId).where('status', '!=', 'finished').get()
     if (snapshot.empty) {
       console.log('No active odai.')
       return null
@@ -58,8 +61,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
   async getRecentFinished({
     slackTeamId,
   }: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null> {
-    const snapshot = await db
-      .collection(slackTeamId)
+    const snapshot = await odaiCollection(slackTeamId)
       .where('status', '==', 'finished')
       .orderBy('createdAt', 'desc')
       .get()
@@ -82,8 +84,8 @@ export class OdaiRepositoryImpl implements OdaiRepository {
   async updateStatus(
     { slackTeamId, status }: OdaiPutStatusData,
     odaiDocId: string
-  ): Promise<OdaiPutApiStatus> {
-    const docRef = db.collection(slackTeamId).doc(odaiDocId)
+  ): Promise<boolean> {
+    const docRef = odaiCollection(slackTeamId).doc(odaiDocId)
     const result = await docRef
       .set(
         {
@@ -96,6 +98,6 @@ export class OdaiRepositoryImpl implements OdaiRepository {
         console.error(error)
         return false
       })
-    return result ? 'ok' : 'error'
+    return result
   }
 }
