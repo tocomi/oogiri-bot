@@ -1,6 +1,6 @@
 import { COLLECTION_NAME } from '../const'
 import { convertTimestamp, createDoc, db } from '../firebase/firestore'
-import { Vote, VoteApiStatus, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
+import { Vote, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
 
 export interface VoteRepository {
   create(
@@ -8,7 +8,7 @@ export interface VoteRepository {
       odaiDocId: string
       kotaeDocId: string
     }
-  ): Promise<VoteApiStatus>
+  ): Promise<boolean | 'alreadyVoted'>
   getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiDocId: string): Promise<Vote[]>
 }
 
@@ -56,7 +56,7 @@ export class VoteRepositoryImpl implements VoteRepository {
   }: VoteRequestParams & {
     odaiDocId: string
     kotaeDocId: string
-  }): Promise<VoteApiStatus> {
+  }): Promise<boolean | 'alreadyVoted'> {
     const collection = voteKotaeCollection({
       slackTeamId,
       odaiDocId,
@@ -86,7 +86,7 @@ export class VoteRepositoryImpl implements VoteRepository {
     // NOTE: kotaeのサブコレクションvoteにドキュメントを追加(重複投票のチェック用)
     const newKotaeVoteRef = collection.doc()
     const result = await createDoc<Vote>(newKotaeVoteRef, data)
-    return result ? 'ok' : 'error'
+    return result
   }
 
   async getAllOfCurrentOdai(

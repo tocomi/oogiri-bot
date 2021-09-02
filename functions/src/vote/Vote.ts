@@ -1,6 +1,5 @@
-import { ApiStatus, SlackParams } from '../api/Api'
-
-export type VoteApiStatus = ApiStatus | 'noKotae' | 'noOdai' | 'alreadyVoted' | 'noVotingOdai'
+import { SlackParams } from '../api/Api'
+import { ApiError } from '../api/Error'
 
 type VoteBase = {
   votedBy: string
@@ -27,4 +26,4 @@ export type VoteCount = {
 
 export type VoteCountParams = SlackParams
 
-export type VoteCountResponse = VoteCount | 'noOdai' | 'noVotingOdai'
+export type VoteCountResponse = VoteCount | ApiError

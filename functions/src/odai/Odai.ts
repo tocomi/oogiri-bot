@@ -1,6 +1,5 @@
-import { ApiStatus, SlackParams } from '../api/Api'
-
-export type OdaiApiStatus = 'duplication' | ApiStatus
+import { ApiPostStatus, SlackParams } from '../api/Api'
+import { ApiError } from '../api/Error'
 
 type OdaiBase = {
   title: string
@@ -21,7 +20,7 @@ export type OdaiPostData = Omit<OdaiApiBase, 'dueDate'> & {
   createdAt: Date
 }
 
-export type OdaiPutApiStatus = 'noPostingOdai' | 'noVotingOdai' | 'noOdai' | ApiStatus
+export type OdaiPutApiStatus = ApiPostStatus
 
 export type OdaiPutStatusParams = SlackParams
 
@@ -29,11 +28,13 @@ export type OdaiPutStatusData = Pick<OdaiApiBase, 'status'> & SlackParams
 
 export type OdaiCurrentParams = SlackParams
 
-export type OdaiCurrentResponse = OdaiApiBase & {
-  docId: string
-  createdAt: number
-}
+export type OdaiCurrentResponse =
+  | (OdaiApiBase & {
+      docId: string
+      createdAt: number
+    })
+  | ApiError
 
 export type OdaiRecentFinishedParams = SlackParams
 
-export type OdaiRecentFinishedResponse = OdaiCurrentResponse
+export type OdaiRecentFinishedResponse = OdaiCurrentResponse | ApiError

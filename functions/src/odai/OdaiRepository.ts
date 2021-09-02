@@ -1,10 +1,8 @@
 import {
-  OdaiApiStatus,
   OdaiCurrentParams,
   OdaiCurrentResponse,
   OdaiPostData,
   OdaiPostRequestParams,
-  OdaiPutApiStatus,
   OdaiPutStatusData,
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
@@ -13,10 +11,10 @@ import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 import { COLLECTION_NAME } from '../const'
 
 export interface OdaiRepository {
-  create(params: OdaiPostRequestParams): Promise<OdaiApiStatus>
+  create(params: OdaiPostRequestParams): Promise<boolean>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
-  updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<OdaiPutApiStatus>
+  updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<boolean>
 }
 
 const odaiCollection = (slackTeamId: string) => {
@@ -29,7 +27,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     dueDate,
     createdBy,
     slackTeamId,
-  }: OdaiPostRequestParams): Promise<OdaiApiStatus> {
+  }: OdaiPostRequestParams): Promise<boolean> {
     const data: OdaiPostData = {
       title,
       dueDate: new Date(dueDate),
@@ -39,7 +37,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     }
     const docRef = odaiCollection(slackTeamId).doc()
     const result = await createDoc<OdaiPostData>(docRef, data)
-    return result ? 'ok' : 'error'
+    return result
   }
 
   async getCurrent({ slackTeamId }: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
@@ -86,7 +84,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
   async updateStatus(
     { slackTeamId, status }: OdaiPutStatusData,
     odaiDocId: string
-  ): Promise<OdaiPutApiStatus> {
+  ): Promise<boolean> {
     const docRef = odaiCollection(slackTeamId).doc(odaiDocId)
     const result = await docRef
       .set(
@@ -100,6 +98,6 @@ export class OdaiRepositoryImpl implements OdaiRepository {
         console.error(error)
         return false
       })
-    return result ? 'ok' : 'error'
+    return result
   }
 }

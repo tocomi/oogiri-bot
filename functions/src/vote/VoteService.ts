@@ -1,10 +1,12 @@
+import { ApiPostStatus } from '../api/Api'
+import { AlreadyVotedError, hasError, InternalServerError, NoVotingOdaiError } from '../api/Error'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
-import { VoteRequestParams, VoteApiStatus, VoteCountResponse, VoteCountParams } from './Vote'
+import { VoteRequestParams, VoteCountResponse, VoteCountParams } from './Vote'
 import { VoteRepository } from './VoteRepository'
 
 export interface VoteService {
-  create(params: VoteRequestParams): Promise<VoteApiStatus>
+  create(params: VoteRequestParams): Promise<ApiPostStatus>
   getVoteCount(params: VoteCountParams): Promise<VoteCountResponse>
 }
 
@@ -19,14 +21,13 @@ export class VoteServiceImpl implements VoteService {
     this.kotaeService = kotaeService
   }
 
-  async create({ slackTeamId, content, votedBy }: VoteRequestParams): Promise<VoteApiStatus> {
+  async create({ slackTeamId, content, votedBy }: VoteRequestParams): Promise<ApiPostStatus> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
-    if (!currentOdai) return 'noOdai'
-    if (currentOdai.status !== 'voting') return 'noVotingOdai'
+    if (hasError(currentOdai)) return currentOdai
+    if (currentOdai.status !== 'voting') return NoVotingOdaiError
 
     const kotae = await this.kotaeService.getByContent({ slackTeamId, content })
-    if (kotae === 'noOdai') return 'noOdai'
-    if (kotae === 'noKotae') return 'noKotae'
+    if (hasError(kotae)) return kotae
 
     const voteResult = await this.repository.create({
       slackTeamId,
@@ -35,21 +36,21 @@ export class VoteServiceImpl implements VoteService {
       odaiDocId: currentOdai.docId,
       kotaeDocId: kotae.docId,
     })
-    if (voteResult === 'noVotingOdai') return 'noVotingOdai'
-    if (voteResult === 'alreadyVoted') return 'alreadyVoted'
+    if (!voteResult) return InternalServerError
+    if (voteResult === 'alreadyVoted') return AlreadyVotedError
 
-    await this.kotaeService.incrementVoteCount({
+    const result = await this.kotaeService.incrementVoteCount({
       slackTeamId,
       content,
     })
 
-    return 'ok'
+    return result
   }
 
   async getVoteCount(params: VoteCountParams): Promise<VoteCountResponse> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
-    if (!currentOdai) return 'noOdai'
-    if (currentOdai.status !== 'voting') return 'noVotingOdai'
+    if (hasError(currentOdai)) return currentOdai
+    if (currentOdai.status !== 'voting') return NoVotingOdaiError
     const votes = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
     return {
       odaiTitle: currentOdai.title,

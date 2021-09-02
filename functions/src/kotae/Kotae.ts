@@ -1,7 +1,6 @@
-import { ApiStatus, SlackParams } from '../api/Api'
+import { SlackParams } from '../api/Api'
+import { ApiError } from '../api/Error'
 import { OdaiStatus } from '../odai/Odai'
-
-export type KotaeApiStatus = ApiStatus | 'noOdai'
 
 type KotaeBase = {
   content: string
@@ -24,12 +23,14 @@ export type KotaeResponse = KotaeApiBase & {
   createdAt: number
 }
 
-export type KotaeGetAllResponse = {
-  odaiTitle: string
-  odaiDueDate: number
-  odaiStatus: OdaiStatus
-  kotaeList: KotaeResponse[]
-}
+export type KotaeGetAllResponse =
+  | {
+      odaiTitle: string
+      odaiDueDate: number
+      odaiStatus: OdaiStatus
+      kotaeList: KotaeResponse[]
+    }
+  | ApiError
 
 export type KotaePersonalResultParams = SlackParams & {
   userId: string
@@ -41,9 +42,11 @@ export type KotaeByContentParams = SlackParams & {
   content: string
 }
 
-export type KotaeByContentResponse = KotaeResponse & {
-  docId: string
-}
+export type KotaeByContentResponse =
+  | (KotaeResponse & {
+      docId: string
+    })
+  | ApiError
 
 export type KotaeIncrementVoteCountParams = SlackParams & {
   content: string
