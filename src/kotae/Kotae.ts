@@ -5,10 +5,14 @@ export type Kotae = {
   content: string
   createdBy: string
   votedCount: number
+  votedFirstCount: number
+  votedSecondCount: number
+  votedThirdCount: number
   createdAt: number
 }
 
 export type RankedKotae = Kotae & {
+  point: number
   rank: 1 | 2 | 3
 }
 

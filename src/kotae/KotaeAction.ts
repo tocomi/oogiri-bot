@@ -10,6 +10,7 @@ import { Logger, WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { countKotae } from './action/countKotae'
 import { KotaeUseCase } from './KotaeUseCase'
+import { makeRanking } from '../kotae/makeRanking'
 
 const CALLBACK_ID = 'create-kotae'
 const BLOCK_ID = 'create-kotae-block'
@@ -205,14 +206,17 @@ export const checkResult = (app: App) => {
     ]
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const resultBlocks: KnownBlock[] = result.kotaeList
+    const resultBlocks: KnownBlock[] = makeRanking({
+      kotaeList: result.kotaeList,
+      removeNoVoteKotae: false,
+    })
       .map((kotae) => {
         return [
           {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `:point_up: *投票数: ${kotae.votedCount}* - ${kotae.content}`,
+              text: `:dart: *${kotae.point}ポイント* - :first_place_medal:${kotae.votedFirstCount}票 :second_place_medal:${kotae.votedSecondCount}票 :third_place_medal:${kotae.votedThirdCount}票 - ${kotae.content}`,
             },
           },
         ]

@@ -518,7 +518,7 @@ export const finish = (app: App) => {
       .catch(handleError)
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const rankedList = makeRanking(result.kotaeList)
+    const rankedList = makeRanking({ kotaeList: result.kotaeList })
 
     const headerBlocks: KnownBlock[] = [
       {
@@ -605,7 +605,7 @@ export const finish = (app: App) => {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `:point_up: 票数 *${ranked.votedCount}票*`,
+              text: `:dart: *${ranked.point}ポイント* :point_up: ${ranked.votedCount}票`,
             },
           },
           {
