@@ -1,5 +1,11 @@
 import { ApiPostStatus } from '../api/Api'
-import { AlreadyVotedError, hasError, InternalServerError, NoVotingOdaiError } from '../api/Error'
+import {
+  AlreadySameRankVotedError,
+  AlreadyVotedError,
+  hasError,
+  InternalServerError,
+  NoVotingOdaiError,
+} from '../api/Error'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
 import { VoteRequestParams, VoteCountResponse, VoteCountParams } from './Vote'
@@ -21,7 +27,7 @@ export class VoteServiceImpl implements VoteService {
     this.kotaeService = kotaeService
   }
 
-  async create({ slackTeamId, content, votedBy }: VoteRequestParams): Promise<ApiPostStatus> {
+  async create({ slackTeamId, content, votedBy, rank }: VoteRequestParams): Promise<ApiPostStatus> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
     if (hasError(currentOdai)) return currentOdai
     if (currentOdai.status !== 'voting') return NoVotingOdaiError
@@ -33,15 +39,18 @@ export class VoteServiceImpl implements VoteService {
       slackTeamId,
       content,
       votedBy,
+      rank,
       odaiDocId: currentOdai.docId,
       kotaeDocId: kotae.docId,
     })
     if (!voteResult) return InternalServerError
     if (voteResult === 'alreadyVoted') return AlreadyVotedError
+    if (voteResult === 'alreadySameRankVoted') return AlreadySameRankVotedError
 
     const result = await this.kotaeService.incrementVoteCount({
       slackTeamId,
       content,
+      rank,
     })
 
     return result

@@ -3,6 +3,7 @@ import { ApiError } from '../api/Error'
 
 type VoteBase = {
   votedBy: string
+  rank: 1 | 2 | 3
 }
 
 export type VoteRequestParams = SlackParams &

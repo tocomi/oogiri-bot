@@ -157,7 +157,7 @@ app.get('/kotae/personal-result', async (req: express.Request, res) => {
 
 app.post('/kotae/vote', async (req: express.Request, res) => {
   const params = req.body as VoteRequestParams
-  if (!params.slackTeamId || !params.content || !params.votedBy) {
+  if (!params.slackTeamId || !params.content || !params.votedBy || !params.rank) {
     return errorResponse(res, IllegalArgumentError)
   }
   const result = await voteService.create(params)
