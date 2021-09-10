@@ -6,6 +6,7 @@ import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
 import { milliSecondsToYYYYMMDD } from '../util/DateUtil'
 import { KotaeUseCase } from '../kotae/KotaeUseCase'
+import { convertVoteRank, convertVoteRankText } from '../vote/convertVoteValue'
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
@@ -306,12 +307,31 @@ export const startVoting = (app: App) => {
               text: `:speaking_head_in_silhouette: *${kotae.content}*`,
             },
             accessory: {
-              type: 'button',
+              type: 'overflow',
+              options: [
+                {
+                  text: {
+                    type: 'plain_text',
+                    text: `:first_place_medal: ${convertVoteRankText(1)}(1票のみ)`,
+                  },
+                  value: 'first-rank-vote',
+                },
+                {
+                  text: {
+                    type: 'plain_text',
+                    text: `:second_place_medal: ${convertVoteRankText(2)}(1票のみ)`,
+                  },
+                  value: 'second-rank-vote',
+                },
+                {
+                  text: {
+                    type: 'plain_text',
+                    text: `:third_place_medal: ${convertVoteRankText(3)}(複数投票可)`,
+                  },
+                  value: 'third-rank-vote',
+                },
+              ],
               action_id: ACTION_ID,
-              text: {
-                type: 'plain_text',
-                text: '草',
-              },
             },
           },
         ]
@@ -320,7 +340,7 @@ export const startVoting = (app: App) => {
     )
   })
 
-  app.action(ACTION_ID, async ({ ack, body, client, logger }) => {
+  app.action(ACTION_ID, async ({ ack, action, body, client, logger }) => {
     await ack()
     // NOTE: 投票ボタンが押された回答のテキストを抽出
     // 何故か型が無いので仕方なくts-ignoreを仕様
@@ -331,6 +351,11 @@ export const startVoting = (app: App) => {
     // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
     const content = text.replace(':speaking_head_in_silhouette: ', '').replace(/\*/g, '')
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const voteRankText = action.selected_option.value
+    const voteRank = convertVoteRank(voteRankText)
+
     const voteUseCase = new VoteUseCase()
     const slackTeamId = body.team?.id || ''
     const user = body.user.id
@@ -338,6 +363,7 @@ export const startVoting = (app: App) => {
       .create({
         slackTeamId,
         content,
+        rank: voteRank,
         votedBy: user,
       })
       .catch((error) => {
@@ -349,6 +375,24 @@ export const startVoting = (app: App) => {
               text: {
                 type: 'mrkdwn',
                 text: `:warning: この答えは既に投票済みです :warning: 回答: ${content}`,
+              },
+            },
+          ]
+          postEphemeral({
+            client,
+            user,
+            blocks,
+          })
+        } else if (error.response.data.message === 'Already Same Rank Voted') {
+          logger.warn(error.response.data.message)
+          const blocks: KnownBlock[] = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `:warning: この投票の種類はすでに使用済みです :warning: ${convertVoteRankText(
+                  voteRank
+                )}`,
               },
             },
           ]
@@ -369,7 +413,9 @@ export const startVoting = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:point_up: 投票を受け付けました！ 回答: ${content}`,
+          text: `:point_up: 投票を受け付けました！ 回答: ${content} 投票: ${convertVoteRankText(
+            voteRank
+          )}`,
         },
       },
     ]
@@ -472,7 +518,7 @@ export const finish = (app: App) => {
       .catch(handleError)
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const rankedList = makeRanking(result.kotaeList)
+    const rankedList = makeRanking({ kotaeList: result.kotaeList })
 
     const headerBlocks: KnownBlock[] = [
       {
@@ -559,7 +605,7 @@ export const finish = (app: App) => {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `:point_up: 票数 *${ranked.votedCount}票*`,
+              text: `:dart: *${ranked.point}ポイント* :point_up: ${ranked.votedCount}票`,
             },
           },
           {

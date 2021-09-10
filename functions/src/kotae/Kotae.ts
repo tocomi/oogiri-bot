@@ -13,6 +13,9 @@ export type KotaeOfCurrentOdaiParams = SlackParams
 
 type KotaeApiBase = KotaeBase & {
   votedCount: number
+  votedFirstCount: number
+  votedSecondCount: number
+  votedThirdCount: number
 }
 
 export type KotaePostData = KotaeApiBase & {
@@ -50,4 +53,5 @@ export type KotaeByContentResponse =
 
 export type KotaeIncrementVoteCountParams = SlackParams & {
   content: string
+  rank: 1 | 2 | 3
 }

@@ -1,24 +1,47 @@
 import { Kotae, RankedKotae } from './Kotae'
 
-export const makeRanking = (kotaeList: Kotae[]): RankedKotae[] => {
-  const sortedList = kotaeList.sort((a, b) => {
-    return a.votedCount > b.votedCount ? -1 : 1
-  })
+const FIRST_RANK_POINT = 5
+const SECOND_RANK_POINT = 3
+const THIRD_RANK_POINT = 1
+
+export const makeRanking = ({
+  kotaeList,
+  removeNoVoteKotae = true,
+}: {
+  kotaeList: Kotae[]
+  removeNoVoteKotae?: boolean
+}): RankedKotae[] => {
   let rank: RankedKotae['rank'] = 1
-  let beforeCount = 0
+  let beforePoint = 0
   let stockRank = 1
-  const rankedList = sortedList
-    .filter((kotae) => kotae.votedCount > 0)
+  const rankedList = kotaeList
+    .filter((kotae) => {
+      if (!removeNoVoteKotae) return true
+      return kotae.votedCount > 0
+    })
     .map((kotae) => {
-      if (beforeCount > 0) {
-        if (beforeCount === kotae.votedCount) {
+      const point =
+        FIRST_RANK_POINT * kotae.votedFirstCount +
+        SECOND_RANK_POINT * kotae.votedSecondCount +
+        THIRD_RANK_POINT * kotae.votedThirdCount
+      return {
+        ...kotae,
+        point,
+      }
+    })
+    .sort((a, b) => {
+      return a.point > b.point ? -1 : 1
+    })
+    .map((kotae) => {
+      if (beforePoint > 0) {
+        if (beforePoint === kotae.point) {
           stockRank += 1
         } else {
           rank += stockRank
           stockRank = 1
         }
       }
-      beforeCount = kotae.votedCount
+      beforePoint = kotae.point
       const ranked = {
         ...kotae,
         rank,

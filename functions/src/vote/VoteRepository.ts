@@ -8,7 +8,7 @@ export interface VoteRepository {
       odaiDocId: string
       kotaeDocId: string
     }
-  ): Promise<boolean | 'alreadyVoted'>
+  ): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'>
   getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiDocId: string): Promise<Vote[]>
 }
 
@@ -51,17 +51,19 @@ export class VoteRepositoryImpl implements VoteRepository {
     slackTeamId,
     content,
     votedBy,
+    rank,
     odaiDocId,
     kotaeDocId,
   }: VoteRequestParams & {
     odaiDocId: string
     kotaeDocId: string
-  }): Promise<boolean | 'alreadyVoted'> {
+  }): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'> {
     const collection = voteKotaeCollection({
       slackTeamId,
       odaiDocId,
       kotaeDocId,
     })
+
     // NOTE: 同一ユーザーが同じ回答に複数投票することはできない
     const voteSnapshot = await collection.where('votedBy', '==', votedBy).get()
     if (!voteSnapshot.empty) {
@@ -69,8 +71,22 @@ export class VoteRepositoryImpl implements VoteRepository {
       return 'alreadyVoted'
     }
 
+    // NOTE: rank = 1 or 2は同じお題で複数投票することはできない
+    if (rank === 1 || rank === 2) {
+      const odaiCollection = voteOdaiCollection({ slackTeamId, odaiDocId })
+      const voteRankSnapshot = await odaiCollection
+        .where('votedBy', '==', votedBy)
+        .where('rank', '==', rank)
+        .get()
+      if (!voteRankSnapshot.empty) {
+        console.log('Already same rank voted.')
+        return 'alreadySameRankVoted'
+      }
+    }
+
     const data: Vote = {
       votedBy,
+      rank,
       createdAt: new Date(),
       kotaeId: kotaeDocId,
       kotaeContent: content,
@@ -101,6 +117,7 @@ export class VoteRepositoryImpl implements VoteRepository {
       const data = doc.data()
       return {
         votedBy: data.votedBy,
+        rank: data.rank,
         createdAt: convertTimestamp(data.createdAt),
         kotaeId: data.kotaeId,
         kotaeContent: data.kotaeContent,

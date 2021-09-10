@@ -89,6 +89,7 @@ export class KotaeServiceImpl implements KotaeService {
   async incrementVoteCount({
     slackTeamId,
     content,
+    rank,
   }: KotaeIncrementVoteCountParams): Promise<ApiPostStatus> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
     if (hasError(currentOdai)) return currentOdai
@@ -100,6 +101,7 @@ export class KotaeServiceImpl implements KotaeService {
       slackTeamId,
       odaiDocId: currentOdai.docId,
       kotaeDocId: kotae.docId,
+      rank,
     })
 
     return result ? 'ok' : InternalServerError

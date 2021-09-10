@@ -1,5 +1,6 @@
 import { COLLECTION_NAME } from '../const'
 import { convertTimestamp, createDoc, db, firestore } from '../firebase/firestore'
+import { convertVoteFieldName } from './convertVoteFieldName'
 import {
   KotaeByContentParams,
   KotaeByContentResponse,
@@ -19,7 +20,7 @@ export interface KotaeRepository {
     params: KotaeByContentParams & { odaiDocId: string }
   ): Promise<KotaeByContentResponse | null>
   incrementVoteCount(
-    params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId'> & {
+    params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
       odaiDocId: string
       kotaeDocId: string
     }
@@ -50,6 +51,9 @@ export class KotaeRepositoryImpl implements KotaeRepository {
       content,
       createdBy,
       votedCount: 0,
+      votedFirstCount: 0,
+      votedSecondCount: 0,
+      votedThirdCount: 0,
       createdAt: new Date(),
     }
     const docRef = kotaeCollection({ slackTeamId, odaiDocId }).doc()
@@ -68,6 +72,9 @@ export class KotaeRepositoryImpl implements KotaeRepository {
         content: data.content,
         createdBy: data.createdBy,
         votedCount: data.votedCount,
+        votedFirstCount: data.votedFirstCount,
+        votedSecondCount: data.votedSecondCount,
+        votedThirdCount: data.votedThirdCount,
         createdAt: convertTimestamp(data.createdAt),
       }
     })
@@ -79,7 +86,6 @@ export class KotaeRepositoryImpl implements KotaeRepository {
   ): Promise<KotaeResponse[]> {
     const snapshot = await kotaeCollection({ slackTeamId, odaiDocId })
       .where('createdBy', '==', userId)
-      .orderBy('votedCount', 'desc')
       .get()
     return snapshot.docs.map((doc) => {
       const data = doc.data()
@@ -87,6 +93,9 @@ export class KotaeRepositoryImpl implements KotaeRepository {
         content: data.content,
         createdBy: data.createdBy,
         votedCount: data.votedCount,
+        votedFirstCount: data.votedFirstCount,
+        votedSecondCount: data.votedSecondCount,
+        votedThirdCount: data.votedThirdCount,
         createdAt: convertTimestamp(data.createdAt),
       }
     })
@@ -117,6 +126,9 @@ export class KotaeRepositoryImpl implements KotaeRepository {
       content: data.content,
       createdBy: data.createdBy,
       votedCount: data.votedCount,
+      votedFirstCount: data.votedFirstCount,
+      votedSecondCount: data.votedSecondCount,
+      votedThirdCount: data.votedThirdCount,
       createdAt: convertTimestamp(data.createdAt),
     }
   }
@@ -125,14 +137,19 @@ export class KotaeRepositoryImpl implements KotaeRepository {
     slackTeamId,
     odaiDocId,
     kotaeDocId,
-  }: Pick<KotaeIncrementVoteCountParams, 'slackTeamId'> & {
+    rank,
+  }: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
     odaiDocId: string
     kotaeDocId: string
   }): Promise<boolean> {
     const kotaeRef = kotaeCollection({ slackTeamId, odaiDocId }).doc(kotaeDocId)
+    const fieldName = convertVoteFieldName(rank)
+    const updateObject: Record<string, unknown> = {}
+    updateObject[fieldName] = firestore.FieldValue.increment(1)
     return kotaeRef
       .update({
         votedCount: firestore.FieldValue.increment(1),
+        ...updateObject,
       })
       .then(() => true)
       .catch((error) => {
