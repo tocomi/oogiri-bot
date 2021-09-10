@@ -6,7 +6,7 @@ import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
 import { milliSecondsToYYYYMMDD } from '../util/DateUtil'
 import { KotaeUseCase } from '../kotae/KotaeUseCase'
-import { convertVoteRank } from '../vote/convertVoteRank'
+import { convertVoteRank, convertVoteRankText } from '../vote/convertVoteValue'
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
@@ -312,21 +312,21 @@ export const startVoting = (app: App) => {
                 {
                   text: {
                     type: 'plain_text',
-                    text: ':first_place_medal: サバンナの大地(1票のみ)',
+                    text: `:first_place_medal: ${convertVoteRankText(1)}(1票のみ)`,
                   },
                   value: 'first-rank-vote',
                 },
                 {
                   text: {
                     type: 'plain_text',
-                    text: ':second_place_medal: 大草原(1票のみ)',
+                    text: `:second_place_medal: ${convertVoteRankText(2)}(1票のみ)`,
                   },
                   value: 'second-rank-vote',
                 },
                 {
                   text: {
                     type: 'plain_text',
-                    text: ':third_place_medal: 草(複数投票可)',
+                    text: `:third_place_medal: ${convertVoteRankText(3)}(複数投票可)`,
                   },
                   value: 'third-rank-vote',
                 },
@@ -390,7 +390,9 @@ export const startVoting = (app: App) => {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `:warning: この投票の種類はすでに使用済みです :warning:`,
+                text: `:warning: この投票の種類はすでに使用済みです :warning: ${convertVoteRankText(
+                  voteRank
+                )}`,
               },
             },
           ]
@@ -411,7 +413,9 @@ export const startVoting = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `:point_up: 投票を受け付けました！ 回答: ${content}`,
+          text: `:point_up: 投票を受け付けました！ 回答: ${content} 投票: ${convertVoteRankText(
+            voteRank
+          )}`,
         },
       },
     ]
