@@ -312,21 +312,21 @@ export const startVoting = (app: App) => {
                 {
                   text: {
                     type: 'plain_text',
-                    text: `:first_place_medal: ${convertVoteRankText(1)}(1票のみ)`,
+                    text: `:first_place_medal: ${convertVoteRankText(1)} - 1票のみ`,
                   },
                   value: 'first-rank-vote',
                 },
                 {
                   text: {
                     type: 'plain_text',
-                    text: `:second_place_medal: ${convertVoteRankText(2)}(1票のみ)`,
+                    text: `:second_place_medal: ${convertVoteRankText(2)} - 1票のみ`,
                   },
                   value: 'second-rank-vote',
                 },
                 {
                   text: {
                     type: 'plain_text',
-                    text: `:third_place_medal: ${convertVoteRankText(3)}(複数投票可)`,
+                    text: `:third_place_medal: ${convertVoteRankText(3)} - 複数投票可`,
                   },
                   value: 'third-rank-vote',
                 },
@@ -374,7 +374,7 @@ export const startVoting = (app: App) => {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `:warning: この答えは既に投票済みです :warning: 回答: ${content}`,
+                text: `:warning: この答えは既に投票されています :warning: 回答: ${content}`,
               },
             },
           ]
@@ -390,7 +390,7 @@ export const startVoting = (app: App) => {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `:warning: この投票の種類はすでに使用済みです :warning: ${convertVoteRankText(
+                text: `:warning: この投票は既に使用されています :warning: 種別: ${convertVoteRankText(
                   voteRank
                 )}`,
               },
