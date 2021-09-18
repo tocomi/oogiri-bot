@@ -1,5 +1,5 @@
-import { RankedKotae } from './Kotae'
-import { makePointRanking } from './makePointRanking'
+import { RankedKotae } from '../../Kotae'
+import { makePointRanking } from '../makePointRanking'
 
 const kotae00 = {
   content: 'ナマステ',

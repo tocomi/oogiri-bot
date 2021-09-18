@@ -11,8 +11,11 @@ export type Kotae = {
   createdAt: number
 }
 
-export type RankedKotae = Kotae & {
+export type PointedKotae = Kotae & {
   point: number
+}
+
+export type RankedKotae = PointedKotae & {
   rank: 1 | 2 | 3
 }
 

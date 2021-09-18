@@ -1,6 +1,6 @@
 import { App } from '@slack/bolt'
 import { KnownBlock } from '@slack/web-api'
-import { makePointRanking } from '../kotae/makePointRanking'
+import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
