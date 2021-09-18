@@ -1,5 +1,5 @@
 import { RankedKotae } from './Kotae'
-import { makeRanking } from './makeRanking'
+import { makePointRanking } from './makePointRanking'
 
 const kotae00 = {
   content: 'ナマステ',
@@ -84,7 +84,7 @@ const kotae31 = {
 
 describe('ポイントと順位の計算', () => {
   test('ポイント順に並び替えとランク付けが行われる', () => {
-    const result = makeRanking({ kotaeList: [kotae10, kotae20, kotae30] })
+    const result = makePointRanking({ kotaeList: [kotae10, kotae20, kotae30] })
     const expected: RankedKotae[] = [
       {
         ...kotae10,
@@ -106,7 +106,7 @@ describe('ポイントと順位の計算', () => {
   })
 
   test('0票の回答は除外される', () => {
-    const result = makeRanking({ kotaeList: [kotae00, kotae01, kotae10, kotae20] })
+    const result = makePointRanking({ kotaeList: [kotae00, kotae01, kotae10, kotae20] })
     const expected: RankedKotae[] = [
       {
         ...kotae10,
@@ -123,7 +123,7 @@ describe('ポイントと順位の計算', () => {
   })
 
   test('ポイントが同値の場合は同じ順位になる', () => {
-    const result = makeRanking({
+    const result = makePointRanking({
       kotaeList: [kotae00, kotae01, kotae10, kotae11, kotae20, kotae21, kotae30, kotae31],
     })
     const expected: RankedKotae[] = [

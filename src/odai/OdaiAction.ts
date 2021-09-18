@@ -1,6 +1,6 @@
 import { App } from '@slack/bolt'
 import { KnownBlock } from '@slack/web-api'
-import { makeRanking } from '../kotae/makeRanking'
+import { makePointRanking } from '../kotae/makePointRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
@@ -518,7 +518,7 @@ export const finish = (app: App) => {
       .catch(handleError)
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const rankedList = makeRanking({ kotaeList: result.kotaeList })
+    const rankedList = makePointRanking({ kotaeList: result.kotaeList })
 
     const headerBlocks: KnownBlock[] = [
       {

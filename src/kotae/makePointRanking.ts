@@ -4,7 +4,7 @@ const FIRST_RANK_POINT = 5
 const SECOND_RANK_POINT = 3
 const THIRD_RANK_POINT = 1
 
-export const makeRanking = ({
+export const makePointRanking = ({
   kotaeList,
   removeNoVoteKotae = true,
 }: {
