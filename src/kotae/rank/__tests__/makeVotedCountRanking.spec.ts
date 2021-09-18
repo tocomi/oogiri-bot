@@ -1,5 +1,5 @@
 import { RankedKotae } from '../../Kotae'
-import { make1stVotedCountRanking } from '../make1stVotedCountRanking'
+import { makeVoted1stCountRanking } from '../makeVoted1stCountRanking'
 import { makeVotedCountRanking } from '../makeVotedCountRanking'
 
 const kotae10 = {
@@ -56,7 +56,7 @@ const kotaeList = [kotae10, kotae20, kotae30, kotae31, kotae40]
 
 describe('順位の計算', () => {
   test('1位投票数の順位が正しく計算される', () => {
-    const result = make1stVotedCountRanking({ kotaeList })
+    const result = makeVoted1stCountRanking({ kotaeList })
     const expected: RankedKotae[] = [
       {
         ...kotae10,

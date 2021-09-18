@@ -7,6 +7,8 @@ import { OdaiUseCase } from './OdaiUseCase'
 import { milliSecondsToYYYYMMDD } from '../util/DateUtil'
 import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { convertVoteRank, convertVoteRankText } from '../vote/convertVoteValue'
+import { makeVoted1stCountRanking } from '../kotae/rank/makeVoted1stCountRanking'
+import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
@@ -518,8 +520,6 @@ export const finish = (app: App) => {
       .catch(handleError)
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const rankedList = makePointRanking({ kotaeList: result.kotaeList })
-
     const headerBlocks: KnownBlock[] = [
       {
         type: 'image',
@@ -579,9 +579,11 @@ export const finish = (app: App) => {
         },
       },
     ]
+
+    const pointRankedList = makePointRanking({ kotaeList: result.kotaeList })
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const rankingBlocks: KnownBlock[] = rankedList
+    const pointRankingBlocks: KnownBlock[] = pointRankedList
       .map((ranked) => {
         const medalEmoji = () => {
           switch (ranked.rank) {
@@ -605,14 +607,7 @@ export const finish = (app: App) => {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `:dart: *${ranked.point}ポイント* :point_up: ${ranked.votedCount}票`,
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `:speaking_head_in_silhouette: *${ranked.content}*`,
+              text: `:dart: *${ranked.point}P* - :speaking_head_in_silhouette: *${ranked.content}*`,
             },
           },
           {
@@ -625,7 +620,144 @@ export const finish = (app: App) => {
         ]
       })
       .flat()
-    const blocks = [...headerBlocks, ...rankingBlocks, ...footerBlocks]
+    // NOTE: 最後のハイフンのブロックは不要
+    pointRankingBlocks.pop()
+    pointRankingBlocks.unshift({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: ':100: :100: :100: *打点王(ポイント)* :100: :100: :100:',
+      },
+    })
+    pointRankingBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: '-'.repeat(50),
+      },
+    })
+
+    const voted1stCountRankedList = makeVoted1stCountRanking({ kotaeList: result.kotaeList })
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const voted1stCountRankingBlocks: KnownBlock[] = voted1stCountRankedList
+      .map((ranked) => {
+        const medalEmoji = () => {
+          switch (ranked.rank) {
+            case 1:
+              return ':first_place_medal:'
+            case 2:
+              return ':second_place_medal:'
+            case 3:
+              return ':third_place_medal:'
+          }
+        }
+        return [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `${medalEmoji()} *第${ranked.rank}位* <@${ranked.createdBy}>`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:point_up: *${ranked.votedFirstCount}票* - :speaking_head_in_silhouette: *${ranked.content}*`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `-`,
+            },
+          },
+        ]
+      })
+      .flat()
+    // NOTE: 最後のハイフンのブロックは不要
+    voted1stCountRankingBlocks.pop()
+    voted1stCountRankingBlocks.unshift({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: ':volcano: :volcano: :volcano: *本塁打王(1位票数)* :volcano: :volcano: :volcano:',
+      },
+    })
+    voted1stCountRankingBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: '-'.repeat(50),
+      },
+    })
+
+    const votedCountRankedList = makeVotedCountRanking({ kotaeList: result.kotaeList })
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const votedCountRankingBlocks: KnownBlock[] = votedCountRankedList
+      .map((ranked) => {
+        const medalEmoji = () => {
+          switch (ranked.rank) {
+            case 1:
+              return ':first_place_medal:'
+            case 2:
+              return ':second_place_medal:'
+            case 3:
+              return ':third_place_medal:'
+          }
+        }
+        return [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `${medalEmoji()} *第${ranked.rank}位* <@${ranked.createdBy}>`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:point_up: *${ranked.votedCount}票* - :speaking_head_in_silhouette: *${ranked.content}*`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `-`,
+            },
+          },
+        ]
+      })
+      .flat()
+    // NOTE: 最後のハイフンのブロックは不要
+    votedCountRankingBlocks.pop()
+    votedCountRankingBlocks.unshift({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: ':scales: :scales: :scales: *首位打者(総票数)* :scales: :scales: :scales:',
+      },
+    })
+    votedCountRankingBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: '-'.repeat(50),
+      },
+    })
+
+    const blocks = [
+      ...headerBlocks,
+      ...pointRankingBlocks,
+      ...voted1stCountRankingBlocks,
+      ...votedCountRankingBlocks,
+      ...footerBlocks,
+    ]
     await postMessage({ client, blocks })
   })
 }
