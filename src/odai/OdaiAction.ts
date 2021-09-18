@@ -664,7 +664,7 @@ export const finish = (app: App) => {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `:point_up: *${ranked.votedFirstCount}票* - :speaking_head_in_silhouette: *${ranked.content}*`,
+              text: `:rocket: *${ranked.votedFirstCount}票* - :speaking_head_in_silhouette: *${ranked.content}*`,
             },
           },
           {
