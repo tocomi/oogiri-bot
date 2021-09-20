@@ -1,4 +1,5 @@
-import { KnownBlock, WebClient } from '@slack/web-api'
+import { WebClient } from '@slack/web-api'
+import { KnownBlock } from '@slack/types'
 import { postEphemeral, postInternalErrorMessage, postMessage } from '../../message/postMessage'
 import { milliSecondsToYYYYMMDD, diffMessageFromCurrent } from '../../util/DateUtil'
 import { KotaeUseCase } from '../KotaeUseCase'
