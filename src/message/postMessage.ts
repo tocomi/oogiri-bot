@@ -1,4 +1,5 @@
-import { KnownBlock, WebClient } from '@slack/web-api'
+import { WebClient } from '@slack/web-api'
+import { KnownBlock } from '@slack/types'
 import { config } from '../config'
 
 const CHANNEL_ID = config.slack.channelId

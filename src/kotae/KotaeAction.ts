@@ -10,7 +10,7 @@ import { Logger, WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { countKotae } from './action/countKotae'
 import { KotaeUseCase } from './KotaeUseCase'
-import { makeRanking } from '../kotae/makeRanking'
+import { makePointRanking } from './rank/makePointRanking'
 
 const CALLBACK_ID = 'create-kotae'
 const BLOCK_ID = 'create-kotae-block'
@@ -206,7 +206,7 @@ export const checkResult = (app: App) => {
     ]
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const resultBlocks: KnownBlock[] = makeRanking({
+    const resultBlocks: KnownBlock[] = makePointRanking({
       kotaeList: result.kotaeList,
       removeNoVoteKotae: false,
     })

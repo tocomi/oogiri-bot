@@ -1,34 +1,23 @@
-import { Kotae, RankedKotae } from './Kotae'
+import { Kotae, RankedKotae } from '../Kotae'
+import { makePointedList } from './makePointedList'
 
-const FIRST_RANK_POINT = 5
-const SECOND_RANK_POINT = 3
-const THIRD_RANK_POINT = 1
-
-export const makeRanking = ({
+export const makePointRanking = ({
   kotaeList,
   removeNoVoteKotae = true,
 }: {
   kotaeList: Kotae[]
   removeNoVoteKotae?: boolean
 }): RankedKotae[] => {
+  const filteredList = kotaeList.filter((kotae) => {
+    if (!removeNoVoteKotae) return true
+    return kotae.votedCount > 0
+  })
+  const pointedList = makePointedList({ kotaeList: filteredList })
+
   let rank: RankedKotae['rank'] = 1
   let beforePoint = 0
   let stockRank = 1
-  const rankedList = kotaeList
-    .filter((kotae) => {
-      if (!removeNoVoteKotae) return true
-      return kotae.votedCount > 0
-    })
-    .map((kotae) => {
-      const point =
-        FIRST_RANK_POINT * kotae.votedFirstCount +
-        SECOND_RANK_POINT * kotae.votedSecondCount +
-        THIRD_RANK_POINT * kotae.votedThirdCount
-      return {
-        ...kotae,
-        point,
-      }
-    })
+  return pointedList
     .sort((a, b) => {
       return a.point > b.point ? -1 : 1
     })
@@ -49,5 +38,4 @@ export const makeRanking = ({
       return ranked
     })
     .filter((kotae) => kotae.rank <= 3)
-  return rankedList
 }

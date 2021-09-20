@@ -1,12 +1,23 @@
 import { App } from '@slack/bolt'
-import { KnownBlock } from '@slack/web-api'
-import { makeRanking } from '../kotae/makeRanking'
+import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { OdaiUseCase } from './OdaiUseCase'
-import { milliSecondsToYYYYMMDD } from '../util/DateUtil'
 import { KotaeUseCase } from '../kotae/KotaeUseCase'
-import { convertVoteRank, convertVoteRankText } from '../vote/convertVoteValue'
+import { convertVoteRank } from '../vote/convertVoteValue'
+import { makeVoted1stCountRanking } from '../kotae/rank/makeVoted1stCountRanking'
+import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
+import { createOdaiDuplicationBlocks } from './blocks/createOdaiDuplicationBlocks'
+import { createOdaiCreateBlocks } from './blocks/createOdaiCreateBlocks'
+import { createVoteStartBlocks } from '../vote/blocks/createVoteStartBlocks'
+import { createVoteSectionBlocks } from '../vote/blocks/createVoteSectionBlocks'
+import { createVoteAlreadyBlocks } from '../vote/blocks/createVoteAlreadyBlocks'
+import { createVoteAlreadySameRankBlocks } from '../vote/blocks/createVoteAlreadySameRankBlocks'
+import { createVoteCompleteBlocks } from '../vote/blocks/createVoteCompleteBlocks'
+import { createOdaiNothingBlocks } from './blocks/createOdaiNothingBlocks'
+import { createVoteResultHeaderBlocks } from '../vote/blocks/createVoteResultHeaderBlocks'
+import { createVoteResultFooterBlocks } from '../vote/blocks/createVoteResultFooterBlocks'
+import { createVoteResultContentBlocks } from '../vote/blocks/createVoteResultContentBlocks'
 
 export const createOdai = (app: App) => {
   const CALLBACK_ID = 'create-odai'
@@ -103,15 +114,7 @@ export const createOdai = (app: App) => {
       .catch((error) => {
         if (error.response.data.message === 'Odai Duplication') {
           logger.warn(error.response.data.message)
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: ':warning: 他のお題がオープンしています :warning:',
-              },
-            },
-          ]
+          const blocks = createOdaiDuplicationBlocks()
           postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(error.response.config)
@@ -121,50 +124,7 @@ export const createOdai = (app: App) => {
       })
     if (!success) return
 
-    const blocks: KnownBlock[] = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `<!here>`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:mega: :mega: :mega: 新しいお題が設定されました！ :mega: :mega: :mega:`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:speech_balloon: *お題: ${title}*`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:calendar: *回答期限: ${milliSecondsToYYYYMMDD(dueDate)}*`,
-        },
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'お題に回答する (複数回答可)',
-            },
-            style: 'primary',
-            action_id: 'oogiri-create-kotae',
-          },
-        ],
-      },
-    ]
+    const blocks = createOdaiCreateBlocks({ title, dueDate })
     await postMessage({ client, blocks })
   })
 }
@@ -232,15 +192,7 @@ export const startVoting = (app: App) => {
           error.response.data.message === 'No Posting Odai'
         ) {
           logger.warn(error.response.data.message)
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: ':warning: 他のお題がオープンしています :warning:',
-              },
-            },
-          ]
+          const blocks = createOdaiDuplicationBlocks()
           postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(error.response.config)
@@ -250,91 +202,13 @@ export const startVoting = (app: App) => {
       })
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const blocks: KnownBlock[] = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '<!here>',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: ':mega: :mega: :mega: *投票が開始されました！* :mega: :mega: :mega:',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '面白いと思った回答に投票しましょう！',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '回答の右のボタンを押すと投票できます:punch: (複数投票可)',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '---',
-        },
-      },
-    ]
+    const blocks = createVoteStartBlocks({ title: result.odaiTitle })
     await postMessage({ client, blocks })
 
     // NOTE: 答えの一覧をチャンネルに投稿
     await Promise.all(
       result.kotaeList.map(async (kotae) => {
-        const blocks: KnownBlock[] = [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `:speaking_head_in_silhouette: *${kotae.content}*`,
-            },
-            accessory: {
-              type: 'overflow',
-              options: [
-                {
-                  text: {
-                    type: 'plain_text',
-                    text: `:first_place_medal: ${convertVoteRankText(1)} - 1票のみ`,
-                  },
-                  value: 'first-rank-vote',
-                },
-                {
-                  text: {
-                    type: 'plain_text',
-                    text: `:second_place_medal: ${convertVoteRankText(2)} - 1票のみ`,
-                  },
-                  value: 'second-rank-vote',
-                },
-                {
-                  text: {
-                    type: 'plain_text',
-                    text: `:third_place_medal: ${convertVoteRankText(3)} - 複数投票可`,
-                  },
-                  value: 'third-rank-vote',
-                },
-              ],
-              action_id: ACTION_ID,
-            },
-          },
-        ]
+        const blocks = createVoteSectionBlocks({ kotaeContent: kotae.content })
         await postMessage({ client, blocks })
       })
     )
@@ -369,15 +243,7 @@ export const startVoting = (app: App) => {
       .catch((error) => {
         if (error.response.data.message === 'Already Voted') {
           logger.warn(error.response.data.message)
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `:warning: この答えは既に投票されています :warning: 回答: ${content}`,
-              },
-            },
-          ]
+          const blocks = createVoteAlreadyBlocks({ content })
           postEphemeral({
             client,
             user,
@@ -385,17 +251,7 @@ export const startVoting = (app: App) => {
           })
         } else if (error.response.data.message === 'Already Same Rank Voted') {
           logger.warn(error.response.data.message)
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `:warning: この投票は既に使用されています :warning: 種別: ${convertVoteRankText(
-                  voteRank
-                )}`,
-              },
-            },
-          ]
+          const blocks = createVoteAlreadySameRankBlocks({ voteRank })
           postEphemeral({
             client,
             user,
@@ -408,17 +264,7 @@ export const startVoting = (app: App) => {
         return undefined
       })
     if (!result) return
-    const blocks: KnownBlock[] = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:point_up: 投票を受け付けました！ 回答: ${content} 投票: ${convertVoteRankText(
-            voteRank
-          )}`,
-        },
-      },
-    ]
+    const blocks = createVoteCompleteBlocks({ content, voteRank })
     await postEphemeral({ client, user, blocks })
   })
 }
@@ -480,15 +326,7 @@ export const finish = (app: App) => {
         error.response.data.message === 'No Voting Odai'
       ) {
         logger.warn(error.response.data.message)
-        const blocks: KnownBlock[] = [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: ':warning: 投票受付中のお題がありません :warning:',
-            },
-          },
-        ]
+        const blocks = createOdaiNothingBlocks()
         postEphemeral({ client, user: body.user.id, blocks })
       } else {
         logger.error(error.response.config)
@@ -518,114 +356,38 @@ export const finish = (app: App) => {
       .catch(handleError)
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const rankedList = makeRanking({ kotaeList: result.kotaeList })
+    const headerBlocks = createVoteResultHeaderBlocks({
+      odaiTitle: result.odaiTitle,
+      kotaeCount,
+      voteCount,
+    })
+    const footerBlocks = createVoteResultFooterBlocks()
 
-    const headerBlocks: KnownBlock[] = [
-      {
-        type: 'image',
-        image_url:
-          'https://stat.ameba.jp/user_images/20200706/09/lymph2/9e/3e/j/o1280072014784922530.jpg',
-        alt_text: 'inspiration',
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:ninja: 回答参加者: ${kotaeCount.uniqueUserCount}人 :speaking_head_in_silhouette: 総回答数: ${kotaeCount.kotaeCount}`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `:male_genie: 投票参加者: ${voteCount.uniqueUserCount}人 :point_up: 総投票数: ${voteCount.voteCount}`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '---',
-        },
-      },
+    const pointRankedList = makePointRanking({ kotaeList: result.kotaeList })
+    const pointRankingBlocks = createVoteResultContentBlocks({
+      rankedList: pointRankedList,
+      resultType: 'point',
+    })
+
+    const voted1stCountRankedList = makeVoted1stCountRanking({ kotaeList: result.kotaeList })
+    const voted1stCountRankingBlocks = createVoteResultContentBlocks({
+      rankedList: voted1stCountRankedList,
+      resultType: 'voted1stCount',
+    })
+
+    const votedCountRankedList = makeVotedCountRanking({ kotaeList: result.kotaeList })
+    const votedCountRankingBlocks = createVoteResultContentBlocks({
+      rankedList: votedCountRankedList,
+      resultType: 'votedCount',
+    })
+
+    const blocks = [
+      ...headerBlocks,
+      ...pointRankingBlocks,
+      ...voted1stCountRankingBlocks,
+      ...votedCountRankingBlocks,
+      ...footerBlocks,
     ]
-    const footerBlocks: KnownBlock[] = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '入賞者の方々おめでとうございます！ :clap: :clap: :clap:',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '次回も奮ってご参加ください！ :muscle: :muscle: :muscle:',
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '個人の結果はコマンド `/oogiri-check-my-result` で確認できます。(他の人には見えません)',
-        },
-      },
-    ]
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const rankingBlocks: KnownBlock[] = rankedList
-      .map((ranked) => {
-        const medalEmoji = () => {
-          switch (ranked.rank) {
-            case 1:
-              return ':first_place_medal:'
-            case 2:
-              return ':second_place_medal:'
-            case 3:
-              return ':third_place_medal:'
-          }
-        }
-        return [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `${medalEmoji()} *第${ranked.rank}位* <@${ranked.createdBy}>`,
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `:dart: *${ranked.point}ポイント* :point_up: ${ranked.votedCount}票`,
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `:speaking_head_in_silhouette: *${ranked.content}*`,
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `-`,
-            },
-          },
-        ]
-      })
-      .flat()
-    const blocks = [...headerBlocks, ...rankingBlocks, ...footerBlocks]
     await postMessage({ client, blocks })
   })
 }
