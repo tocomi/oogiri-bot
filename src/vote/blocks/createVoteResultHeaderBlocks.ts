@@ -42,7 +42,7 @@ export const createVoteResultHeaderBlocks = ({
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: '---',
+      text: '-'.repeat(50),
     },
   },
 ]
