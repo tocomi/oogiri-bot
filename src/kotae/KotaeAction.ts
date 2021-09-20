@@ -8,8 +8,8 @@ import {
 } from '@slack/bolt'
 import { Logger, WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
-import { countKotae } from './action/countKotae'
 import { KotaeUseCase } from './KotaeUseCase'
+import { countKotae } from './action/countKotae'
 import { makePointRanking } from './rank/makePointRanking'
 
 const CALLBACK_ID = 'create-kotae'
