@@ -23,6 +23,9 @@ module.exports = {
         'plugin:@typescript-eslint/recommended', // TypeScript rules
         'plugin:prettier/recommended', // Prettier recommended rules
       ],
+      plugins: [
+        'import',
+      ],
       rules: {
         // Why would you want unused vars?
         '@typescript-eslint/no-unused-vars': ['error'],
@@ -33,6 +36,22 @@ module.exports = {
 
         // Includes .prettierrc.js rules
         'prettier/prettier': ['error', {}, { usePrettierrc: true }],
+
+        // import
+        'sort-imports': 'off',
+        'import/order': [
+          'warn',
+          { 
+            'groups': [
+              'builtin',
+              'external',
+              'internal',
+            ],
+            'alphabetize': {
+              'order': 'asc',
+            },
+          },
+        ],
       },
     },
   ],
