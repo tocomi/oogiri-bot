@@ -4,9 +4,11 @@ import { makePointedList } from './makePointedList'
 export const makePointRanking = ({
   kotaeList,
   removeNoVoteKotae = true,
+  filterTopKotae = true,
 }: {
   kotaeList: Kotae[]
   removeNoVoteKotae?: boolean
+  filterTopKotae?: boolean
 }): RankedKotae[] => {
   const filteredList = kotaeList.filter((kotae) => {
     if (!removeNoVoteKotae) return true
@@ -17,7 +19,7 @@ export const makePointRanking = ({
   let rank: RankedKotae['rank'] = 1
   let beforePoint = 0
   let stockRank = 1
-  return pointedList
+  const rankedList = pointedList
     .sort((a, b) => {
       return a.point > b.point ? -1 : 1
     })
@@ -37,5 +39,5 @@ export const makePointRanking = ({
       }
       return ranked
     })
-    .filter((kotae) => kotae.rank <= 3)
+  return filterTopKotae ? rankedList.filter((kotae) => kotae.rank <= 3) : rankedList
 }

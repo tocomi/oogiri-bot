@@ -209,6 +209,7 @@ export const checkResult = (app: App) => {
     const resultBlocks: KnownBlock[] = makePointRanking({
       kotaeList: result.kotaeList,
       removeNoVoteKotae: false,
+      filterTopKotae: false,
     })
       .map((kotae) => {
         return [
