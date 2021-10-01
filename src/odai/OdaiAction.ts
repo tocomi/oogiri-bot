@@ -1,7 +1,6 @@
 import { App } from '@slack/bolt'
 import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
-import { makeVoted1stCountRanking } from '../kotae/rank/makeVoted1stCountRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { VoteUseCase } from '../vote/VoteUseCase'
@@ -369,11 +368,12 @@ export const finish = (app: App) => {
       resultType: 'point',
     })
 
-    const voted1stCountRankedList = makeVoted1stCountRanking({ kotaeList: result.kotaeList })
-    const voted1stCountRankingBlocks = createVoteResultContentBlocks({
-      rankedList: voted1stCountRankedList,
-      resultType: 'voted1stCount',
-    })
+    // NOTE: 内容量が多すぎるので一旦除外する
+    // const voted1stCountRankedList = makeVoted1stCountRanking({ kotaeList: result.kotaeList })
+    // const voted1stCountRankingBlocks = createVoteResultContentBlocks({
+    //   rankedList: voted1stCountRankedList,
+    //   resultType: 'voted1stCount',
+    // })
 
     const votedCountRankedList = makeVotedCountRanking({ kotaeList: result.kotaeList })
     const votedCountRankingBlocks = createVoteResultContentBlocks({
@@ -384,7 +384,7 @@ export const finish = (app: App) => {
     const blocks = [
       ...headerBlocks,
       ...pointRankingBlocks,
-      ...voted1stCountRankingBlocks,
+      // ...voted1stCountRankingBlocks,
       ...votedCountRankingBlocks,
       ...footerBlocks,
     ]
