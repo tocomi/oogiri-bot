@@ -60,6 +60,13 @@ const create = async ({
               text: '答え',
             },
           },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '誰かを不快にさせうる回答は控えましょう:relieved:',
+            },
+          },
         ],
       },
     })
