@@ -131,7 +131,7 @@ export const createKotae = (app: App) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*回答が投稿されました* :tada:`,
+          text: `*回答を受け付けました！* :tada:`,
         },
       },
       {

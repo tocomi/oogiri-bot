@@ -44,7 +44,7 @@ export const countKotae = async ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: ':mega: *現在の回答状況* :mega:',
+        text: 'ただいまの回答状況をお伝えしまーす！',
       },
     },
     {

@@ -18,7 +18,7 @@ export const diffMessageFromCurrent = (milliSeconds: number) => {
 
   const dateDiff = dueDate.diff(dayjs(), 'day')
   if (dateDiff === 0) {
-    return '今日まで！'
+    return '今日までだよ！'
   }
-  return `あと${dateDiff}日`
+  return `あと${dateDiff}日！`
 }

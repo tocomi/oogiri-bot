@@ -19,7 +19,7 @@ export const createOdaiCreateBlocks = ({
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `:mega: :mega: :mega: 新しいお題が設定されました！ :mega: :mega: :mega:`,
+      text: '新しいお題が設定されたよ〜 みんなドシドシ回答してね！',
     },
   },
   {

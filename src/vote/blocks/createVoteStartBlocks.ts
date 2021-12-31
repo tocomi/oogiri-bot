@@ -12,21 +12,14 @@ export const createVoteStartBlocks = ({ title }: { title: string }): KnownBlock[
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: ':mega: :mega: :mega: *投票が開始されました！* :mega: :mega: :mega:',
+      text: 'みんな〜！ 投票が始まるよ〜！',
     },
   },
   {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: '面白いと思った回答に投票しましょう！',
-    },
-  },
-  {
-    type: 'section',
-    text: {
-      type: 'mrkdwn',
-      text: '回答の右のボタンを押すと投票できます:punch: (複数投票可)',
+      text: '回答の右のボタンを押して投票してね！ 複数の回答に投票できるよ！',
     },
   },
   {
