@@ -39,7 +39,8 @@ export const countKotae = async ({
   // NOTE: スケジューラー実行では回答受付中のみ実行
   if (isScheduler && result.odaiStatus !== 'posting') return
 
-  const blocks: KnownBlock[] = [
+  const blocks: KnownBlock[] = []
+  blocks.push(
     {
       type: 'section',
       text: {
@@ -60,7 +61,16 @@ export const countKotae = async ({
         type: 'mrkdwn',
         text: `:speech_balloon: お題: ${result.odaiTitle}`,
       },
-    },
+    }
+  )
+  if (result.odaiImageUrl) {
+    blocks.push({
+      type: 'image',
+      image_url: result.odaiImageUrl,
+      alt_text: 'odai image',
+    })
+  }
+  blocks.push(
     {
       type: 'section',
       text: {
@@ -83,7 +93,7 @@ export const countKotae = async ({
           action_id: 'oogiri-create-kotae',
         },
       ],
-    },
-  ]
+    }
+  )
   await postMessage({ client, blocks })
 }

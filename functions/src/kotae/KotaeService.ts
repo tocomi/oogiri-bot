@@ -47,6 +47,7 @@ export class KotaeServiceImpl implements KotaeService {
     const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
     return {
       odaiTitle: currentOdai.title,
+      odaiImageUrl: currentOdai.imageUrl,
       odaiDueDate: currentOdai.dueDate,
       odaiStatus: currentOdai.status,
       kotaeList,

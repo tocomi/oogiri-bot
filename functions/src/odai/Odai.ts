@@ -5,6 +5,7 @@ type OdaiBase = {
   title: string
   dueDate: number
   createdBy: string
+  imageUrl?: string
 }
 
 export type OdaiPostRequestParams = OdaiBase & SlackParams

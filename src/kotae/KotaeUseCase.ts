@@ -26,6 +26,7 @@ export class KotaeUseCase {
     const result = await this.getAllOfCurrentOdai(data)
     return {
       odaiTitle: result.odaiTitle,
+      odaiImageUrl: result.odaiImageUrl,
       odaiDueDate: result.odaiDueDate,
       odaiStatus: result.odaiStatus,
       uniqueUserCount: [...new Set(result.kotaeList.map((k) => k.createdBy))].length,

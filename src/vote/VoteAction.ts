@@ -64,6 +64,13 @@ export const countVote = (app: App) => {
         },
       },
     ]
+    if (result.odaiImageUrl) {
+      blocks.push({
+        type: 'image',
+        image_url: result.odaiImageUrl,
+        alt_text: 'odai image',
+      })
+    }
     await postMessage({ client, blocks })
   })
 }

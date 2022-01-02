@@ -18,12 +18,15 @@ import { createOdaiCreateBlocks } from './blocks/createOdaiCreateBlocks'
 import { createOdaiDuplicationBlocks } from './blocks/createOdaiDuplicationBlocks'
 import { createOdaiNothingBlocks } from './blocks/createOdaiNothingBlocks'
 
+const CALLBACK_ID = 'create-odai'
+const TITLE_ACTION_ID = 'title'
+const TITLE_BLOCK_ID = 'title-block'
+const DUE_DATE_ACTION_ID = 'due-date'
+const DUE_DATE_BLOCK_ID = 'due-date-block'
+const IMAGE_URL_ACTION_ID = 'image-url'
+const IMAGE_URL_BLOCK_ID = 'image-url-block'
+
 export const createOdai = (app: App) => {
-  const CALLBACK_ID = 'create-odai'
-  const TITLE_ACTION_ID = 'title'
-  const TITLE_BLOCK_ID = 'title-block'
-  const DUE_DATE_ACTION_ID = 'due-date'
-  const DUE_DATE_BLOCK_ID = 'due-date-block'
   app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
     const result = await client.views
       .open({
@@ -69,13 +72,28 @@ export const createOdai = (app: App) => {
                 placeholder: {
                   type: 'plain_text',
                   text: 'いつまで回答を受け付けますか？',
-                  emoji: true,
                 },
               },
               label: {
                 type: 'plain_text',
-                text: '回答期限(目安。自動的に回答が締め切られることはありません)',
-                emoji: true,
+                text: '回答期限 (目安。自動的に回答が締め切られることはありません)',
+              },
+            },
+            {
+              type: 'input',
+              block_id: IMAGE_URL_BLOCK_ID,
+              optional: true,
+              element: {
+                type: 'plain_text_input',
+                action_id: IMAGE_URL_ACTION_ID,
+                placeholder: {
+                  type: 'plain_text',
+                  text: 'https://img.yakkun.com/poke/icon960/n110.png',
+                },
+              },
+              label: {
+                type: 'plain_text',
+                text: '画像URL (画像系のお題のみ)',
               },
             },
           ],
@@ -94,6 +112,7 @@ export const createOdai = (app: App) => {
     await ack()
     const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
     const dueDate = view.state.values[DUE_DATE_BLOCK_ID][DUE_DATE_ACTION_ID].selected_date
+    const imageUrl = view.state.values[IMAGE_URL_BLOCK_ID][IMAGE_URL_ACTION_ID].value || ''
 
     if (!title || !dueDate) {
       logger.error(view.state.values)
@@ -106,6 +125,7 @@ export const createOdai = (app: App) => {
       .create({
         slackTeamId: view.team_id,
         title,
+        imageUrl,
         dueDate: new Date(dueDate).getTime(),
         createdBy: body.user.id,
       })
@@ -123,7 +143,7 @@ export const createOdai = (app: App) => {
       })
     if (!success) return
 
-    const blocks = createOdaiCreateBlocks({ title, dueDate })
+    const blocks = createOdaiCreateBlocks({ title, dueDate, imageUrl })
     await postMessage({ client, blocks })
   })
 }
@@ -201,7 +221,7 @@ export const startVoting = (app: App) => {
       })
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const blocks = createVoteStartBlocks({ title: result.odaiTitle })
+    const blocks = createVoteStartBlocks({ title: result.odaiTitle, imageUrl: result.odaiImageUrl })
     await postMessage({ client, blocks })
 
     // NOTE: 答えの一覧をチャンネルに投稿
@@ -357,6 +377,7 @@ export const finish = (app: App) => {
 
     const headerBlocks = createVoteResultHeaderBlocks({
       odaiTitle: result.odaiTitle,
+      imageUrl: result.odaiImageUrl,
       kotaeCount,
       voteCount,
     })
