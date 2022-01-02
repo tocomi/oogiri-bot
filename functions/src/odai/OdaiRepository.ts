@@ -26,12 +26,14 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     title,
     dueDate,
     createdBy,
+    imageUrl,
     slackTeamId,
   }: OdaiPostRequestParams): Promise<boolean> {
     const data: OdaiPostData = {
       title,
       dueDate: new Date(dueDate),
       createdBy,
+      imageUrl: imageUrl || '',
       status: 'posting',
       createdAt: new Date(),
     }

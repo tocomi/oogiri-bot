@@ -112,6 +112,7 @@ export const createOdai = (app: App) => {
     await ack()
     const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
     const dueDate = view.state.values[DUE_DATE_BLOCK_ID][DUE_DATE_ACTION_ID].selected_date
+    const imageUrl = view.state.values[IMAGE_URL_BLOCK_ID][IMAGE_URL_ACTION_ID].value
 
     if (!title || !dueDate) {
       logger.error(view.state.values)
@@ -124,6 +125,7 @@ export const createOdai = (app: App) => {
       .create({
         slackTeamId: view.team_id,
         title,
+        imageUrl: imageUrl || '',
         dueDate: new Date(dueDate).getTime(),
         createdBy: body.user.id,
       })
