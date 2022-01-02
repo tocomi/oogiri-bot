@@ -377,6 +377,7 @@ export const finish = (app: App) => {
 
     const headerBlocks = createVoteResultHeaderBlocks({
       odaiTitle: result.odaiTitle,
+      imageUrl: result.odaiImageUrl,
       kotaeCount,
       voteCount,
     })
