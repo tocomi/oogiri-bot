@@ -53,6 +53,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     return {
       docId: doc.id,
       title: data.title,
+      imageUrl: data.imageUrl,
       dueDate: convertTimestamp(data.dueDate),
       createdBy: data.createdBy,
       status: data.status,

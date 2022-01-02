@@ -63,6 +63,7 @@ export class VoteServiceImpl implements VoteService {
     const votes = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
     return {
       odaiTitle: currentOdai.title,
+      odaiImageUrl: currentOdai.imageUrl,
       uniqueUserCount: [...new Set(votes.map((v) => v.votedBy))].length,
       voteCount: votes.length,
     }
