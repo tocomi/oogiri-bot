@@ -30,6 +30,7 @@ export type KotaeListRequestParams = SlackParams
 
 export type KotaeListResponse = {
   odaiTitle: string
+  odaiImageUrl?: string
   odaiDueDate: number
   odaiStatus: OdaiStatus
   kotaeList: Kotae[]
@@ -37,6 +38,7 @@ export type KotaeListResponse = {
 
 export type KotaeCount = {
   odaiTitle: string
+  odaiImageUrl?: string
   odaiDueDate: number
   odaiStatus: OdaiStatus
   uniqueUserCount: number
