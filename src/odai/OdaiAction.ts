@@ -221,7 +221,7 @@ export const startVoting = (app: App) => {
       })
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const blocks = createVoteStartBlocks({ title: result.odaiTitle })
+    const blocks = createVoteStartBlocks({ title: result.odaiTitle, imageUrl: result.odaiImageUrl })
     await postMessage({ client, blocks })
 
     // NOTE: 答えの一覧をチャンネルに投稿
