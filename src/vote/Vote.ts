@@ -1,4 +1,5 @@
 import { PostResponse, SlackParams } from '../api/Api'
+import { OdaiStatus } from '../odai/Odai'
 
 export type VotePostRequestParams = {
   content: string
@@ -13,6 +14,7 @@ export type VoteCountRequestParams = SlackParams
 export type VoteCount = {
   odaiTitle: string
   odaiImageUrl?: string
+  odaiStatus: OdaiStatus
   uniqueUserCount: number
   voteCount: number
 }

@@ -64,6 +64,7 @@ export class VoteServiceImpl implements VoteService {
     return {
       odaiTitle: currentOdai.title,
       odaiImageUrl: currentOdai.imageUrl,
+      odaiStatus: currentOdai.status,
       uniqueUserCount: [...new Set(votes.map((v) => v.votedBy))].length,
       voteCount: votes.length,
     }
