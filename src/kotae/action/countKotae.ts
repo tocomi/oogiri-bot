@@ -45,7 +45,7 @@ export const countKotae = async ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: 'ただいまの回答状況をお伝えしまーす！',
+        text: 'お疲れさまです！ ただいまの回答状況をお伝えしますね！',
       },
     },
     {
@@ -87,7 +87,7 @@ export const countKotae = async ({
           type: 'button',
           text: {
             type: 'plain_text',
-            text: 'お題に回答する (複数回答可)',
+            text: 'お題に回答する！ (複数回答可)',
           },
           style: 'primary',
           action_id: 'oogiri-create-kotae',

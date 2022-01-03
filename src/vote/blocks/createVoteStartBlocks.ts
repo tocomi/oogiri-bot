@@ -20,14 +20,14 @@ export const createVoteStartBlocks = ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: 'みんな〜！ 投票が始まるよ〜！',
+        text: 'みなさーん！ 投票が始まりますよー！',
       },
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: '回答の右のボタンを押して投票してね！ 複数の回答に投票できるよ！',
+        text: '回答の右のボタンを押すと投票できます！ 投票は複数回できますよ！',
       },
     },
     {
