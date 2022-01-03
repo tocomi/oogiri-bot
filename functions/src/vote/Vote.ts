@@ -1,5 +1,6 @@
 import { SlackParams } from '../api/Api'
 import { ApiError } from '../api/Error'
+import { OdaiStatus } from '../odai/Odai'
 
 type VoteBase = {
   votedBy: string
@@ -22,6 +23,7 @@ export type VoteOfCurrentOdaiParams = SlackParams
 export type VoteCount = {
   odaiTitle: string
   odaiImageUrl?: string
+  odaiStatus: OdaiStatus
   uniqueUserCount: number
   voteCount: number
 }
