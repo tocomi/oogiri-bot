@@ -14,11 +14,11 @@ export const diffMessageFromCurrent = (milliSeconds: number) => {
   const dueDate = dayjs(milliSeconds).endOf('day')
   const now = dayjs()
 
-  if (now.isAfter(dueDate)) return '過ぎてる！'
+  if (now.isAfter(dueDate)) return '過ぎてます！'
 
   const dateDiff = dueDate.diff(dayjs(), 'day')
   if (dateDiff === 0) {
-    return '今日まで！'
+    return '今日までですよー！'
   }
-  return `あと${dateDiff}日`
+  return `あと${dateDiff}日！`
 }
