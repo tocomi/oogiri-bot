@@ -7,10 +7,12 @@ export const countVote = async ({
   slackTeamId,
   client,
   userId,
+  isScheduler,
 }: {
   slackTeamId: string
   client: WebClient
   userId?: string
+  isScheduler?: boolean
 }) => {
   const voteUseCase = new VoteUseCase()
   const result = await voteUseCase.getVoteCount({ slackTeamId }).catch((error) => {
@@ -48,6 +50,8 @@ export const countVote = async ({
     return undefined
   })
   if (!result) return
+  // NOTE: スケジューラー実行では投票受付中のみ実行
+  if (isScheduler && result.odaiStatus !== 'voting') return
 
   const blocks: KnownBlock[] = [
     {
