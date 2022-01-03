@@ -79,14 +79,20 @@ app.post('/odai/start-voting', async (req: express.Request, res) => {
   }
 
   const result = await kotaeService.getAllOfCurrentOdai(params)
-  if (hasError(result)) return result
+  if (hasError(result)) {
+    return errorResponse(res, result)
+  }
 
   const putResult = await odaiService.startVoting(params)
   if (hasError(putResult)) {
     return errorResponse(res, putResult)
   }
 
-  return sendResponse(res, { odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+  return sendResponse(res, {
+    odaiTitle: result.odaiTitle,
+    odaiImageUrl: result.odaiImageUrl,
+    kotaeList: result.kotaeList,
+  })
 })
 
 app.post('/odai/finish', async (req: express.Request, res) => {
@@ -105,7 +111,11 @@ app.post('/odai/finish', async (req: express.Request, res) => {
     return errorResponse(res, putResult)
   }
 
-  return sendResponse(res, { odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+  return sendResponse(res, {
+    odaiTitle: result.odaiTitle,
+    odaiImageUrl: result.odaiImageUrl,
+    kotaeList: result.kotaeList,
+  })
 })
 
 app.post('/kotae', async (req: express.Request, res) => {
@@ -133,12 +143,7 @@ app.get('/kotae/current', async (req: express.Request, res) => {
     return errorResponse(res, result)
   }
 
-  return sendResponse(res, {
-    odaiTitle: result.odaiTitle,
-    odaiDueDate: result.odaiDueDate,
-    odaiStatus: result.odaiStatus,
-    kotaeList: result.kotaeList,
-  })
+  return sendResponse(res, { ...result })
 })
 
 app.get('/kotae/personal-result', async (req: express.Request, res) => {

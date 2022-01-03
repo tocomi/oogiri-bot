@@ -5,6 +5,7 @@ export type OdaiPostRequestParams = {
   title: string
   dueDate: number
   createdBy: string
+  imageUrl?: string
 } & SlackParams
 
 export type OdaiStatus = 'posting' | 'voting' | 'finished'

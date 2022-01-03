@@ -29,6 +29,7 @@ export type KotaeResponse = KotaeApiBase & {
 export type KotaeGetAllResponse =
   | {
       odaiTitle: string
+      odaiImageUrl?: string
       odaiDueDate: number
       odaiStatus: OdaiStatus
       kotaeList: KotaeResponse[]
