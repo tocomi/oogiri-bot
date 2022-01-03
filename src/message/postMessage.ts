@@ -33,7 +33,7 @@ export const postEphemeral = async ({
   })
 }
 
-const errorMessageBlocks: KnownBlock[] = [
+const createErrorMessageBlocks = (overrideMessage?: string): KnownBlock[] => [
   {
     type: 'section',
     text: {
@@ -45,7 +45,7 @@ const errorMessageBlocks: KnownBlock[] = [
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: '時間をおいて再度お試しください:pray:',
+      text: overrideMessage ? overrideMessage : '時間をおいて再度お試しください:pray:',
     },
   },
 ]
@@ -53,13 +53,15 @@ const errorMessageBlocks: KnownBlock[] = [
 export const postInternalErrorMessage = async ({
   client,
   user,
+  overrideMessage,
 }: {
   client: WebClient
   user: string
+  overrideMessage?: string
 }) => {
   await postEphemeral({
     client,
     user,
-    blocks: errorMessageBlocks,
+    blocks: createErrorMessageBlocks(overrideMessage),
   })
 }
