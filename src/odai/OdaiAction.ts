@@ -3,6 +3,7 @@ import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { isImageUrl } from '../util/isImageUrl'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { createVoteAlreadyBlocks } from '../vote/blocks/createVoteAlreadyBlocks'
 import { createVoteAlreadySameRankBlocks } from '../vote/blocks/createVoteAlreadySameRankBlocks'
@@ -117,6 +118,16 @@ export const createOdai = (app: App) => {
     if (!title || !dueDate) {
       logger.error(view.state.values)
       postInternalErrorMessage({ client, user: body.user.id })
+      return
+    }
+
+    if (imageUrl && !isImageUrl(imageUrl)) {
+      logger.error(view.state.values)
+      postInternalErrorMessage({
+        client,
+        user: body.user.id,
+        overrideMessage: ':warning: URLは画像の拡張子(.jpg等)で終わるもののみが有効です :warning:',
+      })
       return
     }
 
