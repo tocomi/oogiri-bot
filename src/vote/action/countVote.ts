@@ -58,7 +58,7 @@ export const countVote = async ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: ':mega: *現在の投票状況* :mega:',
+        text: 'お疲れさまです！ ただいまの投票状況をお伝えしますね！',
       },
     },
     {
