@@ -1,6 +1,12 @@
 import { PostResponse, SlackParams } from '../api/Api'
 import { KotaeListResponse } from '../kotae/Kotae'
 
+export type OdaiGetCurrentRequestParams = SlackParams
+
+export type OdaiGetCurrentResponse = {
+  status: OdaiStatus
+}
+
 export type OdaiPostRequestParams = {
   title: string
   dueDate: number

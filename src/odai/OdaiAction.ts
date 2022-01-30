@@ -1,4 +1,5 @@
-import { App } from '@slack/bolt'
+import { App, BlockAction, InteractiveMessage, SlackShortcut, WorkflowStepEdit } from '@slack/bolt'
+import { Logger, WebClient } from '@slack/web-api'
 import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
@@ -6,19 +7,23 @@ import { postMessage, postEphemeral, postInternalErrorMessage } from '../message
 import { getSlackUserList } from '../util/getSlackUserList'
 import { isImageUrl } from '../util/isImageUrl'
 import { VoteUseCase } from '../vote/VoteUseCase'
-import { createVoteAlreadyBlocks } from '../vote/blocks/createVoteAlreadyBlocks'
-import { createVoteAlreadySameRankBlocks } from '../vote/blocks/createVoteAlreadySameRankBlocks'
-import { createVoteCompleteBlocks } from '../vote/blocks/createVoteCompleteBlocks'
-import { createVoteResultContentBlocks } from '../vote/blocks/createVoteResultContentBlocks'
-import { createVoteResultFooterBlocks } from '../vote/blocks/createVoteResultFooterBlocks'
-import { createVoteResultHeaderBlocks } from '../vote/blocks/createVoteResultHeaderBlocks'
-import { createVoteSectionBlocks } from '../vote/blocks/createVoteSectionBlocks'
-import { createVoteStartBlocks } from '../vote/blocks/createVoteStartBlocks'
+import {
+  createVoteAlreadyBlocks,
+  createVoteAlreadySameRankBlocks,
+  createVoteCompleteBlocks,
+  createVoteResultContentBlocks,
+  createVoteResultFooterBlocks,
+  createVoteResultHeaderBlocks,
+  createVoteSectionBlocks,
+  createVoteStartBlocks,
+} from '../vote/blocks'
 import { convertVoteRank } from '../vote/convertVoteValue'
 import { OdaiUseCase } from './OdaiUseCase'
-import { createOdaiCreateBlocks } from './blocks/createOdaiCreateBlocks'
-import { createOdaiDuplicationBlocks } from './blocks/createOdaiDuplicationBlocks'
-import { createOdaiNothingBlocks } from './blocks/createOdaiNothingBlocks'
+import {
+  createOdaiCreateBlocks,
+  createOdaiDuplicationBlocks,
+  createOdaiNothingBlocks,
+} from './blocks'
 
 const CALLBACK_ID = 'create-odai'
 const TITLE_ACTION_ID = 'title'
@@ -28,86 +33,106 @@ const DUE_DATE_BLOCK_ID = 'due-date-block'
 const IMAGE_URL_ACTION_ID = 'image-url'
 const IMAGE_URL_BLOCK_ID = 'image-url-block'
 
-export const createOdai = (app: App) => {
-  app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
-    const result = await client.views
-      .open({
-        trigger_id: body.trigger_id,
-        view: {
-          type: 'modal',
-          callback_id: CALLBACK_ID,
-          title: {
-            type: 'plain_text',
-            text: 'お題の設定',
-          },
-          submit: {
-            type: 'plain_text',
-            text: '送信',
-          },
-          close: {
-            type: 'plain_text',
-            text: 'キャンセル',
-          },
-          blocks: [
-            {
-              type: 'input',
-              block_id: TITLE_BLOCK_ID,
-              element: {
-                type: 'plain_text_input',
-                action_id: TITLE_ACTION_ID,
-                placeholder: {
-                  type: 'plain_text',
-                  text: '例: こんな結婚式は嫌だ',
-                },
-              },
-              label: {
-                type: 'plain_text',
-                text: 'お題',
-              },
-            },
-            {
-              type: 'input',
-              block_id: DUE_DATE_BLOCK_ID,
-              element: {
-                type: 'datepicker',
-                action_id: DUE_DATE_ACTION_ID,
-                placeholder: {
-                  type: 'plain_text',
-                  text: 'いつまで回答を受け付けますか？',
-                },
-              },
-              label: {
-                type: 'plain_text',
-                text: '回答期限 (目安。自動的に回答が締め切られることはありません)',
-              },
-            },
-            {
-              type: 'input',
-              block_id: IMAGE_URL_BLOCK_ID,
-              optional: true,
-              element: {
-                type: 'plain_text_input',
-                action_id: IMAGE_URL_ACTION_ID,
-                placeholder: {
-                  type: 'plain_text',
-                  text: 'https://img.yakkun.com/poke/icon960/n110.png',
-                },
-              },
-              label: {
-                type: 'plain_text',
-                text: '画像URL (画像系のお題のみ)',
-              },
-            },
-          ],
+const create = async ({
+  body,
+  client,
+  logger,
+}: {
+  body: SlackShortcut | BlockAction | InteractiveMessage | WorkflowStepEdit
+  client: WebClient
+  logger: Logger
+}) => {
+  const result = await client.views
+    .open({
+      trigger_id: body.trigger_id,
+      view: {
+        type: 'modal',
+        callback_id: CALLBACK_ID,
+        title: {
+          type: 'plain_text',
+          text: 'お題の設定',
         },
-      })
-      .catch(async (e) => {
-        logger.error(e)
-      })
-    if (result && result.error) {
-      logger.error(result.error)
-    }
+        submit: {
+          type: 'plain_text',
+          text: '送信',
+        },
+        close: {
+          type: 'plain_text',
+          text: 'キャンセル',
+        },
+        blocks: [
+          {
+            type: 'input',
+            block_id: TITLE_BLOCK_ID,
+            element: {
+              type: 'plain_text_input',
+              action_id: TITLE_ACTION_ID,
+              placeholder: {
+                type: 'plain_text',
+                text: '例: こんな結婚式は嫌だ',
+              },
+            },
+            label: {
+              type: 'plain_text',
+              text: 'お題',
+            },
+          },
+          {
+            type: 'input',
+            block_id: DUE_DATE_BLOCK_ID,
+            element: {
+              type: 'datepicker',
+              action_id: DUE_DATE_ACTION_ID,
+              placeholder: {
+                type: 'plain_text',
+                text: 'いつまで回答を受け付けますか？',
+              },
+            },
+            label: {
+              type: 'plain_text',
+              text: '回答期限 (目安。自動的に回答が締め切られることはありません)',
+            },
+          },
+          {
+            type: 'input',
+            block_id: IMAGE_URL_BLOCK_ID,
+            optional: true,
+            element: {
+              type: 'plain_text_input',
+              action_id: IMAGE_URL_ACTION_ID,
+              placeholder: {
+                type: 'plain_text',
+                text: 'https://img.yakkun.com/poke/icon960/n110.png',
+              },
+            },
+            label: {
+              type: 'plain_text',
+              text: '画像URL (画像系のお題のみ)',
+            },
+          },
+        ],
+      },
+    })
+    .catch(async (e) => {
+      logger.error(e)
+    })
+  if (result && result.error) {
+    logger.error(result.error)
+  }
+}
+
+export const createOdai = (app: App) => {
+  // NOTE: ショートカットからの作成
+  app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
     await ack()
+    await create({ body, client, logger })
+  })
+  // NOTE: ボタンからの作成
+  app.action('oogiri-create-odai', async ({ ack, body, client, logger }) => {
+    await ack()
+    if ('trigger_id' in body) {
+      await create({ body, client, logger })
+    }
   })
 
   app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {

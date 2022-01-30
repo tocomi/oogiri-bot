@@ -59,7 +59,7 @@ app.post('/odai', async (req: express.Request, res) => {
 })
 
 app.get('/odai/current', async (req: express.Request, res) => {
-  const params = req.body as OdaiCurrentParams
+  const params = req.query as OdaiCurrentParams
   if (!params.slackTeamId) {
     return errorResponse(res, IllegalArgumentError)
   }

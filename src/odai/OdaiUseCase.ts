@@ -2,6 +2,7 @@ import { api } from '../api/axios'
 import {
   OdaiFinishRequestParams,
   OdaiFinishResponse,
+  OdaiGetCurrentRequestParams,
   OdaiPostRequestParams,
   OdaiPostResponse,
   OdaiStartVotingRequestParams,
@@ -9,6 +10,10 @@ import {
 } from './Odai'
 
 export class OdaiUseCase {
+  async getCurrent(data: OdaiGetCurrentRequestParams) {
+    const result = await api.get<OdaiPostResponse>('/odai/current', { params: data })
+    return result.data
+  }
   async create(data: OdaiPostRequestParams) {
     const result = await api.post<OdaiPostResponse>('/odai', data)
     return result.data
