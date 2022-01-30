@@ -3,6 +3,7 @@ import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { getSlackUserList } from '../util/getSlackUserList'
 import { isImageUrl } from '../util/isImageUrl'
 import { VoteUseCase } from '../vote/VoteUseCase'
 import { createVoteAlreadyBlocks } from '../vote/blocks/createVoteAlreadyBlocks'
@@ -395,9 +396,11 @@ export const finish = (app: App) => {
     const footerBlocks = createVoteResultFooterBlocks()
 
     const pointRankedList = makePointRanking({ kotaeList: result.kotaeList })
+    const userInfoMap = await getSlackUserList({ client, rankedList: pointRankedList })
     const pointRankingBlocks = createVoteResultContentBlocks({
       rankedList: pointRankedList,
       resultType: 'point',
+      userInfoMap,
     })
 
     // NOTE: 内容量が多すぎるので一旦除外する
@@ -411,6 +414,7 @@ export const finish = (app: App) => {
     const votedCountRankingBlocks = createVoteResultContentBlocks({
       rankedList: votedCountRankedList,
       resultType: 'votedCount',
+      userInfoMap,
     })
 
     const blocks = [

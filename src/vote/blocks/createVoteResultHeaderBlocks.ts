@@ -52,11 +52,7 @@ export const createVoteResultHeaderBlocks = ({
       },
     },
     {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '-'.repeat(50),
-      },
+      type: 'divider',
     }
   )
   return blocks
