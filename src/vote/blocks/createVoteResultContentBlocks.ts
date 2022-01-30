@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+import { UsersInfoResponse } from '@slack/web-api'
 import { RankedKotae } from '../../kotae/Kotae'
 
 type ResultType = 'point' | 'voted1stCount' | 'votedCount'
@@ -17,11 +18,11 @@ const medalEmoji = (rank: RankedKotae['rank']) => {
 const createResultText = (ranked: RankedKotae, resultType: ResultType) => {
   switch (resultType) {
     case 'point':
-      return `:dart: *${ranked.point}P* - :speaking_head_in_silhouette: *${ranked.content}*`
+      return `*${ranked.point}P* - :speaking_head_in_silhouette: *${ranked.content}*`
     case 'voted1stCount':
       return `:rocket: *${ranked.votedFirstCount}票* - :speaking_head_in_silhouette: *${ranked.content}*`
     case 'votedCount':
-      return `:point_up: *${ranked.votedCount}票* - :speaking_head_in_silhouette: *${ranked.content}*`
+      return `*${ranked.votedCount}票* - :speaking_head_in_silhouette: *${ranked.content}*`
   }
 }
 
@@ -39,41 +40,42 @@ const createHeaderText = (resultType: ResultType) => {
 export const createVoteResultContentBlocks = ({
   rankedList,
   resultType,
+  userInfoMap,
 }: {
   rankedList: RankedKotae[]
   resultType: ResultType
+  userInfoMap: { [userId: string]: UsersInfoResponse['user'] }
 }): KnownBlock[] => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const rankedListBlocks: KnownBlock[] = rankedList
     .map((ranked) => {
+      const userInfo = userInfoMap[ranked.createdBy]
       return [
         {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `${medalEmoji(ranked.rank)} *第${ranked.rank}位* <@${ranked.createdBy}>`,
+            text: `${medalEmoji(ranked.rank)} ${createResultText(ranked, resultType)}`,
           },
         },
         {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: createResultText(ranked, resultType),
-          },
-        },
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: `-`,
-          },
+          type: 'context',
+          elements: [
+            {
+              type: 'image',
+              image_url: userInfo?.profile?.image_32,
+              alt_text: 'user_image',
+            },
+            {
+              type: 'mrkdwn',
+              text: userInfo?.real_name,
+            },
+          ],
         },
       ]
     })
     .flat()
-  // NOTE: 最後のハイフンのブロックは不要
-  rankedListBlocks.pop()
   rankedListBlocks.unshift({
     type: 'section',
     text: {
@@ -82,11 +84,7 @@ export const createVoteResultContentBlocks = ({
     },
   })
   rankedListBlocks.push({
-    type: 'section',
-    text: {
-      type: 'mrkdwn',
-      text: '-'.repeat(50),
-    },
+    type: 'divider',
   })
   return rankedListBlocks
 }
