@@ -1,12 +1,12 @@
-import { App } from '@slack/bolt'
-import { config } from '../config'
+import { WebClient } from '@slack/web-api'
 import { countVote } from '../vote/action/countVote'
 
-const app = new App({
-  // NOTE: ソケットモードである必要はないが、そうしないとエラーが出てしまう
-  socketMode: true,
-  token: config.slack.botToken,
-  appToken: config.slack.appToken,
-})
-
-countVote({ slackTeamId: config.slack.teamId, client: app.client, isScheduler: true })
+export const notifyVoteCount = async ({
+  slackTeamId,
+  client,
+}: {
+  slackTeamId: string
+  client: WebClient
+}) => {
+  await countVote({ slackTeamId, client, isScheduler: true })
+}
