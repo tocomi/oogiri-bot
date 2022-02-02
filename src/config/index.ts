@@ -12,4 +12,9 @@ export const config = {
     teamId: process.env.SLACK_TEAM_ID || '',
     channelId: process.env.SLACK_CHANNEL_ID || '',
   },
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
+  },
 }
