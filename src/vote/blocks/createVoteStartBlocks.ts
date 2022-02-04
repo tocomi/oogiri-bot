@@ -34,7 +34,7 @@ export const createVoteStartBlocks = ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: ':point_right: :first_place_medal:*5ポイント* (1票のみ) :second_place_medal:*3ポイント* (1票のみ) :third_place_medal:*1ポイント* (無制限)',
+        text: ':point_right: :first_place_medal:*5P* (1票のみ) :second_place_medal:*3P* (1票のみ) :third_place_medal:*1P* (無制限)',
       },
     },
     {
