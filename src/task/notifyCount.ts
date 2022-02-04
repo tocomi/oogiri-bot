@@ -1,7 +1,7 @@
 import { App } from '@slack/bolt'
 import { config } from '../config'
-import { countKotae } from '../kotae/action/countKotae'
-import { countVote } from '../vote/action/countVote'
+import { notifyKotaeCount } from './notifyKotaeCount'
+import { notifyVoteCount } from './notifyVoteCount'
 
 const app = new App({
   // NOTE: ソケットモードである必要はないが、そうしないとエラーが出てしまう
@@ -14,8 +14,8 @@ const run = async () => {
   const slackTeamId = config.slack.teamId
   const client = app.client
 
-  await countKotae({ slackTeamId, client })
-  await countVote({ slackTeamId, client })
+  await notifyKotaeCount({ slackTeamId, client })
+  await notifyVoteCount({ slackTeamId, client })
 }
 
 run()
