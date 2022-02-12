@@ -69,7 +69,7 @@ export const createVoteResultContentBlocks = ({
             },
             {
               type: 'mrkdwn',
-              text: userInfo?.real_name,
+              text: userInfo?.profile?.display_name,
             },
           ],
         },
