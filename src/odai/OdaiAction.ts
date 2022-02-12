@@ -421,7 +421,12 @@ export const finish = (app: App) => {
     const footerBlocks = createVoteResultFooterBlocks()
 
     const pointRankedList = makePointRanking({ kotaeList: result.kotaeList })
-    const userInfoMap = await getSlackUserList({ client, rankedList: pointRankedList })
+    const votedCountRankedList = makeVotedCountRanking({ kotaeList: result.kotaeList })
+    const userInfoMap = await getSlackUserList({
+      client,
+      rankedList: [...pointRankedList, ...votedCountRankedList],
+    })
+
     const pointRankingBlocks = createVoteResultContentBlocks({
       rankedList: pointRankedList,
       resultType: 'point',
@@ -435,7 +440,6 @@ export const finish = (app: App) => {
     //   resultType: 'voted1stCount',
     // })
 
-    const votedCountRankedList = makeVotedCountRanking({ kotaeList: result.kotaeList })
     const votedCountRankingBlocks = createVoteResultContentBlocks({
       rankedList: votedCountRankedList,
       resultType: 'votedCount',
