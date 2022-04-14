@@ -15,7 +15,8 @@ import {
   createVoteResultFooterBlocks,
   createVoteResultHeaderBlocks,
   createVoteSectionBlocks,
-  createVoteStartBlocks,
+  createVoteStartFooterBlocks,
+  createVoteStartHeaderBlocks,
 } from '../vote/blocks'
 import { convertVoteRank } from '../vote/convertVoteValue'
 import { OdaiUseCase } from './OdaiUseCase'
@@ -258,8 +259,11 @@ export const startVoting = (app: App) => {
       })
     if (!result || !result.odaiTitle || !result.kotaeList.length) return
 
-    const blocks = createVoteStartBlocks({ title: result.odaiTitle, imageUrl: result.odaiImageUrl })
-    await postMessage({ client, blocks })
+    const headerBlocks = createVoteStartHeaderBlocks({
+      title: result.odaiTitle,
+      imageUrl: result.odaiImageUrl,
+    })
+    await postMessage({ client, blocks: headerBlocks })
 
     // NOTE: 答えの一覧をチャンネルに投稿
     await Promise.all(
@@ -268,6 +272,9 @@ export const startVoting = (app: App) => {
         await postMessage({ client, blocks })
       })
     )
+
+    const footerBlocks = createVoteStartFooterBlocks()
+    await postMessage({ client, blocks: footerBlocks })
   })
 
   app.action(ACTION_ID, async ({ ack, action, body, client, logger }) => {
