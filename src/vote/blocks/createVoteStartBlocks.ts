@@ -60,11 +60,7 @@ export const createVoteStartBlocks = ({
     })
   }
   blocks.push({
-    type: 'section',
-    text: {
-      type: 'mrkdwn',
-      text: '---',
-    },
+    type: 'divider',
   })
   return blocks
 }
