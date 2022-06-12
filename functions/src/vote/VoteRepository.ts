@@ -7,6 +7,7 @@ export interface VoteRepository {
     params: VoteRequestParams & {
       odaiDocId: string
       kotaeDocId: string
+      kotaeCreatedBy: string
     }
   ): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'>
   getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiDocId: string): Promise<Vote[]>
@@ -54,9 +55,11 @@ export class VoteRepositoryImpl implements VoteRepository {
     rank,
     odaiDocId,
     kotaeDocId,
+    kotaeCreatedBy,
   }: VoteRequestParams & {
     odaiDocId: string
     kotaeDocId: string
+    kotaeCreatedBy: string
   }): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'> {
     const collection = voteKotaeCollection({
       slackTeamId,
@@ -90,6 +93,7 @@ export class VoteRepositoryImpl implements VoteRepository {
       createdAt: new Date(),
       kotaeId: kotaeDocId,
       kotaeContent: content,
+      kotaeCreatedBy,
     }
 
     // NOTE: odaiのサブコレクションvoteにドキュメント追加(投票参加者のカウント用)
@@ -121,6 +125,7 @@ export class VoteRepositoryImpl implements VoteRepository {
         createdAt: convertTimestamp(data.createdAt),
         kotaeId: data.kotaeId,
         kotaeContent: data.kotaeContent,
+        kotaeCreatedBy: data.kotaeCreatedBy,
       }
     })
   }

@@ -16,6 +16,7 @@ export type Vote = VoteBase & {
   createdAt: Date | number
   kotaeId: string
   kotaeContent: string
+  kotaeCreatedBy: string
 }
 
 export type VoteOfCurrentOdaiParams = SlackParams

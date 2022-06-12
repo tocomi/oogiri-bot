@@ -42,6 +42,7 @@ export class VoteServiceImpl implements VoteService {
       rank,
       odaiDocId: currentOdai.docId,
       kotaeDocId: kotae.docId,
+      kotaeCreatedBy: kotae.createdBy,
     })
     if (!voteResult) return InternalServerError
     if (voteResult === 'alreadyVoted') return AlreadyVotedError
