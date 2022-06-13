@@ -8,12 +8,20 @@ import {
 } from '../api/Error'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
-import { VoteRequestParams, VoteCountResponse, VoteCountParams } from './Vote'
+import {
+  VoteRequestParams,
+  VoteCountResponse,
+  VoteCountParams,
+  VoteByUserParams,
+  VoteByUserResponse,
+  Vote,
+} from './Vote'
 import { VoteRepository } from './VoteRepository'
 
 export interface VoteService {
   create(params: VoteRequestParams): Promise<ApiPostStatus>
   getVoteCount(params: VoteCountParams): Promise<VoteCountResponse>
+  getTotalVoteCountByUser(params: VoteByUserParams): Promise<VoteByUserResponse>
 }
 
 export class VoteServiceImpl implements VoteService {
@@ -69,5 +77,42 @@ export class VoteServiceImpl implements VoteService {
       uniqueUserCount: [...new Set(votes.map((v) => v.votedBy))].length,
       voteCount: votes.length,
     }
+  }
+
+  async getTotalVoteCountByUser(params: VoteByUserParams): Promise<VoteByUserResponse> {
+    const votes = await this.repository.getAllByUser(params)
+    const uniqueVotes = this.removeDuplication(votes)
+    let result: VoteByUserResponse = []
+    uniqueVotes.forEach((vote) => {
+      const target = result.find((v) => v.votedBy === vote.votedBy)
+      if (!target) {
+        result.push({
+          votedBy: vote.votedBy,
+          voteCount: 1,
+        })
+        return
+      }
+      result = result.filter((v) => v.votedBy !== vote.votedBy)
+      result.push({
+        votedBy: target.votedBy,
+        voteCount: target.voteCount + 1,
+      })
+    })
+    return result
+  }
+
+  /**
+   * 2 つの vote コレクションからドキュメントを取得することによって発生する重複を取り除く。
+   * @param {Vote[]} votes
+   * @return {Vote[]} unique votes
+   */
+  private removeDuplication(votes: Vote[]): Vote[] {
+    const newVotes: Vote[] = []
+    votes.forEach((vote) => {
+      if (newVotes.every((newVote) => newVote.createdAt !== vote.createdAt)) {
+        newVotes.push(vote)
+      }
+    })
+    return newVotes
   }
 }

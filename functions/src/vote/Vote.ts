@@ -32,3 +32,12 @@ export type VoteCount = {
 export type VoteCountParams = SlackParams
 
 export type VoteCountResponse = VoteCount | ApiError
+
+export type VoteByUserParams = SlackParams & {
+  userId: string
+}
+
+export type VoteByUserResponse = {
+  votedBy: string
+  voteCount: number
+}[]

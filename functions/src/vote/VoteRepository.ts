@@ -1,6 +1,6 @@
 import { COLLECTION_NAME } from '../const'
 import { convertTimestamp, createDoc, db } from '../firebase/firestore'
-import { Vote, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
+import { Vote, VoteByUserParams, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
 
 export interface VoteRepository {
   create(
@@ -11,6 +11,7 @@ export interface VoteRepository {
     }
   ): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'>
   getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiDocId: string): Promise<Vote[]>
+  getAllByUser(params: VoteByUserParams): Promise<Vote[]>
 }
 
 const voteKotaeCollection = ({
@@ -117,6 +118,24 @@ export class VoteRepositoryImpl implements VoteRepository {
       slackTeamId,
       odaiDocId,
     }).get()
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        votedBy: data.votedBy,
+        rank: data.rank,
+        createdAt: convertTimestamp(data.createdAt),
+        kotaeId: data.kotaeId,
+        kotaeContent: data.kotaeContent,
+        kotaeCreatedBy: data.kotaeCreatedBy,
+      }
+    })
+  }
+
+  async getAllByUser({ userId }: VoteByUserParams): Promise<Vote[]> {
+    const snapshot = await db
+      .collectionGroup(COLLECTION_NAME.VOTE)
+      .where('kotaeCreatedBy', '==', userId)
+      .get()
     return snapshot.docs.map((doc) => {
       const data = doc.data()
       return {
