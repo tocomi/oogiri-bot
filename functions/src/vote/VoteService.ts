@@ -98,7 +98,7 @@ export class VoteServiceImpl implements VoteService {
         voteCount: target.voteCount + 1,
       })
     })
-    return result
+    return result.sort((a, b) => b.voteCount - a.voteCount)
   }
 
   /**
