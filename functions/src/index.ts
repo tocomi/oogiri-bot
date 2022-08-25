@@ -195,7 +195,7 @@ app.get('/vote/my-fans', async (req: express.Request, res) => {
 
   const result = await voteService.getTotalVoteCountByUser(params)
 
-  return sendResponse(res, { allResult: result })
+  return sendResponse(res, { ...result })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)
