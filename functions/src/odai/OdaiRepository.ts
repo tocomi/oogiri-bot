@@ -1,11 +1,13 @@
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
+  OdaiFinishedListParams,
   OdaiPostData,
   OdaiPostRequestParams,
   OdaiPutStatusData,
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
+  OdaiResponseBase,
 } from './Odai'
 import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 import { COLLECTION_NAME } from '../const'
@@ -14,6 +16,7 @@ export interface OdaiRepository {
   create(params: OdaiPostRequestParams): Promise<boolean>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
+  getAllFinished(params: OdaiFinishedListParams): Promise<OdaiResponseBase[]>
   updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<boolean>
 }
 
@@ -82,6 +85,28 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       status: data.status,
       createdAt: convertTimestamp(data.createdAt),
     }
+  }
+
+  async getAllFinished({ slackTeamId }: OdaiFinishedListParams): Promise<OdaiResponseBase[]> {
+    const snapshot = await odaiCollection(slackTeamId)
+      .where('status', '==', 'finished')
+      .orderBy('createdAt', 'desc')
+      .get()
+    if (snapshot.empty) {
+      console.log('No finished odai.')
+      return []
+    }
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        docId: doc.id,
+        title: data.title,
+        dueDate: convertTimestamp(data.dueDate),
+        createdBy: data.createdBy,
+        status: data.status,
+        createdAt: convertTimestamp(data.createdAt),
+      }
+    })
   }
 
   async updateStatus(
