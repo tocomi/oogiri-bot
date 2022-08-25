@@ -108,15 +108,12 @@ export class VoteServiceImpl implements VoteService {
     })
     if (hasError(recent5timesOdai)) return recent5timesOdai
 
-    console.log(recent5timesOdai)
     const borderCreatedAt = recent5timesOdai.slice(-1)[0].createdAt
-    console.log('borderCreatedAt: ', borderCreatedAt)
 
     let recent5timesVotes: VoteCountByUser[] = []
     uniqueVotes
       .filter((vote) => vote.createdAt > borderCreatedAt)
       .forEach((vote) => {
-        console.log('voteCreatedAt: ', vote.createdAt)
         const target = recent5timesVotes.find((v) => v.votedBy === vote.votedBy)
         if (!target) {
           recent5timesVotes.push({
