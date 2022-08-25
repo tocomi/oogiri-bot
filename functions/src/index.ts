@@ -13,7 +13,7 @@ import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
-import { VoteByUserParams, VoteCountParams, VoteRequestParams } from './vote/Vote'
+import { VoteCountByUserParams, VoteCountParams, VoteRequestParams } from './vote/Vote'
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
 
 const REGION = 'asia-northeast1'
@@ -188,14 +188,14 @@ app.get('/vote/count', async (req: express.Request, res) => {
 })
 
 app.get('/vote/my-fans', async (req: express.Request, res) => {
-  const params = req.query as VoteByUserParams
+  const params = req.query as VoteCountByUserParams
   if (!params.slackTeamId || !params.userId) {
     return errorResponse(res, IllegalArgumentError)
   }
 
   const result = await voteService.getTotalVoteCountByUser(params)
 
-  return sendResponse(res, { ...result })
+  return sendResponse(res, { allResult: result })
 })
 
 exports.api = functions.region(REGION).https.onRequest(app)

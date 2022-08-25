@@ -12,16 +12,17 @@ import {
   VoteRequestParams,
   VoteCountResponse,
   VoteCountParams,
-  VoteByUserParams,
-  VoteByUserResponse,
+  VoteCountByUserParams,
+  VoteCountByUserResponse,
   Vote,
+  VoteCountByUser,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
 
 export interface VoteService {
   create(params: VoteRequestParams): Promise<ApiPostStatus>
   getVoteCount(params: VoteCountParams): Promise<VoteCountResponse>
-  getTotalVoteCountByUser(params: VoteByUserParams): Promise<VoteByUserResponse>
+  getTotalVoteCountByUser(params: VoteCountByUserParams): Promise<VoteCountByUserResponse>
 }
 
 export class VoteServiceImpl implements VoteService {
@@ -79,26 +80,62 @@ export class VoteServiceImpl implements VoteService {
     }
   }
 
-  async getTotalVoteCountByUser(params: VoteByUserParams): Promise<VoteByUserResponse> {
+  async getTotalVoteCountByUser(params: VoteCountByUserParams): Promise<VoteCountByUserResponse> {
     const votes = await this.repository.getAllByUser(params)
     const uniqueVotes = this.removeDuplication(votes)
-    let result: VoteByUserResponse = []
+
+    // NOTE: 全期間
+    let allVotes: VoteCountByUser[] = []
     uniqueVotes.forEach((vote) => {
-      const target = result.find((v) => v.votedBy === vote.votedBy)
+      const target = allVotes.find((v) => v.votedBy === vote.votedBy)
       if (!target) {
-        result.push({
+        allVotes.push({
           votedBy: vote.votedBy,
           voteCount: 1,
         })
         return
       }
-      result = result.filter((v) => v.votedBy !== vote.votedBy)
-      result.push({
+      allVotes = allVotes.filter((v) => v.votedBy !== vote.votedBy)
+      allVotes.push({
         votedBy: target.votedBy,
         voteCount: target.voteCount + 1,
       })
     })
-    return result.sort((a, b) => b.voteCount - a.voteCount)
+
+    // NOTE: 直近 5 戦
+    const recent5timesOdai = await this.odaiService.getRecent5timesFinished({
+      slackTeamId: params.slackTeamId,
+    })
+    if (hasError(recent5timesOdai)) return recent5timesOdai
+
+    console.log(recent5timesOdai)
+    const borderCreatedAt = recent5timesOdai.slice(-1)[0].createdAt
+    console.log('borderCreatedAt: ', borderCreatedAt)
+
+    let recent5timesVotes: VoteCountByUser[] = []
+    uniqueVotes
+      .filter((vote) => vote.createdAt > borderCreatedAt)
+      .forEach((vote) => {
+        console.log('voteCreatedAt: ', vote.createdAt)
+        const target = recent5timesVotes.find((v) => v.votedBy === vote.votedBy)
+        if (!target) {
+          recent5timesVotes.push({
+            votedBy: vote.votedBy,
+            voteCount: 1,
+          })
+          return
+        }
+        recent5timesVotes = recent5timesVotes.filter((v) => v.votedBy !== vote.votedBy)
+        recent5timesVotes.push({
+          votedBy: target.votedBy,
+          voteCount: target.voteCount + 1,
+        })
+      })
+
+    return {
+      allCount: allVotes.sort((a, b) => b.voteCount - a.voteCount),
+      recent5timesCount: recent5timesVotes.sort((a, b) => b.voteCount - a.voteCount),
+    }
   }
 
   /**

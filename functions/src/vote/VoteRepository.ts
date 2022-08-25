@@ -1,6 +1,6 @@
 import { COLLECTION_NAME } from '../const'
 import { convertTimestamp, createDoc, db } from '../firebase/firestore'
-import { Vote, VoteByUserParams, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
+import { Vote, VoteCountByUserParams, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
 
 export interface VoteRepository {
   create(
@@ -11,7 +11,7 @@ export interface VoteRepository {
     }
   ): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'>
   getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiDocId: string): Promise<Vote[]>
-  getAllByUser(params: VoteByUserParams): Promise<Vote[]>
+  getAllByUser(params: VoteCountByUserParams): Promise<Vote[]>
 }
 
 const voteKotaeCollection = ({
@@ -131,7 +131,7 @@ export class VoteRepositoryImpl implements VoteRepository {
     })
   }
 
-  async getAllByUser({ userId }: VoteByUserParams): Promise<Vote[]> {
+  async getAllByUser({ userId }: VoteCountByUserParams): Promise<Vote[]> {
     const snapshot = await db
       .collectionGroup(COLLECTION_NAME.VOTE)
       .where('kotaeCreatedBy', '==', userId)
