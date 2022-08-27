@@ -1,14 +1,13 @@
 import { UsersInfoResponse, WebClient } from '@slack/web-api'
-import { RankedKotae } from '../kotae/Kotae'
 
 export const getSlackUserList = async ({
   client,
-  rankedList,
+  userIdList,
 }: {
   client: WebClient
-  rankedList: RankedKotae[]
+  userIdList: string[]
 }) => {
-  const userIdSet = [...new Set(rankedList.map((ranked) => ranked.createdBy))]
+  const userIdSet = [...new Set(userIdList)]
   const userInfoMap: { [userId: string]: UsersInfoResponse['user'] } = {}
   for (const userId of userIdSet) {
     const userInfo = await client.users.info({ user: userId })
