@@ -10,6 +10,7 @@ import {
   KotaePersonalResultParams,
   KotaePersonalResultResponse,
   KotaePostRequestParams,
+  KotaeResultResponse,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
 
@@ -54,20 +55,40 @@ export class KotaeServiceImpl implements KotaeService {
     }
   }
 
-  async getPersonalResult(
-    params: KotaePersonalResultParams
-  ): Promise<KotaePersonalResultResponse | ApiError> {
+  async getPersonalResult({
+    slackTeamId,
+    userId,
+  }: KotaePersonalResultParams): Promise<KotaePersonalResultResponse | ApiError> {
     const recentFinishedOdai = await this.odaiService.getRecentFinished({
-      slackTeamId: params.slackTeamId,
+      slackTeamId,
     })
     if (hasError(recentFinishedOdai)) return recentFinishedOdai
 
-    const kotaeList = await this.repository.getPersonalResult(params, recentFinishedOdai.docId)
+    const kotaeList = await this.repository.getPersonalResult(
+      { slackTeamId, userId },
+      recentFinishedOdai.docId
+    )
+
+    // NOTE: 回答ごとに投票の情報を取得する
+    const kotaeWithVoteList: KotaeResultResponse[] = []
+    for (const kotae of kotaeList) {
+      const votes = await this.repository.getVotedBy({
+        slackTeamId,
+        odaiDocId: recentFinishedOdai.docId,
+        kotaeDocId: kotae.docId,
+      })
+      const kotaeWithVote = {
+        ...kotae,
+        votedByList: votes,
+      }
+      kotaeWithVoteList.push(kotaeWithVote)
+    }
+
     return {
       odaiTitle: recentFinishedOdai.title,
       odaiDueDate: recentFinishedOdai.dueDate,
       odaiStatus: recentFinishedOdai.status,
-      kotaeList,
+      kotaeList: kotaeWithVoteList,
     }
   }
 
