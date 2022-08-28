@@ -1,5 +1,8 @@
 import { UsersInfoResponse, WebClient } from '@slack/web-api'
 
+/**
+ * slack の userId から表示名などの情報を取得する
+ */
 export const getSlackUserList = async ({
   client,
   userIdList,
