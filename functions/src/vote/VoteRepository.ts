@@ -1,15 +1,17 @@
 import { COLLECTION_NAME } from '../const'
 import { convertTimestamp, createDoc, db } from '../firebase/firestore'
-import { Vote, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
+import { Vote, VoteCountByUserParams, VoteOfCurrentOdaiParams, VoteRequestParams } from './Vote'
 
 export interface VoteRepository {
   create(
     params: VoteRequestParams & {
       odaiDocId: string
       kotaeDocId: string
+      kotaeCreatedBy: string
     }
   ): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'>
   getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiDocId: string): Promise<Vote[]>
+  getAllByUser(params: VoteCountByUserParams): Promise<Vote[]>
 }
 
 const voteKotaeCollection = ({
@@ -54,9 +56,11 @@ export class VoteRepositoryImpl implements VoteRepository {
     rank,
     odaiDocId,
     kotaeDocId,
+    kotaeCreatedBy,
   }: VoteRequestParams & {
     odaiDocId: string
     kotaeDocId: string
+    kotaeCreatedBy: string
   }): Promise<boolean | 'alreadyVoted' | 'alreadySameRankVoted'> {
     const collection = voteKotaeCollection({
       slackTeamId,
@@ -90,6 +94,7 @@ export class VoteRepositoryImpl implements VoteRepository {
       createdAt: new Date(),
       kotaeId: kotaeDocId,
       kotaeContent: content,
+      kotaeCreatedBy,
     }
 
     // NOTE: odaiのサブコレクションvoteにドキュメント追加(投票参加者のカウント用)
@@ -121,6 +126,25 @@ export class VoteRepositoryImpl implements VoteRepository {
         createdAt: convertTimestamp(data.createdAt),
         kotaeId: data.kotaeId,
         kotaeContent: data.kotaeContent,
+        kotaeCreatedBy: data.kotaeCreatedBy,
+      }
+    })
+  }
+
+  async getAllByUser({ userId }: VoteCountByUserParams): Promise<Vote[]> {
+    const snapshot = await db
+      .collectionGroup(COLLECTION_NAME.VOTE)
+      .where('kotaeCreatedBy', '==', userId)
+      .get()
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        votedBy: data.votedBy,
+        rank: data.rank,
+        createdAt: convertTimestamp(data.createdAt),
+        kotaeId: data.kotaeId,
+        kotaeContent: data.kotaeContent,
+        kotaeCreatedBy: data.kotaeCreatedBy,
       }
     })
   }

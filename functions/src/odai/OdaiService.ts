@@ -2,6 +2,8 @@ import { OdaiRepository } from './OdaiRepository'
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
+  OdaiFinishedListParams,
+  OdaiFinishedListResponse,
   OdaiPostRequestParams,
   OdaiPutApiStatus,
   OdaiPutStatusParams,
@@ -23,6 +25,7 @@ export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<ApiPostStatus>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse>
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse>
+  getRecent5timesFinished(params: OdaiFinishedListParams): Promise<OdaiFinishedListResponse>
   startVoting(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus>
   finish(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus>
 }
@@ -50,10 +53,17 @@ export class OdaiServiceImpl implements OdaiService {
   }
 
   async getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse> {
-    const recentFinishedOdai = await this.repository.getRecentFinished(params)
-    if (!recentFinishedOdai) return NoFinishedOdaiError
+    const finishedOdaiList = await this.repository.getAllFinished(params)
+    if (!finishedOdaiList.length) return NoFinishedOdaiError
 
-    return recentFinishedOdai
+    return finishedOdaiList[0]
+  }
+
+  async getRecent5timesFinished(params: OdaiFinishedListParams): Promise<OdaiFinishedListResponse> {
+    const finishedOdaiList = await this.repository.getAllFinished(params)
+    if (!finishedOdaiList.length) return NoFinishedOdaiError
+
+    return finishedOdaiList.slice(0, 5)
   }
 
   async startVoting(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus> {

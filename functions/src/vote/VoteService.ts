@@ -8,12 +8,21 @@ import {
 } from '../api/Error'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
-import { VoteRequestParams, VoteCountResponse, VoteCountParams } from './Vote'
+import {
+  VoteRequestParams,
+  VoteCountResponse,
+  VoteCountParams,
+  VoteCountByUserParams,
+  VoteCountByUserResponse,
+  Vote,
+  VoteCountByUser,
+} from './Vote'
 import { VoteRepository } from './VoteRepository'
 
 export interface VoteService {
   create(params: VoteRequestParams): Promise<ApiPostStatus>
   getVoteCount(params: VoteCountParams): Promise<VoteCountResponse>
+  getTotalVoteCountByUser(params: VoteCountByUserParams): Promise<VoteCountByUserResponse>
 }
 
 export class VoteServiceImpl implements VoteService {
@@ -42,6 +51,7 @@ export class VoteServiceImpl implements VoteService {
       rank,
       odaiDocId: currentOdai.docId,
       kotaeDocId: kotae.docId,
+      kotaeCreatedBy: kotae.createdBy,
     })
     if (!voteResult) return InternalServerError
     if (voteResult === 'alreadyVoted') return AlreadyVotedError
@@ -68,5 +78,75 @@ export class VoteServiceImpl implements VoteService {
       uniqueUserCount: [...new Set(votes.map((v) => v.votedBy))].length,
       voteCount: votes.length,
     }
+  }
+
+  async getTotalVoteCountByUser(params: VoteCountByUserParams): Promise<VoteCountByUserResponse> {
+    const votes = await this.repository.getAllByUser(params)
+    const uniqueVotes = this.removeDuplication(votes)
+
+    // NOTE: 全期間
+    let allVotes: VoteCountByUser[] = []
+    uniqueVotes.forEach((vote) => {
+      const target = allVotes.find((v) => v.votedBy === vote.votedBy)
+      if (!target) {
+        allVotes.push({
+          votedBy: vote.votedBy,
+          voteCount: 1,
+        })
+        return
+      }
+      allVotes = allVotes.filter((v) => v.votedBy !== vote.votedBy)
+      allVotes.push({
+        votedBy: target.votedBy,
+        voteCount: target.voteCount + 1,
+      })
+    })
+
+    // NOTE: 直近 5 戦
+    const recent5timesOdai = await this.odaiService.getRecent5timesFinished({
+      slackTeamId: params.slackTeamId,
+    })
+    if (hasError(recent5timesOdai)) return recent5timesOdai
+
+    const borderCreatedAt = recent5timesOdai.slice(-1)[0].createdAt
+
+    let recent5timesVotes: VoteCountByUser[] = []
+    uniqueVotes
+      .filter((vote) => vote.createdAt > borderCreatedAt)
+      .forEach((vote) => {
+        const target = recent5timesVotes.find((v) => v.votedBy === vote.votedBy)
+        if (!target) {
+          recent5timesVotes.push({
+            votedBy: vote.votedBy,
+            voteCount: 1,
+          })
+          return
+        }
+        recent5timesVotes = recent5timesVotes.filter((v) => v.votedBy !== vote.votedBy)
+        recent5timesVotes.push({
+          votedBy: target.votedBy,
+          voteCount: target.voteCount + 1,
+        })
+      })
+
+    return {
+      allCount: allVotes.sort((a, b) => b.voteCount - a.voteCount),
+      recent5timesCount: recent5timesVotes.sort((a, b) => b.voteCount - a.voteCount),
+    }
+  }
+
+  /**
+   * 2 つの vote コレクションからドキュメントを取得することによって発生する重複を取り除く。
+   * @param {Vote[]} votes
+   * @return {Vote[]} unique votes
+   */
+  private removeDuplication(votes: Vote[]): Vote[] {
+    const newVotes: Vote[] = []
+    votes.forEach((vote) => {
+      if (newVotes.every((newVote) => newVote.createdAt !== vote.createdAt)) {
+        newVotes.push(vote)
+      }
+    })
+    return newVotes
   }
 }

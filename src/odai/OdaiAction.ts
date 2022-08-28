@@ -431,7 +431,7 @@ export const finish = (app: App) => {
     const votedCountRankedList = makeVotedCountRanking({ kotaeList: result.kotaeList })
     const userInfoMap = await getSlackUserList({
       client,
-      rankedList: [...pointRankedList, ...votedCountRankedList],
+      userIdList: [...pointRankedList, ...votedCountRankedList].map((ranked) => ranked.createdBy),
     })
 
     const pointRankingBlocks = createVoteResultContentBlocks({

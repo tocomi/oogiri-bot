@@ -29,13 +29,17 @@ export type OdaiPutStatusData = Pick<OdaiApiBase, 'status'> & SlackParams
 
 export type OdaiCurrentParams = SlackParams
 
-export type OdaiCurrentResponse =
-  | (OdaiApiBase & {
-      docId: string
-      createdAt: number
-    })
-  | ApiError
+export type OdaiResponseBase = OdaiApiBase & {
+  docId: string
+  createdAt: number
+}
+
+export type OdaiCurrentResponse = OdaiResponseBase | ApiError
 
 export type OdaiRecentFinishedParams = SlackParams
 
-export type OdaiRecentFinishedResponse = OdaiCurrentResponse | ApiError
+export type OdaiRecentFinishedResponse = OdaiResponseBase | ApiError
+
+export type OdaiFinishedListParams = SlackParams
+
+export type OdaiFinishedListResponse = OdaiResponseBase[] | ApiError

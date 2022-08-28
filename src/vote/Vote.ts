@@ -18,3 +18,14 @@ export type VoteCount = {
   uniqueUserCount: number
   voteCount: number
 }
+
+export type VoteResultRequestParams = { userId: string } & SlackParams
+
+type VoteResult = {
+  votedBy: string
+  voteCount: number
+}
+export type VoteResultResponse = {
+  allCount: VoteResult[]
+  recent5timesCount: VoteResult[]
+}
