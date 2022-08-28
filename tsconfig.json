@@ -72,5 +72,9 @@
   "compileOnSave": true,
   "include": [
     "./src"
+  ],
+  "exclude": [
+    /* ローカル実行用スクリプトなので除外 */
+    "./src/script"
   ]
 }
