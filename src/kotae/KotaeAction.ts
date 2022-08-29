@@ -237,15 +237,15 @@ export const checkResult = (app: App) => {
           },
         ]
         if (kotae.votedByList.length > 0) {
-          blocks.push({
-            type: 'context',
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            elements: kotae.votedByList
-              .map((votedBy) => {
-                const user = userInfoMap[votedBy.votedBy]
-                if (!user) return []
-                return [
+          kotae.votedByList
+            .sort((a, b) => a.rank - b.rank)
+            .forEach((votedBy) => {
+              const user = userInfoMap[votedBy.votedBy]
+              if (!user) return
+
+              blocks.push({
+                type: 'context',
+                elements: [
                   {
                     type: 'mrkdwn',
                     text: `${medalEmoji(votedBy.rank)}`,
@@ -259,10 +259,9 @@ export const checkResult = (app: App) => {
                     type: 'mrkdwn',
                     text: `*${user.profile?.display_name}*`,
                   },
-                ]
+                ],
               })
-              .flat(),
-          })
+            })
         }
         return blocks
       })
