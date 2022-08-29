@@ -8,6 +8,8 @@ import {
 } from '@slack/bolt'
 import { Logger, WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { getSlackUserList } from '../util/getSlackUserList'
+import { medalEmoji } from '../vote/util'
 import { KotaeUseCase } from './KotaeUseCase'
 import { countKotae } from './action/countKotae'
 import { makePointRanking } from './rank/makePointRanking'
@@ -211,6 +213,12 @@ export const checkResult = (app: App) => {
         },
       },
     ]
+
+    const userIdList = result.kotaeList
+      .map((kotae) => kotae.votedByList)
+      .flat()
+      .map((votedBy) => votedBy.votedBy)
+    const userInfoMap = await getSlackUserList({ client, userIdList })
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const resultBlocks: KnownBlock[] = makePointRanking({
@@ -226,6 +234,30 @@ export const checkResult = (app: App) => {
               type: 'mrkdwn',
               text: `:dart: *${kotae.point}ポイント* - :first_place_medal:${kotae.votedFirstCount}票 :second_place_medal:${kotae.votedSecondCount}票 :third_place_medal:${kotae.votedThirdCount}票 - ${kotae.content}`,
             },
+          },
+          {
+            type: 'context',
+            elements: kotae.votedByList
+              .map((votedBy) => {
+                const user = userInfoMap[votedBy.votedBy]
+                if (!user) return []
+                return [
+                  {
+                    type: 'mrkdwn',
+                    text: `${medalEmoji(votedBy.rank)}`,
+                  },
+                  {
+                    type: 'image',
+                    image_url: user.profile?.image_32 || '',
+                    alt_text: 'user_image',
+                  },
+                  {
+                    type: 'mrkdwn',
+                    text: `*${user.profile?.display_name}*`,
+                  },
+                ]
+              })
+              .flat(),
           },
         ]
       })
