@@ -9,7 +9,7 @@ import {
 import { Logger, WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
-import { RankedKotae } from './Kotae'
+import { medalEmoji } from '../vote/util'
 import { KotaeUseCase } from './KotaeUseCase'
 import { countKotae } from './action/countKotae'
 import { makePointRanking } from './rank/makePointRanking'
@@ -157,18 +157,6 @@ export const countKotaeAction = (app: App) => {
     await ack()
     await countKotae({ slackTeamId: body.team_id, userId: body.user_id, client })
   })
-}
-
-// TODO: 共通化
-const medalEmoji = (rank: RankedKotae['rank']) => {
-  switch (rank) {
-    case 1:
-      return ':first_place_medal:'
-    case 2:
-      return ':second_place_medal:'
-    case 3:
-      return ':third_place_medal:'
-  }
 }
 
 export const checkResult = (app: App) => {
