@@ -10,6 +10,7 @@ const kotae10 = {
   votedSecondCount: 0,
   votedThirdCount: 0,
   createdAt: 1625889428995,
+  votedByList: [],
 }
 
 const kotae20 = {
@@ -20,6 +21,7 @@ const kotae20 = {
   votedSecondCount: 4,
   votedThirdCount: 0,
   createdAt: 1625889428995,
+  votedByList: [],
 }
 
 const kotae30 = {
@@ -30,6 +32,7 @@ const kotae30 = {
   votedSecondCount: 4,
   votedThirdCount: 3,
   createdAt: 1625889428995,
+  votedByList: [],
 }
 
 const kotae31 = {
@@ -40,6 +43,7 @@ const kotae31 = {
   votedSecondCount: 7,
   votedThirdCount: 1,
   createdAt: 1625889428995,
+  votedByList: [],
 }
 
 const kotae40 = {
@@ -50,6 +54,7 @@ const kotae40 = {
   votedSecondCount: 10,
   votedThirdCount: 2,
   createdAt: 1625889428995,
+  votedByList: [],
 }
 
 const kotaeList = [kotae10, kotae20, kotae30, kotae31, kotae40]
@@ -62,21 +67,25 @@ describe('順位の計算', () => {
         ...kotae10,
         point: 15,
         rank: 1,
+        votedByList: [],
       },
       {
         ...kotae20,
         point: 22,
         rank: 2,
+        votedByList: [],
       },
       {
         ...kotae30,
         point: 20,
         rank: 3,
+        votedByList: [],
       },
       {
         ...kotae31,
         point: 27,
         rank: 3,
+        votedByList: [],
       },
     ]
     expect(result).toStrictEqual(expected)
@@ -89,16 +98,19 @@ describe('順位の計算', () => {
         ...kotae40,
         point: 32,
         rank: 1,
+        votedByList: [],
       },
       {
         ...kotae31,
         point: 27,
         rank: 2,
+        votedByList: [],
       },
       {
         ...kotae30,
         point: 20,
         rank: 3,
+        votedByList: [],
       },
     ]
     expect(result).toStrictEqual(expected)
