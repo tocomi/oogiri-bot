@@ -227,7 +227,7 @@ export const checkResult = (app: App) => {
       filterTopKotae: false,
     })
       .map((kotae) => {
-        return [
+        const blocks: KnownBlock[] = [
           {
             type: 'section',
             text: {
@@ -235,8 +235,12 @@ export const checkResult = (app: App) => {
               text: `:dart: *${kotae.point}ポイント* - :first_place_medal:${kotae.votedFirstCount}票 :second_place_medal:${kotae.votedSecondCount}票 :third_place_medal:${kotae.votedThirdCount}票 - ${kotae.content}`,
             },
           },
-          {
+        ]
+        if (kotae.votedByList.length > 0) {
+          blocks.push({
             type: 'context',
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             elements: kotae.votedByList
               .map((votedBy) => {
                 const user = userInfoMap[votedBy.votedBy]
@@ -258,8 +262,9 @@ export const checkResult = (app: App) => {
                 ]
               })
               .flat(),
-          },
-        ]
+          })
+        }
+        return blocks
       })
       .flat()
     const blocks = [...headerBlocks, ...resultBlocks]
