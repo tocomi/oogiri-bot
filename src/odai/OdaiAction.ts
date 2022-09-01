@@ -29,6 +29,7 @@ import {
   TITLE_ACTION_ID,
   TITLE_BLOCK_ID,
 } from './action/createOdai'
+import { finish, FINISH_ODAI_CALLBACK_ID } from './action/finishOdai'
 import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
 import {
   createOdaiCreateBlocks,
@@ -216,54 +217,12 @@ export const startVoting = (app: App) => {
 }
 
 export const finishOdai = (app: App) => {
-  const CALLBACK_ID = 'finish'
   app.shortcut('oogiri-finish', async ({ ack, body, client, logger }) => {
-    const result = await client.views
-      .open({
-        trigger_id: body.trigger_id,
-        view: {
-          type: 'modal',
-          callback_id: CALLBACK_ID,
-          title: {
-            type: 'plain_text',
-            text: '結果発表 :mega:',
-          },
-          submit: {
-            type: 'plain_text',
-            text: 'OK',
-          },
-          close: {
-            type: 'plain_text',
-            text: 'キャンセル',
-          },
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: '結果発表をします。回答への投票は締め切られます。',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: 'よろしいですか？',
-              },
-            },
-          ],
-        },
-      })
-      .catch(async (e) => {
-        logger.error(e)
-      })
-    if (result && result.error) {
-      logger.error(result.error)
-    }
     await ack()
+    await finish({ body, client, logger })
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+  app.view(FINISH_ODAI_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleError = (error: any) => {
