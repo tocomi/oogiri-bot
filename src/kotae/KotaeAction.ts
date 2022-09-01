@@ -7,16 +7,20 @@ import {
   WorkflowStepEdit,
 } from '@slack/bolt'
 import { Logger, WebClient } from '@slack/web-api'
+import emojiRegex from 'emoji-regex'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
 import { medalEmoji } from '../vote/util'
 import { KotaeUseCase } from './KotaeUseCase'
 import { countKotae } from './action/countKotae'
+import { kotaeCreatedBlocks } from './blocks'
 import { makePointRanking } from './rank/makePointRanking'
-
-const CALLBACK_ID = 'create-kotae'
-const BLOCK_ID = 'create-kotae-block'
-const ACTION_ID = 'input'
+import {
+  kotaeCreateView,
+  KOTAE_CREATE_ACTION_ID,
+  KOTAE_CREATE_BLOCK_ID,
+  KOTAE_CREATE_CALLBACK_ID,
+} from './view/KotaeCreateView'
 
 const create = async ({
   body,
@@ -27,54 +31,9 @@ const create = async ({
   client: WebClient
   logger: Logger
 }) => {
-  const result = await client.views
-    .open({
-      trigger_id: body.trigger_id,
-      view: {
-        type: 'modal',
-        callback_id: CALLBACK_ID,
-        title: {
-          type: 'plain_text',
-          text: 'お題への回答',
-        },
-        submit: {
-          type: 'plain_text',
-          text: '送信',
-        },
-        close: {
-          type: 'plain_text',
-          text: 'キャンセル',
-        },
-        blocks: [
-          {
-            type: 'input',
-            block_id: BLOCK_ID,
-            element: {
-              type: 'plain_text_input',
-              action_id: ACTION_ID,
-              placeholder: {
-                type: 'plain_text',
-                text: '例: 〇〇が□□だ',
-              },
-            },
-            label: {
-              type: 'plain_text',
-              text: '答え',
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: '誰かを不快にさせうる回答は控えましょう:relieved:',
-            },
-          },
-        ],
-      },
-    })
-    .catch(async (e) => {
-      logger.error(e)
-    })
+  const result = await client.views.open(kotaeCreateView(body.trigger_id)).catch(async (e) => {
+    logger.error(e)
+  })
   if (result && result.error) {
     logger.error(result.error)
   }
@@ -94,10 +53,28 @@ export const createKotae = (app: App) => {
     }
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+  app.view(KOTAE_CREATE_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+    const kotae = view.state.values[KOTAE_CREATE_BLOCK_ID][KOTAE_CREATE_ACTION_ID].value
+    if (!kotae) {
+      await ack()
+      return
+    }
+
+    // NOTE: 絵文字は投票できない問題があるのでここで弾く
+    const regex = emojiRegex()
+    const isEmojiContained = kotae.match(regex)
+    if (isEmojiContained) {
+      await ack({
+        response_action: 'errors',
+        errors: {
+          [KOTAE_CREATE_BLOCK_ID]: 'まだ絵文字は未対応なのです、ごめんなさい。',
+        },
+      })
+      logger.info('kotae containing emoji is sent.')
+      return
+    }
+
     await ack()
-    const kotae = view.state.values[BLOCK_ID][ACTION_ID].value
-    if (!kotae) return
 
     const kotaeUseCase = new KotaeUseCase()
     const success = await kotaeUseCase
@@ -128,22 +105,7 @@ export const createKotae = (app: App) => {
       })
     if (!success) return
 
-    const blocks: KnownBlock[] = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*回答を受け付けました！* :tada:`,
-        },
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `あなたの回答: ${kotae}`,
-        },
-      },
-    ]
+    const blocks: KnownBlock[] = kotaeCreatedBlocks(kotae)
     await postEphemeral({
       client,
       user: body.user.id,
