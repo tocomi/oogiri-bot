@@ -1,5 +1,4 @@
-import { App, BlockAction, InteractiveMessage, SlackShortcut, WorkflowStepEdit } from '@slack/bolt'
-import { Logger, WebClient } from '@slack/web-api'
+import { App } from '@slack/bolt'
 import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
@@ -30,6 +29,7 @@ import {
   TITLE_ACTION_ID,
   TITLE_BLOCK_ID,
 } from './action/createOdai'
+import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
 import {
   createOdaiCreateBlocks,
   createOdaiDuplicationBlocks,
@@ -37,7 +37,6 @@ import {
 } from './blocks'
 
 export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
-const START_VOTING_CALLBACK_ID = 'start-voting'
 const VOTING_ACTION_ID = 'vote-kotae'
 
 export const createOdai = (app: App) => {
@@ -102,59 +101,6 @@ export const createOdai = (app: App) => {
     const blocks = createOdaiCreateBlocks({ title, dueDate, imageUrl })
     await postMessage({ client, blocks })
   })
-}
-
-const start = async ({
-  body,
-  client,
-  logger,
-}: {
-  body: SlackShortcut | BlockAction | InteractiveMessage | WorkflowStepEdit
-  client: WebClient
-  logger: Logger
-}) => {
-  const result = await client.views
-    .open({
-      trigger_id: body.trigger_id,
-      view: {
-        type: 'modal',
-        callback_id: START_VOTING_CALLBACK_ID,
-        title: {
-          type: 'plain_text',
-          text: '投票の開始 :ticket:',
-        },
-        submit: {
-          type: 'plain_text',
-          text: 'OK',
-        },
-        close: {
-          type: 'plain_text',
-          text: 'キャンセル',
-        },
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: '投票を開始します。お題への回答は締め切られます。',
-            },
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: 'よろしいですか？',
-            },
-          },
-        ],
-      },
-    })
-    .catch(async (e) => {
-      logger.error(e)
-    })
-  if (result && result.error) {
-    logger.error(result.error)
-  }
 }
 
 export const startVoting = (app: App) => {
