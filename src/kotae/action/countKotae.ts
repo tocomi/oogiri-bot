@@ -45,6 +45,7 @@ export const countKotae = async ({
   // NOTE: スケジューラー実行では回答受付中のみ実行
   if (isScheduler && result.odaiStatus !== 'posting') return
 
+  // NOTE: 期日の当日かそれ以降の場合は投票開始ボタンを表示する
   const displayStartVotingButton = calculateDateDiff(result.odaiDueDate) <= 0
 
   const blocks: KnownBlock[] = []
