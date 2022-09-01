@@ -22,6 +22,8 @@ import {
   KOTAE_CREATE_CALLBACK_ID,
 } from './view/KotaeCreateView'
 
+export const CREATE_KOTAE_ACTION_ID = 'oogiri-create-kotae'
+
 const create = async ({
   body,
   client,
@@ -41,12 +43,12 @@ const create = async ({
 
 export const createKotae = (app: App) => {
   // NOTE: ショートカットからの回答
-  app.shortcut('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
+  app.shortcut(CREATE_KOTAE_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
     await create({ body, client, logger })
   })
   // NOTE: ボタンからの回答
-  app.action('oogiri-create-kotae', async ({ ack, body, client, logger }) => {
+  app.action(CREATE_KOTAE_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
     if ('trigger_id' in body) {
       await create({ body, client, logger })
