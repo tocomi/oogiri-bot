@@ -26,13 +26,17 @@ import {
   createOdaiNothingBlocks,
 } from './blocks'
 
-const CALLBACK_ID = 'create-odai'
+const CREATE_ODAI_CALLBACK_ID = 'create-odai'
 const TITLE_ACTION_ID = 'title'
 const TITLE_BLOCK_ID = 'title-block'
 const DUE_DATE_ACTION_ID = 'due-date'
 const DUE_DATE_BLOCK_ID = 'due-date-block'
 const IMAGE_URL_ACTION_ID = 'image-url'
 const IMAGE_URL_BLOCK_ID = 'image-url-block'
+
+export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
+const START_VOTING_CALLBACK_ID = 'start-voting'
+const VOTING_ACTION_ID = 'vote-kotae'
 
 const create = async ({
   body,
@@ -48,7 +52,7 @@ const create = async ({
       trigger_id: body.trigger_id,
       view: {
         type: 'modal',
-        callback_id: CALLBACK_ID,
+        callback_id: CREATE_ODAI_CALLBACK_ID,
         title: {
           type: 'plain_text',
           text: 'お題の設定',
@@ -136,7 +140,7 @@ export const createOdai = (app: App) => {
     }
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+  app.view(CREATE_ODAI_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
     const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
     const dueDate = view.state.values[DUE_DATE_BLOCK_ID][DUE_DATE_ACTION_ID].selected_date
@@ -186,56 +190,75 @@ export const createOdai = (app: App) => {
   })
 }
 
-export const startVoting = (app: App) => {
-  const CALLBACK_ID = 'start-voting'
-  const ACTION_ID = 'vote-kotae'
-  app.shortcut('oogiri-start-voting', async ({ ack, body, client, logger }) => {
-    const result = await client.views
-      .open({
-        trigger_id: body.trigger_id,
-        view: {
-          type: 'modal',
-          callback_id: CALLBACK_ID,
-          title: {
-            type: 'plain_text',
-            text: '投票の開始 :ticket:',
-          },
-          submit: {
-            type: 'plain_text',
-            text: 'OK',
-          },
-          close: {
-            type: 'plain_text',
-            text: 'キャンセル',
-          },
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: '投票を開始します。お題への回答は締め切られます。',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: 'よろしいですか？',
-              },
-            },
-          ],
+const start = async ({
+  body,
+  client,
+  logger,
+}: {
+  body: SlackShortcut | BlockAction | InteractiveMessage | WorkflowStepEdit
+  client: WebClient
+  logger: Logger
+}) => {
+  const result = await client.views
+    .open({
+      trigger_id: body.trigger_id,
+      view: {
+        type: 'modal',
+        callback_id: START_VOTING_CALLBACK_ID,
+        title: {
+          type: 'plain_text',
+          text: '投票の開始 :ticket:',
         },
-      })
-      .catch(async (e) => {
-        logger.error(e)
-      })
-    if (result && result.error) {
-      logger.error(result.error)
-    }
+        submit: {
+          type: 'plain_text',
+          text: 'OK',
+        },
+        close: {
+          type: 'plain_text',
+          text: 'キャンセル',
+        },
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '投票を開始します。お題への回答は締め切られます。',
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: 'よろしいですか？',
+            },
+          },
+        ],
+      },
+    })
+    .catch(async (e) => {
+      logger.error(e)
+    })
+  if (result && result.error) {
+    logger.error(result.error)
+  }
+}
+
+export const startVoting = (app: App) => {
+  // NOTE: ショートカットからの実行
+  app.shortcut(START_VOTING_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
+    await start({ body, client, logger })
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+  // NOTE: ボタンからの実行
+  app.action(START_VOTING_ACTION_ID, async ({ ack, body, client, logger }) => {
+    await ack()
+    if ('trigger_id' in body) {
+      await start({ body, client, logger })
+    }
+  })
+
+  app.view(START_VOTING_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
     const odaiUseCase = new OdaiUseCase()
     const result = await odaiUseCase
@@ -277,7 +300,7 @@ export const startVoting = (app: App) => {
     await postMessage({ client, blocks: footerBlocks })
   })
 
-  app.action(ACTION_ID, async ({ ack, action, body, client, logger }) => {
+  app.action(VOTING_ACTION_ID, async ({ ack, action, body, client, logger }) => {
     await ack()
     // NOTE: 投票ボタンが押された回答のテキストを抽出
     // 何故か型が無いので仕方なくts-ignoreを仕様

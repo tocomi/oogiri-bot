@@ -1,7 +1,13 @@
 import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage, postMessage } from '../../message/postMessage'
-import { milliSecondsToYYYYMMDD, diffMessageFromCurrent } from '../../util/DateUtil'
+import { START_VOTING_ACTION_ID } from '../../odai/OdaiAction'
+import {
+  milliSecondsToYYYYMMDD,
+  diffMessageFromCurrent,
+  calculateDateDiff,
+} from '../../util/DateUtil'
+import { CREATE_KOTAE_ACTION_ID } from '../KotaeAction'
 import { KotaeUseCase } from '../KotaeUseCase'
 
 export const countKotae = async ({
@@ -38,6 +44,8 @@ export const countKotae = async ({
   if (!result) return
   // NOTE: スケジューラー実行では回答受付中のみ実行
   if (isScheduler && result.odaiStatus !== 'posting') return
+
+  const displayStartVotingButton = calculateDateDiff(result.odaiDueDate) <= 0
 
   const blocks: KnownBlock[] = []
   blocks.push(
@@ -90,10 +98,26 @@ export const countKotae = async ({
             text: 'お題に回答する！ (複数回答可)',
           },
           style: 'primary',
-          action_id: 'oogiri-create-kotae',
+          action_id: CREATE_KOTAE_ACTION_ID,
         },
       ],
     }
   )
+  if (displayStartVotingButton) {
+    blocks.push({
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: {
+            type: 'plain_text',
+            text: '投票を開始する！',
+          },
+          style: 'primary',
+          action_id: START_VOTING_ACTION_ID,
+        },
+      ],
+    })
+  }
   await postMessage({ client, blocks })
 }
