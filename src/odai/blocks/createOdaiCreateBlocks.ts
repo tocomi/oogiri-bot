@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+import { CREATE_KOTAE_ACTION_ID } from '../../kotae/KotaeAction'
 import { milliSecondsToYYYYMMDD } from '../../util/DateUtil'
 
 export const createOdaiCreateBlocks = ({
@@ -59,7 +60,7 @@ export const createOdaiCreateBlocks = ({
             text: 'お題に回答する！ (複数回答可)',
           },
           style: 'primary',
-          action_id: 'oogiri-create-kotae',
+          action_id: CREATE_KOTAE_ACTION_ID,
         },
       ],
     }
