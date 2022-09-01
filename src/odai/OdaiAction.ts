@@ -29,6 +29,7 @@ import {
   TITLE_ACTION_ID,
   TITLE_BLOCK_ID,
 } from './action/createOdai'
+import { finish, FINISH_ODAI_CALLBACK_ID } from './action/finishOdai'
 import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
 import {
   createOdaiCreateBlocks,
@@ -38,6 +39,8 @@ import {
 
 export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
 const VOTING_ACTION_ID = 'vote-kotae'
+
+export const FINISH_ODAI_ACTION_ID = 'oogiri-finish'
 
 export const createOdai = (app: App) => {
   // NOTE: ショートカットからの作成
@@ -215,55 +218,22 @@ export const startVoting = (app: App) => {
   })
 }
 
-export const finish = (app: App) => {
-  const CALLBACK_ID = 'finish'
-  app.shortcut('oogiri-finish', async ({ ack, body, client, logger }) => {
-    const result = await client.views
-      .open({
-        trigger_id: body.trigger_id,
-        view: {
-          type: 'modal',
-          callback_id: CALLBACK_ID,
-          title: {
-            type: 'plain_text',
-            text: '結果発表 :mega:',
-          },
-          submit: {
-            type: 'plain_text',
-            text: 'OK',
-          },
-          close: {
-            type: 'plain_text',
-            text: 'キャンセル',
-          },
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: '結果発表をします。回答への投票は締め切られます。',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: 'よろしいですか？',
-              },
-            },
-          ],
-        },
-      })
-      .catch(async (e) => {
-        logger.error(e)
-      })
-    if (result && result.error) {
-      logger.error(result.error)
-    }
+export const finishOdai = (app: App) => {
+  // NOTE: ショートカットからの実行
+  app.shortcut(FINISH_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
+    await finish({ body, client, logger })
   })
 
-  app.view(CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+  // NOTE: ボタンからの実行
+  app.action(FINISH_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
+    await ack()
+    if ('trigger_id' in body) {
+      await finish({ body, client, logger })
+    }
+  })
+
+  app.view(FINISH_ODAI_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleError = (error: any) => {
