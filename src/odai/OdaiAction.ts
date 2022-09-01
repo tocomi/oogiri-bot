@@ -40,6 +40,8 @@ import {
 export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
 const VOTING_ACTION_ID = 'vote-kotae'
 
+export const FINISH_ODAI_ACTION_ID = 'oogiri-finish'
+
 export const createOdai = (app: App) => {
   // NOTE: ショートカットからの作成
   app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
@@ -217,9 +219,18 @@ export const startVoting = (app: App) => {
 }
 
 export const finishOdai = (app: App) => {
-  app.shortcut('oogiri-finish', async ({ ack, body, client, logger }) => {
+  // NOTE: ショートカットからの実行
+  app.shortcut(FINISH_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
     await finish({ body, client, logger })
+  })
+
+  // NOTE: ボタンからの実行
+  app.action(FINISH_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
+    await ack()
+    if ('trigger_id' in body) {
+      await finish({ body, client, logger })
+    }
   })
 
   app.view(FINISH_ODAI_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
