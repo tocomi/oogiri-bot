@@ -7,6 +7,7 @@ import {
   WorkflowStepEdit,
 } from '@slack/bolt'
 import { Logger, WebClient } from '@slack/web-api'
+import emojiRegex from 'emoji-regex'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
 import { medalEmoji } from '../vote/util'
@@ -53,9 +54,27 @@ export const createKotae = (app: App) => {
   })
 
   app.view(KOTAE_CREATE_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
-    await ack()
     const kotae = view.state.values[KOTAE_CREATE_BLOCK_ID][KOTAE_CREATE_ACTION_ID].value
-    if (!kotae) return
+    if (!kotae) {
+      await ack()
+      return
+    }
+
+    // NOTE: 絵文字は投票できない問題があるのでここで弾く
+    const regex = emojiRegex()
+    const isEmojiContained = kotae.match(regex)
+    if (isEmojiContained) {
+      await ack({
+        response_action: 'errors',
+        errors: {
+          [KOTAE_CREATE_BLOCK_ID]: 'まだ絵文字は未対応なのです、ごめんなさい。',
+        },
+      })
+      logger.info('kotae containing emoji is sent.')
+      return
+    }
+
+    await ack()
 
     const kotaeUseCase = new KotaeUseCase()
     const success = await kotaeUseCase
