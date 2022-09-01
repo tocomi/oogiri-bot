@@ -215,7 +215,7 @@ export const startVoting = (app: App) => {
   })
 }
 
-export const finish = (app: App) => {
+export const finishOdai = (app: App) => {
   const CALLBACK_ID = 'finish'
   app.shortcut('oogiri-finish', async ({ ack, body, client, logger }) => {
     const result = await client.views
