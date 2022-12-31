@@ -32,6 +32,7 @@ const getAllKotae = async (): Promise<Kotae[]> => {
       votedThirdCount: data.votedThirdCount,
       content: data.content,
       createdBy: data.createdBy,
+      votedByList: data.votedByList,
     })
   })
   return kotaeList
@@ -76,8 +77,8 @@ const groupingKotae = (kotaeList: Kotae[]): GroupedKotae => {
 const convertUserIdToName = async (groupedKotae: GroupedKotae) => {
   const converted: GroupedKotae = {}
   for (const [userId, value] of Object.entries(groupedKotae)) {
-    const { user } = await client.users.info({ user: userId })
-    const userName = user?.real_name || 'unknown'
+    const userInfo = await client.users.info({ user: userId }).catch(() => undefined)
+    const userName = userInfo ? userInfo.user?.real_name || 'unknown' : 'unknown'
     converted[userName] = value
   }
   return converted
