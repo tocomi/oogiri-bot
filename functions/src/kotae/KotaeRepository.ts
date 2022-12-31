@@ -10,12 +10,15 @@ import {
   KotaePostData,
   KotaePostRequestParams,
   KotaeResponse,
+  KotaeVotedByParams,
+  KotaeVotedBy,
 } from './Kotae'
 
 export interface KotaeRepository {
   create(params: KotaePostRequestParams, odaiDocId: string): Promise<boolean>
   getAllOfCurrentOdai(params: KotaeOfCurrentOdaiParams, odaiDocId: string): Promise<KotaeResponse[]>
   getPersonalResult(params: KotaePersonalResultParams, odaiDocId: string): Promise<KotaeResponse[]>
+  getVotedBy(params: KotaeVotedByParams): Promise<KotaeVotedBy[]>
   getByContent(
     params: KotaeByContentParams & { odaiDocId: string }
   ): Promise<KotaeByContentResponse | null>
@@ -40,6 +43,20 @@ export const kotaeCollection = ({
     .collection(COLLECTION_NAME.ODAI)
     .doc(odaiDocId)
     .collection(COLLECTION_NAME.KOTAE)
+}
+
+const kotaeVoteCollection = ({
+  slackTeamId,
+  odaiDocId,
+  kotaeDocId,
+}: {
+  slackTeamId: string
+  odaiDocId: string
+  kotaeDocId: string
+}): FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData> => {
+  return kotaeCollection({ slackTeamId, odaiDocId })
+    .doc(kotaeDocId)
+    .collection(COLLECTION_NAME.VOTE)
 }
 
 export class KotaeRepositoryImpl implements KotaeRepository {
@@ -69,6 +86,7 @@ export class KotaeRepositoryImpl implements KotaeRepository {
     return snapshot.docs.map((doc) => {
       const data = doc.data()
       return {
+        docId: doc.id,
         content: data.content,
         createdBy: data.createdBy,
         votedCount: data.votedCount,
@@ -90,12 +108,29 @@ export class KotaeRepositoryImpl implements KotaeRepository {
     return snapshot.docs.map((doc) => {
       const data = doc.data()
       return {
+        docId: doc.id,
         content: data.content,
         createdBy: data.createdBy,
         votedCount: data.votedCount,
         votedFirstCount: data.votedFirstCount,
         votedSecondCount: data.votedSecondCount,
         votedThirdCount: data.votedThirdCount,
+        createdAt: convertTimestamp(data.createdAt),
+      }
+    })
+  }
+
+  async getVotedBy({
+    slackTeamId,
+    odaiDocId,
+    kotaeDocId,
+  }: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
+    const snapshot = await kotaeVoteCollection({ slackTeamId, odaiDocId, kotaeDocId }).get()
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        votedBy: data.votedBy,
+        rank: data.rank,
         createdAt: convertTimestamp(data.createdAt),
       }
     })

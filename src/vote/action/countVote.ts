@@ -1,6 +1,7 @@
 import { KnownBlock } from '@slack/bolt'
 import { WebClient } from '@slack/web-api'
 import { postEphemeral, postInternalErrorMessage, postMessage } from '../../message/postMessage'
+import { FINISH_ODAI_ACTION_ID } from '../../odai/OdaiAction'
 import { VoteUseCase } from '../VoteUseCase'
 
 export const countVote = async ({
@@ -53,6 +54,9 @@ export const countVote = async ({
   // NOTE: スケジューラー実行では投票受付中のみ実行
   if (isScheduler && result.odaiStatus !== 'voting') return
 
+  // NOTE: 投票人数が 10 人以上集まっていたら結果発表ボタンを表示する
+  const displayFinishButton = result.uniqueUserCount >= 10
+
   const blocks: KnownBlock[] = [
     {
       type: 'section',
@@ -81,6 +85,22 @@ export const countVote = async ({
       type: 'image',
       image_url: result.odaiImageUrl,
       alt_text: 'odai image',
+    })
+  }
+  if (displayFinishButton) {
+    blocks.push({
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: {
+            type: 'plain_text',
+            text: '結果を発表する！',
+          },
+          style: 'primary',
+          action_id: FINISH_ODAI_ACTION_ID,
+        },
+      ],
     })
   }
   await postMessage({ client, blocks })

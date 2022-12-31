@@ -16,6 +16,7 @@ export type Vote = VoteBase & {
   createdAt: Date | number
   kotaeId: string
   kotaeContent: string
+  kotaeCreatedBy: string
 }
 
 export type VoteOfCurrentOdaiParams = SlackParams
@@ -31,3 +32,19 @@ export type VoteCount = {
 export type VoteCountParams = SlackParams
 
 export type VoteCountResponse = VoteCount | ApiError
+
+export type VoteCountByUserParams = SlackParams & {
+  userId: string
+}
+
+export type VoteCountByUser = {
+  votedBy: string
+  voteCount: number
+}
+
+export type VoteCountByUserResponse =
+  | {
+      allCount: VoteCountByUser[]
+      recent5timesCount: VoteCountByUser[]
+    }
+  | ApiError

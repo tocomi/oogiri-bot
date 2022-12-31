@@ -9,6 +9,7 @@ const kotae00 = {
   votedSecondCount: 0,
   votedThirdCount: 0,
   createdAt: 1625889428995,
+  votedByList: [],
 }
 
 const kotae01 = {
@@ -19,6 +20,7 @@ const kotae01 = {
   votedSecondCount: 0,
   votedThirdCount: 0,
   createdAt: 1626181675614,
+  votedByList: [],
 }
 
 const kotae10 = {
@@ -29,6 +31,7 @@ const kotae10 = {
   votedSecondCount: 0,
   votedThirdCount: 0,
   createdAt: 1626181663621,
+  votedByList: [],
 }
 
 const kotae11 = {
@@ -39,6 +42,7 @@ const kotae11 = {
   votedSecondCount: 0,
   votedThirdCount: 0,
   createdAt: 1625578388545,
+  votedByList: [],
 }
 
 const kotae20 = {
@@ -49,6 +53,7 @@ const kotae20 = {
   votedSecondCount: 2,
   votedThirdCount: 2,
   createdAt: 1625578388545,
+  votedByList: [],
 }
 
 const kotae21 = {
@@ -59,6 +64,7 @@ const kotae21 = {
   votedSecondCount: 2,
   votedThirdCount: 2,
   createdAt: 1626181663621,
+  votedByList: [],
 }
 
 const kotae30 = {
@@ -70,6 +76,7 @@ const kotae30 = {
   votedSecondCount: 0,
   votedThirdCount: 6,
   createdAt: 1625578405605,
+  votedByList: [],
 }
 
 const kotae31 = {
@@ -80,6 +87,7 @@ const kotae31 = {
   votedSecondCount: 0,
   votedThirdCount: 6,
   createdAt: 1625578403499,
+  votedByList: [],
 }
 
 describe('ポイントと順位の計算', () => {

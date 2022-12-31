@@ -32,6 +32,7 @@ const getAllKotae = async (): Promise<Kotae[]> => {
       votedThirdCount: data.votedThirdCount,
       content: data.content,
       createdBy: data.createdBy,
+      votedByList: data.votedByList,
     })
   })
   return kotaeList

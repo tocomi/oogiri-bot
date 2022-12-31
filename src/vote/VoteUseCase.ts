@@ -1,5 +1,12 @@
 import { api } from '../api/axios'
-import { VoteCount, VoteCountRequestParams, VotePostRequestParams, VotePostResponse } from './Vote'
+import {
+  VoteCount,
+  VoteCountRequestParams,
+  VotePostRequestParams,
+  VotePostResponse,
+  VoteResultRequestParams,
+  VoteResultResponse,
+} from './Vote'
 
 export class VoteUseCase {
   async create(data: VotePostRequestParams) {
@@ -9,6 +16,13 @@ export class VoteUseCase {
 
   async getVoteCount(data: VoteCountRequestParams): Promise<VoteCount> {
     const result = await api.get<VoteCount>('/vote/count', {
+      params: data,
+    })
+    return result.data
+  }
+
+  async getVoteResult(data: VoteResultRequestParams): Promise<VoteResultResponse> {
+    const result = await api.get<VoteResultResponse>('/vote/my-fans', {
       params: data,
     })
     return result.data

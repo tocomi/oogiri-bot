@@ -1,6 +1,11 @@
 import { PostResponse, SlackParams } from '../api/Api'
 import { OdaiStatus } from '../odai/Odai'
 
+type VotedBy = {
+  votedBy: string
+  rank: 1 | 2 | 3
+  createdAt: string
+}
 export type Kotae = {
   content: string
   createdBy: string
@@ -9,6 +14,7 @@ export type Kotae = {
   votedSecondCount: number
   votedThirdCount: number
   createdAt: number
+  votedByList: VotedBy[]
 }
 
 export type PointedKotae = Kotae & {
