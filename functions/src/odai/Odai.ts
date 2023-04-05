@@ -3,21 +3,38 @@ import { ApiError } from '../api/Error'
 
 type OdaiBase = {
   title: string
-  dueDate: number
   createdBy: string
   imageUrl?: string
 }
 
-export type OdaiPostRequestParams = OdaiBase & SlackParams
+type Odai = OdaiBase &
+  (
+    | {
+        type: 'normal'
+        dueDate: number
+      }
+    | {
+        type: 'ippon'
+        ipponVoteCount: number
+        winIpponCount: number
+      }
+  )
+
+export type OdaiPostRequestParams = Odai & SlackParams
+export type OdaiNormalPostRequest = Extract<OdaiPostRequestParams, { type: 'normal' }>
+export type OdaiIpponPostRequest = Extract<OdaiPostRequestParams, { type: 'ippon' }>
 
 export type OdaiStatus = 'posting' | 'voting' | 'finished'
 
-type OdaiApiBase = OdaiBase & {
+type OdaiApiBase = Odai & {
   status: OdaiStatus
 }
 
-export type OdaiPostData = Omit<OdaiApiBase, 'dueDate'> & {
+export type OdaiNormalPostData = Omit<Extract<OdaiApiBase, { type: 'normal' }>, 'dueDate'> & {
   dueDate: Date
+  createdAt: Date
+}
+export type OdaiIpponPostData = Extract<OdaiApiBase, { type: 'ippon' }> & {
   createdAt: Date
 }
 

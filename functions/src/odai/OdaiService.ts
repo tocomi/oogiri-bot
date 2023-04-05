@@ -41,7 +41,10 @@ export class OdaiServiceImpl implements OdaiService {
     const currentOdai = await this.repository.getCurrent(params)
     if (currentOdai) return OdaiDuplicationError
 
-    const result = await this.repository.create(params)
+    const result =
+      params.type === 'normal'
+        ? await this.repository.createNormal(params)
+        : await this.repository.createIppon(params)
     return result ? 'ok' : InternalServerError
   }
 

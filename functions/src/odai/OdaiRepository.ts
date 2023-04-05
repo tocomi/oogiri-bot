@@ -2,18 +2,21 @@ import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
   OdaiFinishedListParams,
-  OdaiPostData,
-  OdaiPostRequestParams,
+  OdaiNormalPostRequest,
+  OdaiNormalPostData,
   OdaiPutStatusData,
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
   OdaiResponseBase,
+  OdaiIpponPostRequest,
+  OdaiIpponPostData,
 } from './Odai'
 import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 import { COLLECTION_NAME } from '../const'
 
 export interface OdaiRepository {
-  create(params: OdaiPostRequestParams): Promise<boolean>
+  createNormal(params: OdaiNormalPostRequest): Promise<boolean>
+  createIppon(params: OdaiIpponPostRequest): Promise<boolean>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
   getAllFinished(params: OdaiFinishedListParams): Promise<OdaiResponseBase[]>
@@ -25,14 +28,15 @@ const odaiCollection = (slackTeamId: string) => {
 }
 
 export class OdaiRepositoryImpl implements OdaiRepository {
-  async create({
+  async createNormal({
     title,
     dueDate,
     createdBy,
     imageUrl,
     slackTeamId,
-  }: OdaiPostRequestParams): Promise<boolean> {
-    const data: OdaiPostData = {
+  }: OdaiNormalPostRequest): Promise<boolean> {
+    const data: OdaiNormalPostData = {
+      type: 'normal',
       title,
       dueDate: new Date(dueDate),
       createdBy,
@@ -41,7 +45,30 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       createdAt: new Date(),
     }
     const docRef = odaiCollection(slackTeamId).doc()
-    const result = await createDoc<OdaiPostData>(docRef, data)
+    const result = await createDoc<OdaiNormalPostData>(docRef, data)
+    return result
+  }
+
+  async createIppon({
+    title,
+    createdBy,
+    imageUrl,
+    ipponVoteCount,
+    winIpponCount,
+    slackTeamId,
+  }: OdaiIpponPostRequest): Promise<boolean> {
+    const data: OdaiIpponPostData = {
+      type: 'ippon',
+      title,
+      createdBy,
+      imageUrl: imageUrl || '',
+      ipponVoteCount,
+      winIpponCount,
+      status: 'posting',
+      createdAt: new Date(),
+    }
+    const docRef = odaiCollection(slackTeamId).doc()
+    const result = await createDoc<OdaiIpponPostData>(docRef, data)
     return result
   }
 
@@ -52,16 +79,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       return null
     }
     const doc = snapshot.docs[0]
-    const data = doc.data()
-    return {
-      docId: doc.id,
-      title: data.title,
-      imageUrl: data.imageUrl,
-      dueDate: convertTimestamp(data.dueDate),
-      createdBy: data.createdBy,
-      status: data.status,
-      createdAt: convertTimestamp(data.createdAt),
-    }
+    return this.makeResponse(doc)
   }
 
   async getRecentFinished({
@@ -76,15 +94,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       return null
     }
     const doc = snapshot.docs[0]
-    const data = doc.data()
-    return {
-      docId: doc.id,
-      title: data.title,
-      dueDate: convertTimestamp(data.dueDate),
-      createdBy: data.createdBy,
-      status: data.status,
-      createdAt: convertTimestamp(data.createdAt),
-    }
+    return this.makeResponse(doc)
   }
 
   async getAllFinished({ slackTeamId }: OdaiFinishedListParams): Promise<OdaiResponseBase[]> {
@@ -96,17 +106,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
       console.log('No finished odai.')
       return []
     }
-    return snapshot.docs.map((doc) => {
-      const data = doc.data()
-      return {
-        docId: doc.id,
-        title: data.title,
-        dueDate: convertTimestamp(data.dueDate),
-        createdBy: data.createdBy,
-        status: data.status,
-        createdAt: convertTimestamp(data.createdAt),
-      }
-    })
+    return snapshot.docs.map(this.makeResponse)
   }
 
   async updateStatus(
@@ -127,5 +127,30 @@ export class OdaiRepositoryImpl implements OdaiRepository {
         return false
       })
     return result
+  }
+
+  private makeResponse(doc: FirebaseFirestore.QueryDocumentSnapshot): OdaiResponseBase {
+    const data = doc.data()
+    const responseBase = {
+      docId: doc.id,
+      title: data.title,
+      imageUrl: data.imageUrl,
+      createdBy: data.createdBy,
+      status: data.status,
+      createdAt: convertTimestamp(data.createdAt),
+    }
+    if (data.type === 'ippon') {
+      return {
+        type: 'ippon',
+        ipponVoteCount: data.ipponVoteCount,
+        winIpponCount: data.winIpponCount,
+        ...responseBase,
+      }
+    }
+    return {
+      type: 'normal',
+      dueDate: convertTimestamp(data.dueDate),
+      ...responseBase,
+    }
   }
 }

@@ -46,7 +46,7 @@ const sendResponse = (res: express.Response, result: Record<string, unknown>) =>
 
 app.post('/odai', async (req: express.Request, res) => {
   const params = req.body as OdaiPostRequestParams
-  if (!params.slackTeamId || !params.title || !params.dueDate || !params.createdBy) {
+  if (!params.slackTeamId || !params.title || !params.createdBy) {
     return errorResponse(res, IllegalArgumentError)
   }
 
