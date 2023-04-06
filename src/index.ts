@@ -2,7 +2,7 @@ import { App } from '@slack/bolt'
 import { config } from './config'
 import { checkResult, countKotaeAction, createKotae } from './kotae/KotaeAction'
 import { createOdai, finishOdai, startVoting } from './odai/OdaiAction'
-import { checkVoteResult, countVoteAction } from './vote/VoteAction'
+import { checkVoteResult, countVoteAction, voteKotaeIppon } from './vote/VoteAction'
 
 const app = new App({
   socketMode: true,
@@ -22,6 +22,7 @@ checkResult(app)
 
 countVoteAction(app)
 checkVoteResult(app)
+voteKotaeIppon(app)
 
 const main = async () => {
   await app.start(PORT)

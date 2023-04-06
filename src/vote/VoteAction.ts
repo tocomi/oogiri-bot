@@ -1,8 +1,10 @@
 import { App, KnownBlock } from '@slack/bolt'
+import { VOTE_KOTAE_IPPON_ACTION_ID } from '../kotae/blocks/kotaeIpponCreatedBlocks'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
 import { VoteUseCase } from './VoteUseCase'
 import { countVote } from './action/countVote'
+import { createVoteAlreadyBlocks, createVoteCompleteBlocks } from './blocks'
 
 export const countVoteAction = (app: App) => {
   app.command('/oogiri-count-kusa', async ({ ack, body, client }) => {
@@ -147,5 +149,51 @@ export const checkVoteResult = (app: App) => {
 
     const blocks = [...headerBlocks, ...resultBlocks]
     await postEphemeral({ client, user: body.user_id, blocks })
+  })
+}
+
+export const voteKotaeIppon = (app: App) => {
+  app.action(VOTE_KOTAE_IPPON_ACTION_ID, async ({ ack, body, client, logger }) => {
+    await ack()
+    // NOTE: 投票ボタンが押された回答のテキストを抽出
+    // 何故か型が無いので仕方なくts-ignoreを使用
+    // text -> ':speaking_head_in_silhouette: *kotae*'
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const text: string = body.message.blocks[0].text.text
+    // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
+    const content = text.replace(/.*\n/, '').replace(/\*/g, '')
+
+    // TODO: ランクはないが暫定的に3を入れておく
+    const voteRank = 3
+
+    const voteUseCase = new VoteUseCase()
+    const slackTeamId = body.team?.id || ''
+    const user = body.user.id
+    const result = await voteUseCase
+      .create({
+        slackTeamId,
+        content,
+        rank: voteRank,
+        votedBy: user,
+      })
+      .catch((error) => {
+        if (error.response.data.message === 'Already Voted') {
+          logger.warn(error.response.data.message)
+          const blocks = createVoteAlreadyBlocks({ content })
+          postEphemeral({
+            client,
+            user,
+            blocks,
+          })
+        } else {
+          logger.error(error.response.config)
+          postInternalErrorMessage({ client, user })
+        }
+        return undefined
+      })
+    if (!result) return
+    const blocks = createVoteCompleteBlocks({ content, voteRank })
+    await postEphemeral({ client, user, blocks })
   })
 }

@@ -7,11 +7,14 @@ const CHANNEL_ID = config.slack.channelId
 export const postMessage = async ({
   client,
   blocks,
+  options = {},
 }: {
   client: WebClient
   blocks: KnownBlock[]
+  options?: Partial<NonNullable<Parameters<typeof client.chat.postMessage>[0]>>
 }) => {
   await client.chat.postMessage({
+    ...options,
     channel: CHANNEL_ID,
     blocks,
   })
