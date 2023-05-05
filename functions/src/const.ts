@@ -3,4 +3,5 @@ export const COLLECTION_NAME = {
   ODAI: 'odai',
   KOTAE: 'kotae',
   VOTE: 'vote',
+  IPPON: 'ippon',
 }

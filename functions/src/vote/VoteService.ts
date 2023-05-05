@@ -1,4 +1,3 @@
-import { ApiPostStatus } from '../api/Api'
 import {
   AlreadySameRankVotedError,
   AlreadyVotedError,
@@ -6,21 +5,23 @@ import {
   InternalServerError,
   NoVotingOdaiError,
 } from '../api/Error'
+import { IpponService } from '../ippon/IpponService'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
 import {
-  VoteRequestParams,
+  VoteCreateRequest,
   VoteCountResponse,
   VoteCountParams,
   VoteCountByUserParams,
   VoteCountByUserResponse,
   Vote,
   VoteCountByUser,
+  VoteCreateResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
 
 export interface VoteService {
-  create(params: VoteRequestParams): Promise<ApiPostStatus>
+  create(params: VoteCreateRequest): Promise<VoteCreateResponse>
   getVoteCount(params: VoteCountParams): Promise<VoteCountResponse>
   getTotalVoteCountByUser(params: VoteCountByUserParams): Promise<VoteCountByUserResponse>
 }
@@ -29,17 +30,31 @@ export class VoteServiceImpl implements VoteService {
   repository: VoteRepository
   odaiService: OdaiService
   kotaeService: KotaeService
+  ipponService: IpponService
 
-  constructor(repository: VoteRepository, odaiService: OdaiService, kotaeService: KotaeService) {
+  constructor(
+    repository: VoteRepository,
+    odaiService: OdaiService,
+    kotaeService: KotaeService,
+    ipponService: IpponService
+  ) {
     this.repository = repository
     this.odaiService = odaiService
     this.kotaeService = kotaeService
+    this.ipponService = ipponService
   }
 
-  async create({ slackTeamId, content, votedBy, rank }: VoteRequestParams): Promise<ApiPostStatus> {
+  async create({
+    slackTeamId,
+    content,
+    votedBy,
+    rank,
+  }: VoteCreateRequest): Promise<VoteCreateResponse> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
     if (hasError(currentOdai)) return currentOdai
-    if (currentOdai.status !== 'voting') return NoVotingOdaiError
+
+    // NOTE: IPPON グランプリモードでは voting のステータスはない
+    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
     const kotae = await this.kotaeService.getByContent({ slackTeamId, content })
     if (hasError(kotae)) return kotae
@@ -57,13 +72,31 @@ export class VoteServiceImpl implements VoteService {
     if (voteResult === 'alreadyVoted') return AlreadyVotedError
     if (voteResult === 'alreadySameRankVoted') return AlreadySameRankVotedError
 
-    const result = await this.kotaeService.incrementVoteCount({
+    await this.kotaeService.incrementVoteCount({
       slackTeamId,
       content,
       rank,
     })
 
-    return result
+    // NOTE: 投票数が IPPON の基準を満たした場合はその情報を一緒に返す
+    if (currentOdai.type === 'ippon' && currentOdai.ipponVoteCount === kotae.votedCount + 1) {
+      const ipponResult = await this.ipponService.create({
+        slackTeamId,
+        userId: kotae.createdBy,
+        kotaeId: kotae.docId,
+        kotaeContent: kotae.content,
+        odaiId: currentOdai.docId,
+        odaiTitle: currentOdai.title,
+        winIpponCount: currentOdai.winIpponCount,
+      })
+      return {
+        vote: voteResult,
+        ippon: ipponResult.ippon,
+        win: ipponResult.win,
+      }
+    }
+
+    return { vote: voteResult }
   }
 
   async getVoteCount(params: VoteCountParams): Promise<VoteCountResponse> {
@@ -112,7 +145,7 @@ export class VoteServiceImpl implements VoteService {
 
     let recent5timesVotes: VoteCountByUser[] = []
     uniqueVotes
-      .filter((vote) => vote.createdAt > borderCreatedAt)
+      .filter((vote) => (vote.createdAt as number) > borderCreatedAt)
       .forEach((vote) => {
         const target = recent5timesVotes.find((v) => v.votedBy === vote.votedBy)
         if (!target) {

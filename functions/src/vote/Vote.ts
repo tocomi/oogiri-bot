@@ -1,5 +1,6 @@
 import { SlackParams } from '../api/Api'
 import { ApiError } from '../api/Error'
+import { Ippon, Win } from '../ippon/Ippon'
 import { OdaiStatus } from '../odai/Odai'
 
 type VoteBase = {
@@ -7,17 +8,24 @@ type VoteBase = {
   rank: 1 | 2 | 3
 }
 
-export type VoteRequestParams = SlackParams &
-  VoteBase & {
-    content: string
-  }
-
 export type Vote = VoteBase & {
   createdAt: Date | number
   kotaeId: string
   kotaeContent: string
   kotaeCreatedBy: string
 }
+
+export type VoteCreateRequest = SlackParams &
+  VoteBase & {
+    content: string
+  }
+export type VoteCreateResponse =
+  | {
+      vote: Vote
+      ippon?: Ippon
+      win?: Win
+    }
+  | ApiError
 
 export type VoteOfCurrentOdaiParams = SlackParams
 
