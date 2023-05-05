@@ -35,6 +35,17 @@ export class KotaeServiceImpl implements KotaeService {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
     if (hasError(currentOdai)) return currentOdai
 
+    // NOTE: 同じ内容の答えがすでに存在する場合は何もしない
+    const sameContentKotae = await this.repository.getByContent({
+      slackTeamId: params.slackTeamId,
+      content: params.content,
+      odaiDocId: currentOdai.docId,
+    })
+    if (sameContentKotae) {
+      console.warn('Same content kotae is posted.')
+      return 'ok'
+    }
+
     const result = await this.repository.create(params, currentOdai.docId)
     return result ? 'ok' : InternalServerError
   }
