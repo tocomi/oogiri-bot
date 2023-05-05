@@ -1,5 +1,4 @@
 import { SlackParams } from '../api/Api'
-import { ApiError } from '../api/Error'
 
 export type Ippon = {
   userId: string
