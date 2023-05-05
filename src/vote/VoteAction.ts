@@ -1,4 +1,5 @@
 import { App, KnownBlock } from '@slack/bolt'
+import { createIppon } from '../ippon/IpponAction'
 import { VOTE_KOTAE_IPPON_ACTION_ID } from '../kotae/blocks/kotaeIpponCreatedBlocks'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
@@ -195,5 +196,9 @@ export const voteKotaeIppon = (app: App) => {
     if (!result) return
     const blocks = createVoteCompleteBlocks({ content, voteRank })
     await postEphemeral({ client, user, blocks })
+
+    if (result.ippon) {
+      createIppon({ client, userId: result.ippon.userId, kotaeContent: content })
+    }
   })
 }
