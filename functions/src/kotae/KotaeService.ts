@@ -1,9 +1,11 @@
-import { ApiPostStatus } from '../api/Api'
+import { ApiPostStatus, SlackParams } from '../api/Api'
 import { ApiError, hasError, InternalServerError, NoTargetKotaeError } from '../api/Error'
 import { OdaiService } from '../odai/OdaiService'
 import {
   KotaeByContentParams,
   KotaeByContentResponse,
+  KotaeCountsRequest,
+  KotaeCountsResponse,
   KotaeGetAllResponse,
   KotaeIncrementVoteCountParams,
   KotaeOfCurrentOdaiParams as KotaeOfCurrentOdaiParams,
@@ -15,11 +17,23 @@ import {
 import { KotaeRepository } from './KotaeRepository'
 
 export interface KotaeService {
+  /** 回答の作成 */
   create(params: KotaePostRequestParams): Promise<ApiPostStatus>
+
+  /** 現在アクティブなお題の全回答を取得 */
   getAllOfCurrentOdai(params: KotaeOfCurrentOdaiParams): Promise<KotaeGetAllResponse>
+
+  /** 直近終了したお題の個人成績を取得 */
   getPersonalResult(params: KotaePersonalResultParams): Promise<KotaePersonalResultResponse>
+
+  /** 回答内容をキーに情報を取得 */
   getByContent(params: KotaeByContentParams): Promise<KotaeByContentResponse>
+
+  /** 投票数を加算する */
   incrementVoteCount(params: KotaeIncrementVoteCountParams): Promise<ApiPostStatus>
+
+  /** 現在アクティブなお題の回答数と回答参加者数を取得 */
+  getCurrentCounts(params: KotaeCountsRequest): Promise<KotaeCountsResponse>
 }
 
 export class KotaeServiceImpl implements KotaeService {
@@ -144,5 +158,17 @@ export class KotaeServiceImpl implements KotaeService {
     })
 
     return result ? 'ok' : InternalServerError
+  }
+
+  async getCurrentCounts(params: SlackParams): Promise<KotaeCountsResponse> {
+    const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
+    if (hasError(currentOdai)) return currentOdai
+
+    const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
+
+    return {
+      kotaeCount: kotaeList.length,
+      kotaeUserCount: [...new Set(kotaeList.map((k) => k.createdBy))].length,
+    }
   }
 }
