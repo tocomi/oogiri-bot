@@ -78,6 +78,10 @@ export class VoteServiceImpl implements VoteService {
       rank,
     })
 
+    // NOTE: 依存方向の関係で投票情報は個々で取得して ipponService に渡す
+    const voteCounts = await this.getVoteCount({ slackTeamId })
+    if (hasError(voteCounts)) return voteCounts
+
     // NOTE: 投票数が IPPON の基準を満たした場合はその情報を一緒に返す
     if (currentOdai.type === 'ippon' && currentOdai.ipponVoteCount === kotae.votedCount + 1) {
       const ipponResult = await this.ipponService.create({
@@ -89,6 +93,7 @@ export class VoteServiceImpl implements VoteService {
         odaiTitle: currentOdai.title,
         odaiImageUrl: currentOdai.imageUrl,
         winIpponCount: currentOdai.winIpponCount,
+        voteCounts,
       })
       if (hasError(ipponResult)) return ipponResult
       return {

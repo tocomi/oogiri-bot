@@ -1,6 +1,5 @@
 import { hasError } from '../api/Error'
 import { KotaeService } from '../kotae/KotaeService'
-import { VoteService } from '../vote/VoteService'
 import { IpponCreateRequest, IpponCreateResponse, WinResult } from './Ippon'
 import { IpponRepository } from './IpponRepository'
 
@@ -11,16 +10,10 @@ export interface IpponService {
 export class IpponServiceImpl implements IpponService {
   repository: IpponRepository
   kotaeService: KotaeService
-  voteService: VoteService
 
-  constructor(
-    private ipponRepository: IpponRepository,
-    kotaeService: KotaeService,
-    voteService: VoteService
-  ) {
+  constructor(private ipponRepository: IpponRepository, kotaeService: KotaeService) {
     this.repository = ipponRepository
     this.kotaeService = kotaeService
-    this.voteService = voteService
   }
 
   async create(params: IpponCreateRequest): Promise<IpponCreateResponse> {
@@ -36,16 +29,14 @@ export class IpponServiceImpl implements IpponService {
     if (params.winIpponCount !== ipponCountOfUser) return { ippon }
 
     // NOTE: ippon 数が基準を満たしたら試合終了処理
-    const [kotaeCounts, voteCounts, ipponList] = await Promise.all([
+    const [kotaeCounts, ipponList] = await Promise.all([
       this.kotaeService.getCurrentCounts({ slackTeamId: params.slackTeamId }),
-      this.voteService.getVoteCount({ slackTeamId: params.slackTeamId }),
       this.ipponRepository.getAllIpponOfOdai({
         slackTeamId: params.slackTeamId,
         odaiId: params.odaiId,
       }),
     ])
     if (hasError(kotaeCounts)) return kotaeCounts
-    if (hasError(voteCounts)) return voteCounts
 
     // NOTE: IPPON のデータからユーザーごとの IPPON 数を集計
     const ipponResult: WinResult['ipponResult'] = []
@@ -70,8 +61,8 @@ export class IpponServiceImpl implements IpponService {
         odaiImageUrl: params.odaiImageUrl,
         kotaeCount: kotaeCounts.kotaeCount,
         kotaeUserCount: kotaeCounts.kotaeUserCount,
-        voteCount: voteCounts.voteCount,
-        voteUserCount: voteCounts.uniqueUserCount,
+        voteCount: params.voteCounts.voteCount,
+        voteUserCount: params.voteCounts.uniqueUserCount,
         ipponResult,
       },
     }

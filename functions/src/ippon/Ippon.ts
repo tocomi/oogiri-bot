@@ -25,7 +25,11 @@ export type WinResult = {
 }
 
 export type IpponCreateRequest = SlackParams &
-  Omit<Ippon, 'createdAt'> & { winIpponCount: number; odaiImageUrl?: string }
+  Omit<Ippon, 'createdAt'> & {
+    winIpponCount: number
+    odaiImageUrl?: string
+    voteCounts: { voteCount: number; uniqueUserCount: number }
+  }
 export type IpponCreateResponse =
   | {
       ippon: Ippon
