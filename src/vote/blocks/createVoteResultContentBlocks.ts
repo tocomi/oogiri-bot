@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { UsersInfoResponse } from '@slack/web-api'
+import { UNKNOWN_USER_IMAGE_URL } from '../../conts'
 import { RankedKotae } from '../../kotae/Kotae'
 import { medalEmoji } from '../util'
 
@@ -54,12 +55,12 @@ export const createVoteResultContentBlocks = ({
           elements: [
             {
               type: 'image',
-              image_url: userInfo?.profile?.image_32,
+              image_url: userInfo?.profile?.image_32 || UNKNOWN_USER_IMAGE_URL,
               alt_text: 'user_image',
             },
             {
               type: 'mrkdwn',
-              text: userInfo?.profile?.display_name,
+              text: userInfo?.profile?.display_name || 'unknown',
             },
           ],
         },
