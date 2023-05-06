@@ -1,6 +1,6 @@
 import { SlackParams } from '../api/Api'
 import { ApiError } from '../api/Error'
-import { Ippon, Win } from '../ippon/Ippon'
+import { Ippon, WinResult } from '../ippon/Ippon'
 import { OdaiStatus } from '../odai/Odai'
 
 type VoteBase = {
@@ -23,7 +23,7 @@ export type VoteCreateResponse =
   | {
       vote: Vote
       ippon?: Ippon
-      win?: Win
+      winResult?: WinResult
     }
   | ApiError
 

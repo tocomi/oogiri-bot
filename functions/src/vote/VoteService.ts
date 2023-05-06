@@ -89,10 +89,11 @@ export class VoteServiceImpl implements VoteService {
         odaiTitle: currentOdai.title,
         winIpponCount: currentOdai.winIpponCount,
       })
+      if (hasError(ipponResult)) return ipponResult
       return {
         vote: voteResult,
         ippon: ipponResult.ippon,
-        win: ipponResult.win,
+        winResult: ipponResult.winResult,
       }
     }
 

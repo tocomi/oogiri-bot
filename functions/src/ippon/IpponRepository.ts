@@ -1,10 +1,22 @@
 import { COLLECTION_NAME } from '../const'
 import { createDoc, db } from '../firebase/firestore'
-import { Ippon, IpponCreateRequest, IpponGetByUserRequest } from './Ippon'
+import {
+  Ippon,
+  IpponCreateRequest,
+  IpponGetAllRequest,
+  IpponGetAllResponse,
+  IpponGetByUserRequest,
+} from './Ippon'
 
 export interface IpponRepository {
+  /** IPPON のデータ作成 */
   create(params: IpponCreateRequest): Promise<Ippon>
+
+  /** ユーザーの現在の IPPON 数を取得 */
   getIpponCountByUser(params: IpponGetByUserRequest): Promise<number>
+
+  /** 指定したお題の IPPON をすべて取得 */
+  getAllIpponOfOdai(params: IpponGetAllRequest): Promise<IpponGetAllResponse>
 }
 
 const ipponOdaiCollection = ({
@@ -45,5 +57,20 @@ export class IpponRepositoryImpl implements IpponRepository {
       .where('userId', '==', params.userId)
       .get()
     return snapshot.size
+  }
+
+  async getAllIpponOfOdai(params: IpponGetAllRequest): Promise<IpponGetAllResponse> {
+    const snapshot = await ipponOdaiCollection({
+      slackTeamId: params.slackTeamId,
+      odaiDocId: params.odaiId,
+    }).get()
+
+    const ipponList: Ippon[] = []
+    snapshot.forEach((doc) => {
+      const data = doc.data() as Ippon
+      ipponList.push(data)
+    })
+
+    return ipponList
   }
 }
