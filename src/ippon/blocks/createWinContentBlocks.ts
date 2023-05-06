@@ -1,7 +1,7 @@
 import { KnownBlock, UsersInfoResponse } from '@slack/web-api'
 import { UNKNOWN_USER_IMAGE_URL } from '../../conts'
 
-export const createWinBlocks = ({
+export const createWinContentBlocks = ({
   ipponCountList,
   userInfoMap,
 }: {

@@ -109,7 +109,10 @@ export class VoteServiceImpl implements VoteService {
   async getVoteCount(params: VoteCountParams): Promise<VoteCountResponse> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
     if (hasError(currentOdai)) return currentOdai
-    if (currentOdai.status !== 'voting') return NoVotingOdaiError
+
+    // NOTE: IPPON グランプリモードでは voting のステータスはない
+    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
+
     const votes = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
     return {
       odaiTitle: currentOdai.title,

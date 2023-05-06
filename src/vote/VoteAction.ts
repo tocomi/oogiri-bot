@@ -203,12 +203,30 @@ export const voteKotaeIppon = (app: App) => {
     }
 
     // NOTE: 勝負が決まってない場合は継続
-    if (!result.win) return
+    if (!result.winResult) return
 
     // NOTE: 勝負が決まった場合は結果を通知
-    // FIXME: ダミーデータ
-    const ipponCountList = [{ userId: 'U5S9CURD2', ipponCount: 3 }]
-    const userInfoMap = await getSlackUserList({ client, userIdList: ['U5S9CURD2'] })
-    createWin({ client, ipponCountList, userInfoMap })
+    const {
+      odaiTitle,
+      odaiImageUrl,
+      kotaeCount,
+      kotaeUserCount,
+      voteCount,
+      voteUserCount,
+      ipponResult: ipponCountList,
+    } = result.winResult
+    const userInfoMap = await getSlackUserList({
+      client,
+      userIdList: ipponCountList.map((ippon) => ippon.userId),
+    })
+    createWin({
+      client,
+      odaiTitle,
+      odaiImageUrl,
+      kotaeCounts: { kotaeCount, uniqueUserCount: kotaeUserCount },
+      voteCounts: { voteCount, uniqueUserCount: voteUserCount },
+      ipponCountList,
+      userInfoMap,
+    })
   })
 }

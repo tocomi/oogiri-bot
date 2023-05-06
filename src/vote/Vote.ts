@@ -1,5 +1,5 @@
 import { SlackParams } from '../api/Api'
-import { Ippon, Win } from '../ippon/Ippon'
+import { Ippon, WinResult } from '../ippon/Ippon'
 import { OdaiStatus } from '../odai/Odai'
 
 export type VotePostRequestParams = {
@@ -11,7 +11,7 @@ export type VotePostRequestParams = {
 export type VotePostResponse = {
   vote: Pick<VotePostRequestParams, 'content' | 'rank' | 'votedBy'>
   ippon?: Ippon
-  win?: Win
+  winResult?: WinResult
 }
 
 export type VoteCountRequestParams = SlackParams

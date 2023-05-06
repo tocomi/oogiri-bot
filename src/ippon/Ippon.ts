@@ -7,8 +7,16 @@ export type Ippon = {
   createdAt: Date
 }
 
-export type Win = {
-  userId: string
+export type WinResult = {
   odaiId: string
   odaiTitle: string
+  odaiImageUrl?: string
+  kotaeCount: number
+  kotaeUserCount: number
+  voteCount: number
+  voteUserCount: number
+  ipponResult: {
+    userId: string
+    ipponCount: number
+  }[]
 }
