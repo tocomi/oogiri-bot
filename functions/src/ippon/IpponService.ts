@@ -67,6 +67,7 @@ export class IpponServiceImpl implements IpponService {
       winResult: {
         odaiId: params.odaiId,
         odaiTitle: params.odaiTitle,
+        odaiImageUrl: params.odaiImageUrl,
         kotaeCount: kotaeCounts.kotaeCount,
         kotaeUserCount: kotaeCounts.kotaeUserCount,
         voteCount: voteCounts.voteCount,

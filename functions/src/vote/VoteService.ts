@@ -87,6 +87,7 @@ export class VoteServiceImpl implements VoteService {
         kotaeContent: kotae.content,
         odaiId: currentOdai.docId,
         odaiTitle: currentOdai.title,
+        odaiImageUrl: currentOdai.imageUrl,
         winIpponCount: currentOdai.winIpponCount,
       })
       if (hasError(ipponResult)) return ipponResult
