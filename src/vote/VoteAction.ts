@@ -1,5 +1,5 @@
 import { App, KnownBlock } from '@slack/bolt'
-import { createIppon } from '../ippon/IpponAction'
+import { createIppon, createWin } from '../ippon/IpponAction'
 import { VOTE_KOTAE_IPPON_ACTION_ID } from '../kotae/blocks/kotaeIpponCreatedBlocks'
 import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
@@ -197,8 +197,18 @@ export const voteKotaeIppon = (app: App) => {
     const blocks = createVoteCompleteBlocks({ content, voteRank })
     await postEphemeral({ client, user, blocks })
 
+    // NOTE: IPPON の場合の通知
     if (result.ippon) {
       createIppon({ client, userId: result.ippon.userId, kotaeContent: content })
     }
+
+    // NOTE: 勝負が決まってない場合は継続
+    if (!result.win) return
+
+    // NOTE: 勝負が決まった場合は結果を通知
+    // FIXME: ダミーデータ
+    const ipponCountList = [{ userId: 'U5S9CURD2', ipponCount: 3 }]
+    const userInfoMap = await getSlackUserList({ client, userIdList: ['U5S9CURD2'] })
+    createWin({ client, ipponCountList, userInfoMap })
   })
 }
