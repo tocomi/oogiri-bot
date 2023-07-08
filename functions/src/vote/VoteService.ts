@@ -78,7 +78,7 @@ export class VoteServiceImpl implements VoteService {
       rank,
     })
 
-    // NOTE: 依存方向の関係で投票情報は個々で取得して ipponService に渡す
+    // NOTE: 依存方向の関係で投票情報はここで取得して ipponService に渡す
     const voteCounts = await this.getVoteCount({ slackTeamId })
     if (hasError(voteCounts)) return voteCounts
 
