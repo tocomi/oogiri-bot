@@ -34,7 +34,7 @@ const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
 const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
 const ipponRepository: IpponRepository = new IpponRepositoryImpl()
-const ipponService: IpponService = new IpponServiceImpl(ipponRepository, kotaeService)
+const ipponService: IpponService = new IpponServiceImpl(ipponRepository, kotaeService, odaiService)
 const voteRepository: VoteRepository = new VoteRepositoryImpl()
 const voteService: VoteService = new VoteServiceImpl(
   voteRepository,

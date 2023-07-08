@@ -1,5 +1,6 @@
 import { hasError } from '../api/Error'
 import { KotaeService } from '../kotae/KotaeService'
+import { OdaiService } from '../odai/OdaiService'
 import { IpponCreateRequest, IpponCreateResponse, WinResult } from './Ippon'
 import { IpponRepository } from './IpponRepository'
 
@@ -10,16 +11,22 @@ export interface IpponService {
 export class IpponServiceImpl implements IpponService {
   repository: IpponRepository
   kotaeService: KotaeService
+  odaiService: OdaiService
 
-  constructor(private ipponRepository: IpponRepository, kotaeService: KotaeService) {
+  constructor(
+    ipponRepository: IpponRepository,
+    kotaeService: KotaeService,
+    odaiService: OdaiService
+  ) {
     this.repository = ipponRepository
     this.kotaeService = kotaeService
+    this.odaiService = odaiService
   }
 
   async create(params: IpponCreateRequest): Promise<IpponCreateResponse> {
-    const ippon = await this.ipponRepository.create(params)
+    const ippon = await this.repository.create(params)
 
-    const ipponCountOfUser = await this.ipponRepository.getIpponCountByUser({
+    const ipponCountOfUser = await this.repository.getIpponCountByUser({
       slackTeamId: params.slackTeamId,
       odaiId: params.odaiId,
       userId: params.userId,
@@ -31,10 +38,11 @@ export class IpponServiceImpl implements IpponService {
     // NOTE: ippon 数が基準を満たしたら試合終了処理
     const [kotaeCounts, ipponList] = await Promise.all([
       this.kotaeService.getCurrentCounts({ slackTeamId: params.slackTeamId }),
-      this.ipponRepository.getAllIpponOfOdai({
+      this.repository.getAllIpponOfOdai({
         slackTeamId: params.slackTeamId,
         odaiId: params.odaiId,
       }),
+      this.odaiService.finish({ slackTeamId: params.slackTeamId }),
     ])
     if (hasError(kotaeCounts)) return kotaeCounts
 

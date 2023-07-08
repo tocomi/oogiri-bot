@@ -84,7 +84,7 @@ export class OdaiServiceImpl implements OdaiService {
   async finish(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus> {
     const currentOdai = await this.getCurrent({ slackTeamId: params.slackTeamId })
     if (hasError(currentOdai)) return currentOdai
-    if (currentOdai.status !== 'voting') return NoVotingOdaiError
+    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
     const result = await this.repository.updateStatus(
       { slackTeamId: params.slackTeamId, status: 'finished' },
