@@ -92,9 +92,6 @@ export class KotaeServiceImpl implements KotaeService {
     })
     if (hasError(recentFinishedOdai)) return recentFinishedOdai
 
-    // FIXME: 一旦ノーマルモードのみ対応
-    if (recentFinishedOdai.type === 'ippon') throw InternalServerError
-
     const kotaeList = await this.repository.getPersonalResult(
       { slackTeamId, userId },
       recentFinishedOdai.docId
@@ -117,7 +114,8 @@ export class KotaeServiceImpl implements KotaeService {
 
     return {
       odaiTitle: recentFinishedOdai.title,
-      odaiDueDate: recentFinishedOdai.dueDate,
+      // NOTE: ippon の場合は dueDate は使わないのでダミーの値
+      odaiDueDate: recentFinishedOdai.type === 'normal' ? recentFinishedOdai.dueDate : 0,
       odaiStatus: recentFinishedOdai.status,
       kotaeList: kotaeWithVoteList,
     }
