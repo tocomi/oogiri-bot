@@ -4,15 +4,30 @@ import { KotaeListResponse } from '../kotae/Kotae'
 export type OdaiGetCurrentRequestParams = SlackParams
 
 export type OdaiGetCurrentResponse = {
-  status: OdaiStatus
+  odai: {
+    type: 'normal' | 'ippon'
+    status: OdaiStatus
+  }
 }
 
-export type OdaiPostRequestParams = {
+type OdaiRequestBase = {
   title: string
-  dueDate: number
   createdBy: string
   imageUrl?: string
 } & SlackParams
+
+export type OdaiPostRequestParams = OdaiRequestBase &
+  (
+    | {
+        type: 'normal'
+        dueDate: number
+      }
+    | {
+        type: 'ippon'
+        ipponVoteCount: number
+        winIpponCount: number
+      }
+  )
 
 export type OdaiStatus = 'posting' | 'voting' | 'finished'
 

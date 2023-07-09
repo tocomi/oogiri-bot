@@ -41,7 +41,10 @@ export class OdaiServiceImpl implements OdaiService {
     const currentOdai = await this.repository.getCurrent(params)
     if (currentOdai) return OdaiDuplicationError
 
-    const result = await this.repository.create(params)
+    const result =
+      params.type === 'normal'
+        ? await this.repository.createNormal(params)
+        : await this.repository.createIppon(params)
     return result ? 'ok' : InternalServerError
   }
 
@@ -81,7 +84,7 @@ export class OdaiServiceImpl implements OdaiService {
   async finish(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus> {
     const currentOdai = await this.getCurrent({ slackTeamId: params.slackTeamId })
     if (hasError(currentOdai)) return currentOdai
-    if (currentOdai.status !== 'voting') return NoVotingOdaiError
+    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
     const result = await this.repository.updateStatus(
       { slackTeamId: params.slackTeamId, status: 'finished' },

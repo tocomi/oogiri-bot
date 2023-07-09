@@ -8,12 +8,14 @@ import {
 } from '@slack/bolt'
 import { Logger, WebClient } from '@slack/web-api'
 import emojiRegex from 'emoji-regex'
-import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { postMessage, postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { OdaiUseCase } from '../odai/OdaiUseCase'
 import { getSlackUserList } from '../util/getSlackUserList'
 import { medalEmoji } from '../vote/util'
 import { KotaeUseCase } from './KotaeUseCase'
 import { countKotae } from './action/countKotae'
 import { kotaeCreatedBlocks } from './blocks'
+import { kotaeIpponCreatedBlocks } from './blocks/kotaeIpponCreatedBlocks'
 import { makePointRanking } from './rank/makePointRanking'
 import {
   kotaeCreateView,
@@ -107,6 +109,16 @@ export const createKotae = (app: App) => {
       })
     if (!success) return
 
+    const odaiUseCase = new OdaiUseCase()
+    const { odai } = await odaiUseCase.getCurrent({ slackTeamId: view.team_id })
+    if (odai.type === 'ippon') {
+      const blocks: KnownBlock[] = kotaeIpponCreatedBlocks(kotae)
+      await postMessage({
+        client,
+        blocks,
+      })
+      return
+    }
     const blocks: KnownBlock[] = kotaeCreatedBlocks(kotae)
     await postEphemeral({
       client,

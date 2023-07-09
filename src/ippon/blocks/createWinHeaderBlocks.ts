@@ -1,18 +1,16 @@
-import { KnownBlock } from '@slack/types'
+import { KnownBlock } from '@slack/web-api'
 import { KEKKA_IMAGE_URL } from '../../conts'
-import { KotaeCount } from '../../kotae/Kotae'
-import { VoteCount } from '../Vote'
 
-export const createVoteResultHeaderBlocks = ({
+export const createWinHeaderBlocks = ({
   odaiTitle,
-  imageUrl,
-  kotaeCount,
-  voteCount,
+  odaiImageUrl,
+  kotaeCounts,
+  voteCounts,
 }: {
   odaiTitle: string
-  imageUrl?: string
-  kotaeCount: KotaeCount
-  voteCount: VoteCount
+  odaiImageUrl?: string
+  kotaeCounts: { uniqueUserCount: number; kotaeCount: number }
+  voteCounts: { uniqueUserCount: number; voteCount: number }
 }): KnownBlock[] => {
   const blocks: KnownBlock[] = []
   blocks.push(
@@ -29,10 +27,10 @@ export const createVoteResultHeaderBlocks = ({
       },
     }
   )
-  if (imageUrl) {
+  if (odaiImageUrl) {
     blocks.push({
       type: 'image',
-      image_url: imageUrl,
+      image_url: odaiImageUrl,
       alt_text: 'odai image',
     })
   }
@@ -41,14 +39,14 @@ export const createVoteResultHeaderBlocks = ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `:ninja: 回答参加者: ${kotaeCount.uniqueUserCount}人 :speaking_head_in_silhouette: 総回答数: ${kotaeCount.kotaeCount}`,
+        text: `:ninja: 回答参加者: ${kotaeCounts.uniqueUserCount}人 :speaking_head_in_silhouette: 総回答数: ${kotaeCounts.kotaeCount}`,
       },
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `:male_genie: 投票参加者: ${voteCount.uniqueUserCount}人 :point_up: 総投票数: ${voteCount.voteCount}`,
+        text: `:male_genie: 投票参加者: ${voteCounts.uniqueUserCount}人 :point_up: 総投票数: ${voteCounts.voteCount}`,
       },
     },
     {

@@ -13,8 +13,10 @@ import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
-import { VoteCountByUserParams, VoteCountParams, VoteRequestParams } from './vote/Vote'
+import { VoteCountByUserParams, VoteCountParams, VoteCreateRequest } from './vote/Vote'
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
+import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
+import { IpponService, IpponServiceImpl } from './ippon/IpponService'
 
 const REGION = 'asia-northeast1'
 
@@ -31,8 +33,15 @@ const odaiRepository: OdaiRepository = new OdaiRepositoryImpl()
 const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
 const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
+const ipponRepository: IpponRepository = new IpponRepositoryImpl()
+const ipponService: IpponService = new IpponServiceImpl(ipponRepository, kotaeService, odaiService)
 const voteRepository: VoteRepository = new VoteRepositoryImpl()
-const voteService: VoteService = new VoteServiceImpl(voteRepository, odaiService, kotaeService)
+const voteService: VoteService = new VoteServiceImpl(
+  voteRepository,
+  odaiService,
+  kotaeService,
+  ipponService
+)
 
 const errorResponse = (res: express.Response, error: ApiError) => {
   console.log(`ERROR: ${error.message}`)
@@ -46,7 +55,7 @@ const sendResponse = (res: express.Response, result: Record<string, unknown>) =>
 
 app.post('/odai', async (req: express.Request, res) => {
   const params = req.body as OdaiPostRequestParams
-  if (!params.slackTeamId || !params.title || !params.dueDate || !params.createdBy) {
+  if (!params.slackTeamId || !params.title || !params.createdBy) {
     return errorResponse(res, IllegalArgumentError)
   }
 
@@ -161,7 +170,7 @@ app.get('/kotae/personal-result', async (req: express.Request, res) => {
 })
 
 app.post('/kotae/vote', async (req: express.Request, res) => {
-  const params = req.body as VoteRequestParams
+  const params = req.body as VoteCreateRequest
   if (!params.slackTeamId || !params.content || !params.votedBy || !params.rank) {
     return errorResponse(res, IllegalArgumentError)
   }
@@ -170,7 +179,7 @@ app.post('/kotae/vote', async (req: express.Request, res) => {
     return errorResponse(res, result)
   }
 
-  return sendResponse(res, { error: false })
+  return sendResponse(res, { ...result })
 })
 
 app.get('/vote/count', async (req: express.Request, res) => {

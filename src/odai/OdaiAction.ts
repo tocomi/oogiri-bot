@@ -29,6 +29,14 @@ import {
   TITLE_ACTION_ID,
   TITLE_BLOCK_ID,
 } from './action/createOdai'
+import {
+  CREATE_ODAI_IPPON_CALLBACK_ID,
+  IPPON_VOTE_COUNT_ACTION_ID,
+  IPPON_VOTE_COUNT_BLOCK_ID,
+  WIN_IPPON_COUNT_ACTION_ID,
+  WIN_IPPON_COUNT_BLOCK_ID,
+  createIppon,
+} from './action/createOdaiIppon'
 import { finish, FINISH_ODAI_CALLBACK_ID } from './action/finishOdai'
 import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
 import {
@@ -36,6 +44,7 @@ import {
   createOdaiDuplicationBlocks,
   createOdaiNothingBlocks,
 } from './blocks'
+import { createOdaiIpponCreateBlocks } from './blocks/createOdaiIpponCreateBlocks'
 
 export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
 const VOTING_ACTION_ID = 'vote-kotae'
@@ -48,6 +57,11 @@ export const createOdai = (app: App) => {
     await ack()
     await create({ body, client, logger })
   })
+  app.shortcut('oogiri-create-odai-ippon', async ({ ack, body, client, logger }) => {
+    await ack()
+    await createIppon({ body, client, logger })
+  })
+
   // NOTE: ボタンからの作成
   app.action('oogiri-create-odai', async ({ ack, body, client, logger }) => {
     await ack()
@@ -55,7 +69,16 @@ export const createOdai = (app: App) => {
       await create({ body, client, logger })
     }
   })
+  app.action('oogiri-create-odai-ippon', async ({ ack, body, client, logger }) => {
+    await ack()
+    if ('trigger_id' in body) {
+      await createIppon({ body, client, logger })
+    }
+  })
 
+  /**
+   * 通常のお題の作成
+   */
   app.view(CREATE_ODAI_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
     await ack()
     const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
@@ -81,6 +104,7 @@ export const createOdai = (app: App) => {
     const odaiUseCase = new OdaiUseCase()
     const success = await odaiUseCase
       .create({
+        type: 'normal',
         slackTeamId: view.team_id,
         title,
         imageUrl,
@@ -102,6 +126,65 @@ export const createOdai = (app: App) => {
     if (!success) return
 
     const blocks = createOdaiCreateBlocks({ title, dueDate, imageUrl })
+    await postMessage({ client, blocks })
+  })
+
+  /**
+   * IPPON グランプリモードでのお題の作成
+   */
+  app.view(CREATE_ODAI_IPPON_CALLBACK_ID, async ({ ack, view, client, body, logger }) => {
+    await ack()
+    const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
+    const _ipponVoteCount =
+      view.state.values[IPPON_VOTE_COUNT_BLOCK_ID][IPPON_VOTE_COUNT_ACTION_ID].value
+    const _winIpponCount =
+      view.state.values[WIN_IPPON_COUNT_BLOCK_ID][WIN_IPPON_COUNT_ACTION_ID].value
+    const imageUrl = view.state.values[IMAGE_URL_BLOCK_ID][IMAGE_URL_ACTION_ID].value || ''
+
+    if (!title || !_ipponVoteCount || !_winIpponCount) {
+      logger.error(view.state.values)
+      postInternalErrorMessage({ client, user: body.user.id })
+      return
+    }
+
+    if (imageUrl && !isImageUrl(imageUrl)) {
+      logger.error(view.state.values)
+      postInternalErrorMessage({
+        client,
+        user: body.user.id,
+        overrideMessage: ':warning: URLは画像の拡張子(.jpg等)で終わるもののみが有効です :warning:',
+      })
+      return
+    }
+
+    const ipponVoteCount = Number(_ipponVoteCount)
+    const winIpponCount = Number(_winIpponCount)
+    const odaiUseCase = new OdaiUseCase()
+    const success = await odaiUseCase
+      .create({
+        type: 'ippon',
+        slackTeamId: view.team_id,
+        title,
+        ipponVoteCount,
+        winIpponCount,
+        imageUrl,
+        createdBy: body.user.id,
+      })
+      .then(() => true)
+      .catch((error) => {
+        if (error.response.data.message === 'Odai Duplication') {
+          logger.warn(error.response.data.message)
+          const blocks = createOdaiDuplicationBlocks()
+          postEphemeral({ client, user: body.user.id, blocks })
+        } else {
+          logger.error(error.response.config)
+          postInternalErrorMessage({ client, user: body.user.id })
+        }
+        return false
+      })
+    if (!success) return
+
+    const blocks = createOdaiIpponCreateBlocks({ title, ipponVoteCount, winIpponCount, imageUrl })
     await postMessage({ client, blocks })
   })
 }
@@ -166,7 +249,7 @@ export const startVoting = (app: App) => {
   app.action(VOTING_ACTION_ID, async ({ ack, action, body, client, logger }) => {
     await ack()
     // NOTE: 投票ボタンが押された回答のテキストを抽出
-    // 何故か型が無いので仕方なくts-ignoreを仕様
+    // 何故か型が無いので仕方なくts-ignoreを使用
     // text -> ':speaking_head_in_silhouette: *kotae*'
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

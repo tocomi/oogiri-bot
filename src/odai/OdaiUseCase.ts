@@ -3,6 +3,7 @@ import {
   OdaiFinishRequestParams,
   OdaiFinishResponse,
   OdaiGetCurrentRequestParams,
+  OdaiGetCurrentResponse,
   OdaiPostRequestParams,
   OdaiPostResponse,
   OdaiStartVotingRequestParams,
@@ -11,7 +12,7 @@ import {
 
 export class OdaiUseCase {
   async getCurrent(data: OdaiGetCurrentRequestParams) {
-    const result = await api.get<OdaiPostResponse>('/odai/current', { params: data })
+    const result = await api.get<OdaiGetCurrentResponse>('/odai/current', { params: data })
     return result.data
   }
   async create(data: OdaiPostRequestParams) {

@@ -68,3 +68,11 @@ export type KotaeIncrementVoteCountParams = SlackParams & {
   content: string
   rank: 1 | 2 | 3
 }
+
+export type KotaeCountsRequest = SlackParams
+export type KotaeCountsResponse =
+  | {
+      kotaeCount: number
+      kotaeUserCount: number
+    }
+  | ApiError
