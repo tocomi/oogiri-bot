@@ -10,7 +10,10 @@ import {
   OdaiResponseBase,
   OdaiIpponPostRequest,
   OdaiIpponPostData,
-  OdaiResult,
+  OdaiAddResultParams,
+  OdaiGetAllResultsParams,
+  OdaiGetResultParams,
+  OdaiWithResult,
 } from './Odai'
 import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 import { COLLECTION_NAME } from '../const'
@@ -22,7 +25,9 @@ export interface OdaiRepository {
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
   getAllFinished(params: OdaiFinishedListParams): Promise<OdaiResponseBase[]>
   updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<boolean>
-  addResultField(params: { slackTeamId: string; odaiResult: OdaiResult }): Promise<boolean>
+  addResultField(params: OdaiAddResultParams): Promise<boolean>
+  getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResult[]>
+  getResult(params: OdaiGetResultParams): Promise<OdaiWithResult | null>
 }
 
 const odaiCollection = (slackTeamId: string) => {
@@ -131,13 +136,7 @@ export class OdaiRepositoryImpl implements OdaiRepository {
     return result
   }
 
-  async addResultField({
-    slackTeamId,
-    odaiResult,
-  }: {
-    slackTeamId: string
-    odaiResult: OdaiResult
-  }): Promise<boolean> {
+  async addResultField({ slackTeamId, odaiResult }: OdaiAddResultParams): Promise<boolean> {
     const docRef = odaiCollection(slackTeamId).doc(odaiResult.id)
     const success = await docRef
       .update({
@@ -154,6 +153,53 @@ export class OdaiRepositoryImpl implements OdaiRepository {
         return false
       })
     return success
+  }
+
+  async getAllResults({ slackTeamId }: { slackTeamId: string }): Promise<OdaiWithResult[]> {
+    const snapshot = await odaiCollection(slackTeamId).where('result', '!=', null).get()
+    if (snapshot.empty) {
+      console.error('No odai having result.')
+      return []
+    }
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        type: 'normal',
+        id: doc.id,
+        title: data.title,
+        imageUrl: data.imageUrl,
+        createdBy: data.createdBy,
+        dueDate: convertTimestamp(data.dueDate),
+        kotaeCount: data.result.kotaeCount,
+        voteCount: data.result.voteCount,
+        pointStats: data.result.pointStats,
+        countStats: data.result.countStats,
+      }
+    })
+  }
+
+  async getResult({ slackTeamId, odaiId }: OdaiGetResultParams): Promise<OdaiWithResult | null> {
+    const snapshot = await odaiCollection(slackTeamId).doc(odaiId).get()
+    if (!snapshot.exists) {
+      console.error(`No odai id: ${odaiId}`)
+      return null
+    }
+    const data = snapshot.data()
+    if (!data?.result) {
+      console.error(`No result in odai: ${odaiId}`)
+      return null
+    }
+    return {
+      id: snapshot.id,
+      title: data.title,
+      imageUrl: data.imageUrl,
+      createdBy: data.createdBy,
+      dueDate: convertTimestamp(data.dueDate),
+      kotaeCount: data.result.kotaeCount,
+      voteCount: data.result.voteCount,
+      pointStats: data.result.pointStats,
+      countStats: data.result.countStats,
+    }
   }
 
   private makeResponse(doc: FirebaseFirestore.QueryDocumentSnapshot): OdaiResponseBase {
