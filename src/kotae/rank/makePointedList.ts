@@ -1,3 +1,5 @@
+// TODO: サーバー側とファイルが重複している
+
 import { Kotae, PointedKotae } from '../Kotae'
 
 const FIRST_RANK_POINT = 5

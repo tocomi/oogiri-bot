@@ -1,3 +1,5 @@
+// TODO: サーバー側とファイルが重複している
+
 import { Kotae, RankedKotae } from '../Kotae'
 import { makePointedList } from './makePointedList'
 
