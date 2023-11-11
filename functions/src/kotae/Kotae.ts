@@ -3,29 +3,24 @@ import { ApiError } from '../api/Error'
 import { OdaiStatus } from '../odai/Odai'
 import { Vote } from '../vote/Vote'
 
-type KotaeBase = {
+export type Kotae = {
   content: string
   createdBy: string
-}
-
-export type KotaePostRequestParams = KotaeBase & SlackParams
-
-export type KotaeOfCurrentOdaiParams = SlackParams
-
-type KotaeApiBase = KotaeBase & {
   votedCount: number
   votedFirstCount: number
   votedSecondCount: number
   votedThirdCount: number
-}
-
-export type KotaePostData = KotaeApiBase & {
-  createdAt: Date
-}
-
-export type KotaeResponse = KotaeApiBase & {
-  docId: string
   createdAt: number
+}
+
+export type KotaePostRequestParams = Pick<Kotae, 'content' | 'createdBy'> & SlackParams
+
+export type KotaeOfCurrentOdaiParams = SlackParams
+
+export type KotaePostData = Kotae
+
+export type KotaeResponse = Kotae & {
+  docId: string
 }
 
 type KotaeGetBase = {
@@ -76,3 +71,11 @@ export type KotaeCountsResponse =
       kotaeUserCount: number
     }
   | ApiError
+
+export type PointedKotae = Kotae & {
+  point: number
+}
+
+export type RankedKotae = PointedKotae & {
+  rank: 1 | 2 | 3
+}

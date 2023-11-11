@@ -115,7 +115,10 @@ app.post('/odai/finish', async (req: express.Request, res) => {
     return errorResponse(res, result)
   }
 
-  const putResult = await odaiService.finish(params)
+  const putResult = await odaiService.finish({
+    slackTeamId: params.slackTeamId,
+    kotaeList: result.kotaeList,
+  })
   if (hasError(putResult)) {
     return errorResponse(res, putResult)
   }

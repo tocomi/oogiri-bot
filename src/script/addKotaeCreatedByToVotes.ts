@@ -10,7 +10,7 @@ admin.initializeApp({
   }),
 })
 
-type Kotae = Omit<KotaeType, 'createdAt'> & { id: string }
+type Kotae = Omit<KotaeType, 'createdAt' | 'votedByList'> & { id: string }
 
 const getAllKotae = async (): Promise<Kotae[]> => {
   const snapshots = await admin.firestore().collectionGroup('kotae').get()

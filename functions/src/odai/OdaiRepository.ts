@@ -10,6 +10,7 @@ import {
   OdaiResponseBase,
   OdaiIpponPostRequest,
   OdaiIpponPostData,
+  OdaiResult,
 } from './Odai'
 import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 import { COLLECTION_NAME } from '../const'
@@ -21,6 +22,7 @@ export interface OdaiRepository {
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
   getAllFinished(params: OdaiFinishedListParams): Promise<OdaiResponseBase[]>
   updateStatus(params: OdaiPutStatusData, odaiDocId: string): Promise<boolean>
+  addResultField(params: { slackTeamId: string; odaiResult: OdaiResult }): Promise<boolean>
 }
 
 const odaiCollection = (slackTeamId: string) => {
@@ -127,6 +129,31 @@ export class OdaiRepositoryImpl implements OdaiRepository {
         return false
       })
     return result
+  }
+
+  async addResultField({
+    slackTeamId,
+    odaiResult,
+  }: {
+    slackTeamId: string
+    odaiResult: OdaiResult
+  }): Promise<boolean> {
+    const docRef = odaiCollection(slackTeamId).doc(odaiResult.id)
+    const success = await docRef
+      .update({
+        result: {
+          kotaeCount: odaiResult.kotaeCount,
+          voteCount: odaiResult.voteCount,
+          pointStats: odaiResult.pointStats,
+          countStats: odaiResult.countStats,
+        },
+      })
+      .then(() => true)
+      .catch((error) => {
+        console.error(error)
+        return false
+      })
+    return success
   }
 
   private makeResponse(doc: FirebaseFirestore.QueryDocumentSnapshot): OdaiResponseBase {

@@ -1,4 +1,4 @@
-// TODO: サーバー側とファイルが重複している
+// TODO: クライアント側とファイルが重複している
 
 import { Kotae, PointedKotae } from '../Kotae'
 
