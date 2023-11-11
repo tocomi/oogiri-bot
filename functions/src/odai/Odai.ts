@@ -1,5 +1,6 @@
 import { ApiPostStatus, SlackParams } from '../api/Api'
 import { ApiError } from '../api/Error'
+import { Kotae } from '../kotae/Kotae'
 
 type OdaiBase = {
   title: string
@@ -19,6 +20,32 @@ type Odai = OdaiBase &
         winIpponCount: number
       }
   )
+
+type StatBase = {
+  kotaeContent: string
+  userName: string
+}
+
+type PointStat = StatBase & {
+  type: 'point'
+  point: number
+  votedFirstCount: number
+  votedSecondCount: number
+  votedThirdCount: number
+}
+
+type CountStat = StatBase & {
+  type: 'count'
+  votedCount: number
+}
+
+export type OdaiResult = {
+  id: string
+  kotaeCount: number
+  voteCount: number
+  pointStats: PointStat[]
+  countStats: CountStat[]
+}
 
 export type OdaiPostRequestParams = Odai & SlackParams
 export type OdaiNormalPostRequest = Extract<OdaiPostRequestParams, { type: 'normal' }>
@@ -41,6 +68,8 @@ export type OdaiIpponPostData = Extract<OdaiApiBase, { type: 'ippon' }> & {
 export type OdaiPutApiStatus = ApiPostStatus
 
 export type OdaiPutStatusParams = SlackParams
+
+export type OdaiFinishParams = OdaiPutStatusParams & { kotaeList: Kotae[] }
 
 export type OdaiPutStatusData = Pick<OdaiApiBase, 'status'> & SlackParams
 
