@@ -33,5 +33,9 @@
     "tsc-watch": "^4.4.0",
     "typescript": "^3.8.0"
   },
-  "private": true
+  "private": true,
+  "volta": {
+    "node": "16.20.2",
+    "yarn": "1.22.19"
+  }
 }
