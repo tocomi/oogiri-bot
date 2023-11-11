@@ -1,7 +1,12 @@
 import * as functions from 'firebase-functions'
 import * as express from 'express'
 import * as cors from 'cors'
-import { OdaiCurrentParams, OdaiPostRequestParams, OdaiPutStatusParams } from './odai/Odai'
+import {
+  OdaiCurrentParams,
+  OdaiGetAllResultsParams,
+  OdaiPostRequestParams,
+  OdaiPutStatusParams,
+} from './odai/Odai'
 import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import {
@@ -48,7 +53,7 @@ const errorResponse = (res: express.Response, error: ApiError) => {
   return res.status(error.status).send({ error: true, message: error.message })
 }
 
-const sendResponse = (res: express.Response, result: Record<string, unknown>) => {
+const sendResponse = (res: express.Response, result: Record<string, unknown> | unknown[]) => {
   console.log(`response: ${JSON.stringify(result)}`)
   return res.send(result)
 }
@@ -206,6 +211,39 @@ app.get('/vote/my-fans', async (req: express.Request, res) => {
   }
 
   const result = await voteService.getTotalVoteCountByUser(params)
+
+  return sendResponse(res, { ...result })
+})
+
+app.get('/stats', async (req: express.Request, res) => {
+  const params = req.query as OdaiGetAllResultsParams
+  if (!params.slackTeamId) {
+    return errorResponse(res, IllegalArgumentError)
+  }
+
+  const result = await odaiService.getAllResults(params)
+  if (hasError(result)) {
+    return errorResponse(res, result)
+  }
+
+  return sendResponse(res, result)
+})
+
+app.get('/stats/:odaiId', async (req: express.Request, res) => {
+  const { slackTeamId } = req.query as OdaiGetAllResultsParams
+  if (!slackTeamId) {
+    return errorResponse(res, IllegalArgumentError)
+  }
+
+  const { odaiId } = req.params
+  if (!odaiId) {
+    return errorResponse(res, IllegalArgumentError)
+  }
+
+  const result = await odaiService.getResult({ slackTeamId, odaiId })
+  if (hasError(result)) {
+    return errorResponse(res, result)
+  }
 
   return sendResponse(res, { ...result })
 })

@@ -47,6 +47,11 @@ export type OdaiResult = {
   countStats: CountStat[]
 }
 
+export type OdaiWithResult = Omit<Extract<Odai, { type: 'normal' }>, 'type'> & OdaiResult
+
+export type OdaiWithResultSummary = Omit<Extract<Odai, { type: 'normal' }>, 'type'> &
+  Pick<OdaiResult, 'id' | 'kotaeCount' | 'voteCount'>
+
 export type OdaiPostRequestParams = Odai & SlackParams
 export type OdaiNormalPostRequest = Extract<OdaiPostRequestParams, { type: 'normal' }>
 export type OdaiIpponPostRequest = Extract<OdaiPostRequestParams, { type: 'ippon' }>
@@ -89,3 +94,9 @@ export type OdaiRecentFinishedResponse = OdaiResponseBase | ApiError
 export type OdaiFinishedListParams = SlackParams
 
 export type OdaiFinishedListResponse = OdaiResponseBase[] | ApiError
+
+export type OdaiAddResultParams = SlackParams & { odaiResult: OdaiResult }
+
+export type OdaiGetAllResultsParams = SlackParams
+
+export type OdaiGetResultParams = SlackParams & { odaiId: string }

@@ -5,15 +5,20 @@ import {
   OdaiFinishParams,
   OdaiFinishedListParams,
   OdaiFinishedListResponse,
+  OdaiGetAllResultsParams,
+  OdaiGetResultParams,
   OdaiPostRequestParams,
   OdaiPutApiStatus,
   OdaiPutStatusParams,
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
   OdaiResult,
+  OdaiWithResult,
+  OdaiWithResultSummary,
 } from './Odai'
 import { ApiPostStatus } from '../api/Api'
 import {
+  ApiError,
   hasError,
   InternalServerError,
   NoActiveOdaiError,
@@ -35,6 +40,12 @@ export interface OdaiService {
 
   /** お題の完了。ステータスの更新と結果データの登録を行う。 */
   finish(params: OdaiFinishParams): Promise<OdaiPutApiStatus>
+
+  /** 過去のお題の結果のサマリをすべて取得する。詳細な回答内容は含めない */
+  getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]>
+
+  /** 特定のお題の結果を取得する。詳細な回答内容も含まれる */
+  getResult(params: OdaiGetResultParams): Promise<OdaiWithResult | ApiError>
 }
 
 export class OdaiServiceImpl implements OdaiService {
@@ -102,6 +113,27 @@ export class OdaiServiceImpl implements OdaiService {
       currentOdai.docId
     )
     return result ? 'ok' : InternalServerError
+  }
+
+  async getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]> {
+    const result = await this.repository.getAllResults(params)
+    return result
+      .map((odai) => ({
+        id: odai.id,
+        title: odai.title,
+        imageUrl: odai.imageUrl,
+        dueDate: odai.dueDate,
+        createdBy: odai.createdBy,
+        kotaeCount: odai.kotaeCount,
+        voteCount: odai.voteCount,
+      }))
+      .sort((a, b) => b.dueDate - a.dueDate)
+  }
+
+  async getResult(params: OdaiGetResultParams): Promise<OdaiWithResult | ApiError> {
+    const result = await this.repository.getResult(params)
+    if (!result) return NoFinishedOdaiError
+    return result
   }
 
   private makeOdaiResult = ({

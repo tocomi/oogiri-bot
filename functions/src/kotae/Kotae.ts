@@ -17,7 +17,7 @@ export type KotaePostRequestParams = Pick<Kotae, 'content' | 'createdBy'> & Slac
 
 export type KotaeOfCurrentOdaiParams = SlackParams
 
-export type KotaePostData = Kotae
+export type KotaePostData = Omit<Kotae, 'createdAt'> & { createdAt: Date }
 
 export type KotaeResponse = Kotae & {
   docId: string

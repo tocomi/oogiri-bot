@@ -42,7 +42,7 @@ export class IpponServiceImpl implements IpponService {
         slackTeamId: params.slackTeamId,
         odaiId: params.odaiId,
       }),
-      this.odaiService.finish({ slackTeamId: params.slackTeamId }),
+      this.odaiService.finish({ slackTeamId: params.slackTeamId, kotaeList: [] }),
     ])
     if (hasError(kotaeCounts)) return kotaeCounts
 
