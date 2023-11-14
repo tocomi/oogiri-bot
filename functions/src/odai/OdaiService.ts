@@ -30,6 +30,7 @@ import {
 import { Kotae } from '../kotae/Kotae'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
+import { getUserNameMapFromUserId } from '../slack/getUserNameFromUserId'
 
 export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<ApiPostStatus>
@@ -105,7 +106,7 @@ export class OdaiServiceImpl implements OdaiService {
     if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
     // NOTE: お題の結果を result フィールドに格納する
-    const odaiResult = this.makeOdaiResult({ odaiId: currentOdai.docId, kotaeList })
+    const odaiResult = await this.makeOdaiResult({ odaiId: currentOdai.docId, kotaeList })
     await this.repository.addResultField({ slackTeamId, odaiResult })
 
     const result = await this.repository.updateStatus(
@@ -136,15 +137,20 @@ export class OdaiServiceImpl implements OdaiService {
     return result
   }
 
-  private makeOdaiResult = ({
+  private makeOdaiResult = async ({
     odaiId,
     kotaeList,
   }: {
     odaiId: string
     kotaeList: Kotae[]
-  }): OdaiResult => {
+  }): Promise<OdaiResult> => {
     const pointRanking = makePointRanking({ kotaeList, filterTopKotae: true })
     const votedCountRanking = makeVotedCountRanking({ kotaeList })
+    const userIdList = [
+      ...pointRanking.map((kotae) => kotae.createdBy),
+      ...votedCountRanking.map((kotae) => kotae.createdBy),
+    ]
+    const userNameMap = await getUserNameMapFromUserId({ userIdList })
     return {
       id: odaiId,
       kotaeCount: kotaeList.length,
@@ -153,7 +159,7 @@ export class OdaiServiceImpl implements OdaiService {
         .map((kotae) => ({
           type: 'point' as const,
           kotaeContent: kotae.content,
-          userName: kotae.createdBy,
+          userName: userNameMap[kotae.createdBy],
           point: kotae.point,
           votedFirstCount: kotae.votedFirstCount,
           votedSecondCount: kotae.votedSecondCount,
@@ -164,7 +170,7 @@ export class OdaiServiceImpl implements OdaiService {
       countStats: votedCountRanking.map((kotae) => ({
         type: 'count' as const,
         kotaeContent: kotae.content,
-        userName: kotae.createdBy,
+        userName: userNameMap[kotae.createdBy],
         votedCount: kotae.votedCount,
       })),
     }
