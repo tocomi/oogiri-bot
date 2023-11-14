@@ -1,6 +1,5 @@
 import { App } from '@slack/bolt'
 import { config } from '../config'
-import { WebClient } from '@slack/web-api'
 
 const { client } = new App({
   socketMode: true,
@@ -8,4 +7,4 @@ const { client } = new App({
   appToken: config.slack.appToken,
 })
 
-export const getSlackClient = (): WebClient => client
+export const getSlackClient = () => client

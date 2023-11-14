@@ -25,5 +25,6 @@ module.exports = {
   rules: {
     'require-jsdoc': 'off',
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
   },
 }
