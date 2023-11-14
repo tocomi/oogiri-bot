@@ -6,7 +6,7 @@ export const db = admin.firestore()
 
 export const firestore = admin.firestore
 
-export const createDoc = async <T>(
+export const createDoc = async <T extends admin.firestore.DocumentData>(
   docRef: admin.firestore.DocumentReference,
   data: T
 ): Promise<boolean> => {
