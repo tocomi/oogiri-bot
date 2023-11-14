@@ -30,6 +30,7 @@ import {
 import { Kotae } from '../kotae/Kotae'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
+import { getUserNameMapFromUserId } from '../slack/getUserNameFromUserId'
 
 export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<ApiPostStatus>
@@ -133,7 +134,23 @@ export class OdaiServiceImpl implements OdaiService {
   async getResult(params: OdaiGetResultParams): Promise<OdaiWithResult | ApiError> {
     const result = await this.repository.getResult(params)
     if (!result) return NoFinishedOdaiError
-    return result
+    const userNameMap = await getUserNameMapFromUserId({
+      userIdList: [
+        ...result.pointStats.map((stat) => stat.userName),
+        ...result.countStats.map((stat) => stat.userName),
+      ],
+    })
+    return {
+      ...result,
+      pointStats: result.pointStats.map((stat) => ({
+        ...stat,
+        userName: userNameMap[stat.userName],
+      })),
+      countStats: result.countStats.map((stat) => ({
+        ...stat,
+        userName: userNameMap[stat.userName],
+      })),
+    }
   }
 
   private makeOdaiResult = ({
