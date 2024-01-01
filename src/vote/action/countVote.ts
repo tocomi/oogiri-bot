@@ -1,7 +1,7 @@
 import { KnownBlock } from '@slack/bolt'
 import { WebClient } from '@slack/web-api'
-import { postEphemeral, postInternalErrorMessage, postMessage } from '../../message/postMessage'
 import { FINISH_ODAI_ACTION_ID } from '../../odai/OdaiAction'
+import { postEphemeral, postInternalErrorMessage, postMessage } from '../../slack/postMessage'
 import { VoteUseCase } from '../VoteUseCase'
 
 export const countVote = async ({

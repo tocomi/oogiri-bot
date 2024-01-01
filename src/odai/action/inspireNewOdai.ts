@@ -1,5 +1,5 @@
 import { KnownBlock, WebClient } from '@slack/web-api'
-import { postMessage } from '../../message/postMessage'
+import { postMessage } from '../../slack/postMessage'
 import { OdaiUseCase } from '../OdaiUseCase'
 
 export const inspireNewOdai = async ({

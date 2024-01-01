@@ -1,7 +1,7 @@
 import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
-import { postEphemeral, postInternalErrorMessage, postMessage } from '../../message/postMessage'
 import { START_VOTING_ACTION_ID } from '../../odai/OdaiAction'
+import { postEphemeral, postInternalErrorMessage, postMessage } from '../../slack/postMessage'
 import {
   milliSecondsToYYYYMMDD,
   diffMessageFromCurrent,
