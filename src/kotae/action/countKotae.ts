@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
+import { getCharacterMessage } from '../../message'
 import { START_VOTING_ACTION_ID } from '../../odai/OdaiAction'
 import { postEphemeral, postInternalErrorMessage, postMessage } from '../../slack/postMessage'
 import {
@@ -54,7 +55,7 @@ export const countKotae = async ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: 'お疲れさまです！ ただいまの回答状況をお伝えしますね！',
+        text: getCharacterMessage('kotae-status'),
       },
     },
     {

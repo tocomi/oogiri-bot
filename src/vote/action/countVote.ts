@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/bolt'
 import { WebClient } from '@slack/web-api'
+import { getCharacterMessage } from '../../message'
 import { FINISH_ODAI_ACTION_ID } from '../../odai/OdaiAction'
 import { postEphemeral, postInternalErrorMessage, postMessage } from '../../slack/postMessage'
 import { VoteUseCase } from '../VoteUseCase'
@@ -62,7 +63,7 @@ export const countVote = async ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: 'お疲れさまです！ ただいまの投票状況をお伝えしますね！',
+        text: getCharacterMessage('vote-status'),
       },
     },
     {

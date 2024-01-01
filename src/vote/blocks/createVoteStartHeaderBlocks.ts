@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+import { getCharacterMessage } from '../../message'
 
 export const createVoteStartHeaderBlocks = ({
   title,
@@ -20,7 +21,7 @@ export const createVoteStartHeaderBlocks = ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: 'みなさーん！ 投票が始まりますよー！',
+        text: getCharacterMessage('vote-start'),
       },
     },
     {

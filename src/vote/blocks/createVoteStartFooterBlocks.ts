@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+import { getCharacterMessage } from '../../message'
 
 export const createVoteStartFooterBlocks = (): KnownBlock[] => {
   const blocks: KnownBlock[] = []
@@ -10,7 +11,7 @@ export const createVoteStartFooterBlocks = (): KnownBlock[] => {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: '回答の右のボタンを押すと投票できます！',
+        text: getCharacterMessage('vote-description'),
       },
     },
     {
