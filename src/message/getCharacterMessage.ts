@@ -8,7 +8,7 @@ const characterMessages = getCharacterMessages(characterType)
  * キャラクターのメッセージを取得する。
  * - key に指定されたメッセージからランダムでメッセージを取得する。
  */
-export const getCharacterMessage = ({ key }: { key: CHARACTER_MESSAGE_KEYS }): string => {
+export const getCharacterMessage = (key: CHARACTER_MESSAGE_KEYS): string => {
   const messages = characterMessages[key]
   const index = Math.floor(Math.random() * messages.length)
   return messages[index]
