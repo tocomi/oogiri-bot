@@ -10,3 +10,11 @@ node_modules/
 # firebase
 firebase-debug.log
 ui-debug.log
+
+# yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
