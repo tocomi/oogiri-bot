@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { CREATE_KOTAE_ACTION_ID } from '../../kotae/KotaeAction'
+import { getCharacterMessage } from '../../message'
 import { milliSecondsToYYYYMMDD } from '../../util/DateUtil'
 
 export const createOdaiCreateBlocks = ({
@@ -24,7 +25,7 @@ export const createOdaiCreateBlocks = ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `みなさーん、新しいお題が発表されました！ ドシドシ回答してください！`,
+        text: getCharacterMessage('odai-start'),
       },
     },
     {

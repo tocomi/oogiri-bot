@@ -1,4 +1,5 @@
 import { shizue } from './character'
+import { tanukichi } from './character/tanukichi'
 import { CHARACTER_MESSAGE_KEYS, CHARACTER_TYPE } from './types'
 
 const characterType: CHARACTER_TYPE = 'tanukichi'
@@ -18,6 +19,8 @@ function getCharacterMessages(characterType: CHARACTER_TYPE) {
   switch (characterType) {
     case 'shizue':
       return shizue
+    case 'tanukichi':
+      return tanukichi
     default:
       throw new Error(`指定されたキャラクターは存在しません。 characterType: ${characterType}`)
   }
