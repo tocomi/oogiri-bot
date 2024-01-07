@@ -1,5 +1,6 @@
 import { KnownBlock, WebClient } from '@slack/web-api'
-import { postMessage } from '../../message/postMessage'
+import { getCharacterMessage } from '../../message'
+import { postMessage } from '../../slack/postMessage'
 import { OdaiUseCase } from '../OdaiUseCase'
 
 export const inspireNewOdai = async ({
@@ -25,21 +26,21 @@ export const inspireNewOdai = async ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: 'おはようございます！',
+        text: getCharacterMessage('odai-inspire-001'),
       },
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: '今週もお仕事頑張っていきましょう〜！',
+        text: getCharacterMessage('odai-inspire-002'),
       },
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: '新しいお題、お待ちしていますね:blush:',
+        text: getCharacterMessage('odai-inspire-003'),
       },
     },
     {

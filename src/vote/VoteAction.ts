@@ -1,7 +1,7 @@
 import { App, KnownBlock } from '@slack/bolt'
 import { createIppon, createWin } from '../ippon/IpponAction'
 import { VOTE_KOTAE_IPPON_ACTION_ID } from '../kotae/blocks/kotaeIpponCreatedBlocks'
-import { postEphemeral, postInternalErrorMessage } from '../message/postMessage'
+import { postEphemeral, postInternalErrorMessage } from '../slack/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
 import { VoteUseCase } from './VoteUseCase'
 import { countVote } from './action/countVote'

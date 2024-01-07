@@ -1,5 +1,5 @@
 import { WebClient } from '@slack/web-api'
-import { postMessage } from '../message/postMessage'
+import { postMessage } from '../slack/postMessage'
 import { createIpponBlocks } from './blocks/createIpponBlocks'
 import { createWinContentBlocks } from './blocks/createWinContentBlocks'
 import { createWinFooterBlocks } from './blocks/createWinFooterBlocks'

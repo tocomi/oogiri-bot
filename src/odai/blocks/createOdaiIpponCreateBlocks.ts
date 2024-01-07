@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { CREATE_KOTAE_ACTION_ID } from '../../kotae/KotaeAction'
+import { getCharacterMessage } from '../../message'
 
 export const createOdaiIpponCreateBlocks = ({
   title,
@@ -25,7 +26,7 @@ export const createOdaiIpponCreateBlocks = ({
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `みなさーん、IPPONグランプリが始まりました！ ドシドシ回答してください！`,
+        text: getCharacterMessage('ippon-odai-start'),
       },
     },
     {
