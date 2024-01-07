@@ -1,5 +1,4 @@
-import { shizue } from './character'
-import { tanukichi } from './character/tanukichi'
+import { shizue, tanukichi } from './character'
 import { CHARACTER_MESSAGE_KEYS, CHARACTER_TYPE } from './types'
 
 const characterType: CHARACTER_TYPE = 'tanukichi'
