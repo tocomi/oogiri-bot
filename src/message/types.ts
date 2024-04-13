@@ -5,6 +5,7 @@ export type CHARACTER_MESSAGE_KEYS =
   | 'odai-inspire-001'
   | 'odai-inspire-002'
   | 'odai-inspire-003'
+  | 'odai-inspire-004'
   | 'kotae-status'
   | 'vote-start'
   | 'vote-description'
