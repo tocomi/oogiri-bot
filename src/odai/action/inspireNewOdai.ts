@@ -44,6 +44,13 @@ export const inspireNewOdai = async ({
       },
     },
     {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: getCharacterMessage('odai-inspire-004'),
+      },
+    },
+    {
       type: 'actions',
       elements: [
         {
