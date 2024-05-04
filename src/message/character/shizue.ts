@@ -9,7 +9,7 @@ export const shizue: CharacterMessages = {
   'odai-inspire-002': ['今週もお仕事頑張っていきましょう〜！'],
   'odai-inspire-003': ['新しいお題、お待ちしていますね:blush:'],
   'odai-inspire-004': [
-    'お題のアイデアがほしい方は、 [モアイさん](https://oogiri-odai-generator.pages.dev/) に聞いてみてください！',
+    'お題のアイデアがほしい方は、 <https://oogiri-odai-generator.pages.dev|モアイさん> に聞いてみてください！',
   ],
   'kotae-status': ['お疲れさまです！ ただいまの回答状況をお伝えしますね！'],
   'vote-start': ['みなさーん、投票が始まりますよ！'],
