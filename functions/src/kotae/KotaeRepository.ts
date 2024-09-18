@@ -1,6 +1,5 @@
 import { COLLECTION_NAME } from '../const'
 import { convertTimestamp, createDoc, db, firestore } from '../firebase/firestore'
-import { convertVoteFieldName } from './convertVoteFieldName'
 import {
   KotaeByContentParams,
   KotaeByContentResponse,
@@ -13,6 +12,7 @@ import {
   KotaeVotedByParams,
   KotaeVotedBy,
 } from './Kotae'
+import { convertVoteFieldName } from './convertVoteFieldName'
 
 export interface KotaeRepository {
   create(params: KotaePostRequestParams, odaiDocId: string): Promise<boolean>

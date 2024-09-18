@@ -1,14 +1,9 @@
-import * as functions from 'firebase-functions'
-import express from 'express'
 import cors from 'cors'
-import {
-  OdaiCurrentParams,
-  OdaiGetAllResultsParams,
-  OdaiPostRequestParams,
-  OdaiPutStatusParams,
-} from './odai/Odai'
-import { OdaiRepository } from './odai/OdaiRepository'
-import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
+import express from 'express'
+import * as functions from 'firebase-functions'
+import { ApiError, hasError, IllegalArgumentError } from './api/Error'
+import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
+import { IpponService, IpponServiceImpl } from './ippon/IpponService'
 import {
   KotaeOfCurrentOdaiParams,
   KotaePersonalResultParams,
@@ -16,13 +11,18 @@ import {
 } from './kotae/Kotae'
 import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
+import {
+  OdaiCurrentParams,
+  OdaiGetAllResultsParams,
+  OdaiPostRequestParams,
+  OdaiPutStatusParams,
+} from './odai/Odai'
+import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
+import { OdaiRepository } from './odai/OdaiRepository'
+import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
+import { VoteCountByUserParams, VoteCountParams, VoteCreateRequest } from './vote/Vote'
 import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
-import { VoteCountByUserParams, VoteCountParams, VoteCreateRequest } from './vote/Vote'
-import { ApiError, hasError, IllegalArgumentError } from './api/Error'
-import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
-import { IpponService, IpponServiceImpl } from './ippon/IpponService'
-import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
 
 const REGION = 'asia-northeast1'
 

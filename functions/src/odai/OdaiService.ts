@@ -1,4 +1,18 @@
-import { OdaiRepository } from './OdaiRepository'
+import { ApiPostStatus } from '../api/Api'
+import {
+  ApiError,
+  hasError,
+  InternalServerError,
+  NoActiveOdaiError,
+  NoFinishedOdaiError,
+  NoPostingOdaiError,
+  NoVotingOdaiError,
+  OdaiDuplicationError,
+} from '../api/Error'
+import { Kotae } from '../kotae/Kotae'
+import { makePointRanking } from '../kotae/rank/makePointRanking'
+import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
+import { getUserNameMapFromUserId } from '../slack/getUserNameFromUserId'
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
@@ -16,21 +30,7 @@ import {
   OdaiWithResult,
   OdaiWithResultSummary,
 } from './Odai'
-import { ApiPostStatus } from '../api/Api'
-import {
-  ApiError,
-  hasError,
-  InternalServerError,
-  NoActiveOdaiError,
-  NoFinishedOdaiError,
-  NoPostingOdaiError,
-  NoVotingOdaiError,
-  OdaiDuplicationError,
-} from '../api/Error'
-import { Kotae } from '../kotae/Kotae'
-import { makePointRanking } from '../kotae/rank/makePointRanking'
-import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
-import { getUserNameMapFromUserId } from '../slack/getUserNameFromUserId'
+import { OdaiRepository } from './OdaiRepository'
 
 export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<ApiPostStatus>

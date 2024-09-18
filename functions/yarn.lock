@@ -2001,6 +2001,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-unused-imports@npm:^1.1.4":
+  version: 1.1.5
+  resolution: "eslint-plugin-unused-imports@npm:1.1.5"
+  dependencies:
+    eslint-rule-composer: "npm:^0.3.0"
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^4.14.2
+    eslint: ^6.0.0 || ^7.0.0
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+  checksum: 57b390b3cb5804f71927b244e52701212c980644845de5bc9d20ef5850779c1395c7979c1886aad1c8797ea5ddbb511f5da8ea7503dc9bcfb6afee159737496a
+  languageName: node
+  linkType: hard
+
+"eslint-rule-composer@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "eslint-rule-composer@npm:0.3.0"
+  checksum: 1f0c40d209e1503a955101a0dbba37e7fc67c8aaa47a5b9ae0b0fcbae7022c86e52b3df2b1b9ffd658e16cd80f31fff92e7222460a44d8251e61d49e0af79a07
+  languageName: node
+  linkType: hard
+
 "eslint-scope@npm:^5.0.0, eslint-scope@npm:^5.1.1":
   version: 5.1.1
   resolution: "eslint-scope@npm:5.1.1"
@@ -2614,6 +2636,7 @@ __metadata:
     eslint-config-prettier: "npm:^8.3.0"
     eslint-plugin-import: "npm:^2.22.0"
     eslint-plugin-prettier: "npm:^3.4.0"
+    eslint-plugin-unused-imports: "npm:^1.1.4"
     express: "npm:^4.17.1"
     firebase-admin: "npm:^9.10.0"
     firebase-functions: "npm:^3.14.1"

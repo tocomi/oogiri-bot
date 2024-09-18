@@ -1,3 +1,5 @@
+import { COLLECTION_NAME } from '../const'
+import { db, convertTimestamp, createDoc } from '../firebase/firestore'
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
@@ -14,8 +16,6 @@ import {
   OdaiGetResultParams,
   OdaiWithResult,
 } from './Odai'
-import { db, convertTimestamp, createDoc } from '../firebase/firestore'
-import { COLLECTION_NAME } from '../const'
 import { OdaiRepository } from './OdaiRepository'
 
 const odaiCollection = (slackTeamId: string) => {
