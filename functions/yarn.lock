@@ -290,6 +290,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@prisma/client@npm:5.19.1":
+  version: 5.19.1
+  resolution: "@prisma/client@npm:5.19.1"
+  peerDependencies:
+    prisma: "*"
+  peerDependenciesMeta:
+    prisma:
+      optional: true
+  checksum: 3fd0c77c831cf592155539d0d369849d5c4f6bbe483b7e5ed476aad29434491a0d5a63ebcda86852484b808fa94bdd614c7715fb2084c0696fdcedd21d3671fb
+  languageName: node
+  linkType: hard
+
 "@prisma/debug@npm:5.19.1":
   version: 5.19.1
   resolution: "@prisma/debug@npm:5.19.1"
@@ -2591,6 +2603,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "functions@workspace:."
   dependencies:
+    "@prisma/client": "npm:5.19.1"
     "@slack/bolt": "npm:3"
     "@types/cors": "npm:^2.8.10"
     "@typescript-eslint/eslint-plugin": "npm:^3.9.1"
