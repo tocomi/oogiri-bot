@@ -7,7 +7,7 @@ import {
   OdaiPostRequestParams,
   OdaiPutStatusParams,
 } from './odai/Odai'
-import { OdaiRepository, OdaiRepositoryImpl } from './odai/OdaiRepository'
+import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import {
   KotaeOfCurrentOdaiParams,
@@ -22,6 +22,7 @@ import { VoteCountByUserParams, VoteCountParams, VoteCreateRequest } from './vot
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
 import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
 import { IpponService, IpponServiceImpl } from './ippon/IpponService'
+import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
 
 const REGION = 'asia-northeast1'
 
@@ -34,7 +35,7 @@ app.use((req, _res, next) => {
   next()
 })
 
-const odaiRepository: OdaiRepository = new OdaiRepositoryImpl()
+const odaiRepository: OdaiRepository = new OdaiFirestoreRepositoryImpl()
 const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
 const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
