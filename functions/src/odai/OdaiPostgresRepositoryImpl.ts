@@ -1,3 +1,5 @@
+import { v7 as uuidv7 } from 'uuid'
+import { prismaClient } from '../prisma/client'
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
@@ -12,12 +14,42 @@ import {
   OdaiGetResultParams,
   OdaiWithResult,
   OdaiGetAllResultsParams,
+  OdaiNormalPostData,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
 
 export class OdaiPostgresRepositoryImpl implements OdaiRepository {
-  createNormal(params: OdaiNormalPostRequest): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  createNormal({
+    title,
+    dueDate,
+    createdBy,
+    imageUrl,
+    slackTeamId,
+  }: OdaiNormalPostRequest): Promise<boolean> {
+    const data: OdaiNormalPostData = {
+      type: 'normal',
+      title,
+      dueDate: new Date(dueDate),
+      createdBy,
+      imageUrl: imageUrl || '',
+      status: 'posting',
+      createdAt: new Date(),
+    }
+    return prismaClient.odai
+      .create({
+        data: {
+          ...data,
+          teamId: slackTeamId,
+          id: uuidv7(),
+        },
+      })
+      .then(() => {
+        return true
+      })
+      .catch((e) => {
+        console.error(e)
+        return false
+      })
   }
   createIppon(params: OdaiIpponPostRequest): Promise<boolean> {
     throw new Error('Method not implemented.')

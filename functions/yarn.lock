@@ -768,6 +768,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/uuid@npm:^10":
+  version: 10.0.0
+  resolution: "@types/uuid@npm:10.0.0"
+  checksum: 9a1404bf287164481cb9b97f6bb638f78f955be57c40c6513b7655160beb29df6f84c915aaf4089a1559c216557dc4d2f79b48d978742d3ae10b937420ddac60
+  languageName: node
+  linkType: hard
+
 "@types/ws@npm:^7.4.7":
   version: 7.4.7
   resolution: "@types/ws@npm:7.4.7"
@@ -2628,6 +2635,7 @@ __metadata:
     "@prisma/client": "npm:5.19.1"
     "@slack/bolt": "npm:3"
     "@types/cors": "npm:^2.8.10"
+    "@types/uuid": "npm:^10"
     "@typescript-eslint/eslint-plugin": "npm:^3.9.1"
     "@typescript-eslint/parser": "npm:^3.8.0"
     cors: "npm:^2.8.5"
@@ -2645,6 +2653,7 @@ __metadata:
     prisma: "npm:^5.19.1"
     tsc-watch: "npm:^4.4.0"
     typescript: "npm:~4.2.0"
+    uuid: "npm:^10.0.0"
   languageName: unknown
   linkType: soft
 
@@ -5743,6 +5752,15 @@ __metadata:
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "uuid@npm:10.0.0"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: eab18c27fe4ab9fb9709a5d5f40119b45f2ec8314f8d4cf12ce27e4c6f4ffa4a6321dc7db6c515068fa373c075b49691ba969f0010bf37f44c37ca40cd6bf7fe
   languageName: node
   linkType: hard
 
