@@ -51,20 +51,31 @@ export interface OdaiService {
 
 export class OdaiServiceImpl implements OdaiService {
   repository: OdaiRepository
+  newRepository: OdaiRepository
 
-  constructor(repository: OdaiRepository) {
+  constructor(repository: OdaiRepository, newRepository: OdaiRepository) {
     this.repository = repository
+    this.newRepository = newRepository
   }
 
   async create(params: OdaiPostRequestParams): Promise<ApiPostStatus> {
     const currentOdai = await this.repository.getCurrent(params)
     if (currentOdai) return OdaiDuplicationError
 
-    const result =
-      params.type === 'normal'
-        ? await this.repository.createNormal(params)
-        : await this.repository.createIppon(params)
-    return result ? 'ok' : InternalServerError
+    if (params.type === 'normal') {
+      const [resultA, resultB] = await Promise.all([
+        this.repository.createNormal(params),
+        this.newRepository.createNormal(params),
+      ])
+      if (!resultA || !resultB) return InternalServerError
+    } else {
+      const [resultA, resultB] = await Promise.all([
+        this.repository.createIppon(params),
+        this.newRepository.createIppon(params),
+      ])
+      if (!resultA || !resultB) return InternalServerError
+    }
+    return 'ok'
   }
 
   async getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse> {

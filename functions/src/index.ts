@@ -18,6 +18,7 @@ import {
   OdaiPutStatusParams,
 } from './odai/Odai'
 import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
+import { OdaiPostgresRepositoryImpl } from './odai/OdaiPostgresRepositoryImpl'
 import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import { VoteCountByUserParams, VoteCountParams, VoteCreateRequest } from './vote/Vote'
@@ -36,7 +37,8 @@ app.use((req, _res, next) => {
 })
 
 const odaiRepository: OdaiRepository = new OdaiFirestoreRepositoryImpl()
-const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
+const odaiNewRepository: OdaiRepository = new OdaiPostgresRepositoryImpl()
+const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository, odaiNewRepository)
 const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
 const ipponRepository: IpponRepository = new IpponRepositoryImpl()

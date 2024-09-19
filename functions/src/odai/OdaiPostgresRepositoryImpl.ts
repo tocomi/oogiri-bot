@@ -9,7 +9,6 @@ import {
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
   OdaiResponseBase,
-  OdaiIpponPostRequest,
   OdaiAddResultParams,
   OdaiGetResultParams,
   OdaiWithResult,
@@ -19,7 +18,7 @@ import {
 import { OdaiRepository } from './OdaiRepository'
 
 export class OdaiPostgresRepositoryImpl implements OdaiRepository {
-  createNormal({
+  async createNormal({
     title,
     dueDate,
     createdBy,
@@ -51,8 +50,11 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         return false
       })
   }
-  createIppon(params: OdaiIpponPostRequest): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  createIppon(): Promise<boolean> {
+    // TODO: 廃止するかどうか決める
+    return new Promise((resolve) => {
+      resolve(true)
+    })
   }
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
     throw new Error('Method not implemented.')
