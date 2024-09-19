@@ -11,7 +11,7 @@
     "plugin": "echo dummyCommandForAvoidingFirebaseError"
   },
   "engines": {
-    "node": "18"
+    "node": "20"
   },
   "main": "lib/index.js",
   "dependencies": {
@@ -42,7 +42,7 @@
   },
   "private": true,
   "volta": {
-    "node": "18.17.1",
-    "yarn": "4.0.1"
+    "node": "20.9.0",
+    "yarn": "4.0.2"
   }
 }
