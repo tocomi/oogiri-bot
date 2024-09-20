@@ -1,0 +1,22 @@
+{
+  "name": "slackbot",
+  "version": "2.1.1",
+  "description": "slack bot for oogiri",
+  "main": "index.js",
+  "author": "tocomi",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "watch": "tsc-watch --onSuccess 'yarn start'",
+    "lint": "eslint --ext .js,.ts ./src",
+    "lint:fix": "eslint --ext .js,.ts ./src --fix",
+    "test": "jest",
+    "tsc": "tsc",
+    "deploy:heroku": "yarn tsc && yarn start"
+  },
+  "volta": {
+    "node": "20.9.0",
+    "yarn": "4.0.2"
+  },
+  "packageManager": "yarn@4.0.2"
+}
