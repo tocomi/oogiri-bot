@@ -15,6 +15,7 @@ import { KotaeRepository } from './KotaeRepository'
 import { ApiPostStatus, SlackParams } from '../api/Api'
 import { ApiError, hasError, InternalServerError, NoTargetKotaeError } from '../api/Error'
 import { OdaiService } from '../odai/OdaiService'
+import { generateId } from '../util/generateId'
 
 export interface KotaeService {
   /** 回答の作成 */
@@ -38,14 +39,20 @@ export interface KotaeService {
 
 export class KotaeServiceImpl implements KotaeService {
   repository: KotaeRepository
+  newRepository: KotaeRepository
   odaiService: OdaiService
 
-  constructor(repository: KotaeRepository, odaiService: OdaiService) {
+  constructor(
+    repository: KotaeRepository,
+    newRepository: KotaeRepository,
+    odaiService: OdaiService
+  ) {
     this.repository = repository
+    this.newRepository = newRepository
     this.odaiService = odaiService
   }
 
-  async create(params: KotaePostRequestParams): Promise<ApiPostStatus> {
+  async create(params: Omit<KotaePostRequestParams, 'id'>): Promise<ApiPostStatus> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
     if (hasError(currentOdai)) return currentOdai
 
@@ -60,8 +67,13 @@ export class KotaeServiceImpl implements KotaeService {
       return 'ok'
     }
 
-    const result = await this.repository.create(params, currentOdai.docId)
-    return result ? 'ok' : InternalServerError
+    const id = generateId()
+    const [resultA, resultB] = await Promise.all([
+      this.repository.create({ ...params, id }, currentOdai.docId),
+      this.newRepository.create({ ...params, id }, currentOdai.docId),
+    ])
+    if (!resultA || !resultB) return InternalServerError
+    return 'ok'
   }
 
   async getAllOfCurrentOdai(

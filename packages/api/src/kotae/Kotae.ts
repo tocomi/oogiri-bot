@@ -13,7 +13,10 @@ export type Kotae = {
   createdAt: number
 }
 
-export type KotaePostRequestParams = Pick<Kotae, 'content' | 'createdBy'> & SlackParams
+export type KotaePostRequestParams = Pick<Kotae, 'content' | 'createdBy'> &
+  SlackParams & {
+    id: string
+  }
 
 export type KotaeOfCurrentOdaiParams = SlackParams
 

@@ -9,7 +9,9 @@ import {
   KotaePersonalResultParams,
   KotaePostRequestParams,
 } from './kotae/Kotae'
-import { KotaeRepository, KotaeRepositoryImpl } from './kotae/KotaeRepository'
+import { KotaeFirestoreRepositoryImpl } from './kotae/KotaeFirestoreRepositoryImpl'
+import { KotaePostgresRepositoryImpl } from './kotae/KotaePostgresRepositoryImpl'
+import { KotaeRepository } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import {
   OdaiCurrentParams,
@@ -37,8 +39,13 @@ app.use((req, _res, next) => {
 const odaiRepository: OdaiRepository = new OdaiFirestoreRepositoryImpl()
 const odaiNewRepository: OdaiRepository = new OdaiPostgresRepositoryImpl()
 const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository, odaiNewRepository)
-const kotaeRepository: KotaeRepository = new KotaeRepositoryImpl()
-const kotaeService: KotaeService = new KotaeServiceImpl(kotaeRepository, odaiService)
+const kotaeRepository: KotaeRepository = new KotaeFirestoreRepositoryImpl()
+const kotaeNewRepository: KotaeRepository = new KotaePostgresRepositoryImpl()
+const kotaeService: KotaeService = new KotaeServiceImpl(
+  kotaeRepository,
+  kotaeNewRepository,
+  odaiService
+)
 const ipponRepository: IpponRepository = new IpponRepositoryImpl()
 const ipponService: IpponService = new IpponServiceImpl(ipponRepository, kotaeService, odaiService)
 const voteRepository: VoteRepository = new VoteRepositoryImpl()
