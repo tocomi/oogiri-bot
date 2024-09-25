@@ -53,7 +53,9 @@ export type OdaiWithResultSummary = Omit<Extract<Odai, { type: 'normal' }>, 'typ
   Pick<OdaiResult, 'id' | 'kotaeCount' | 'voteCount'>
 
 export type OdaiPostRequestParams = Odai & SlackParams
-export type OdaiNormalPostRequest = Extract<OdaiPostRequestParams, { type: 'normal' }>
+export type OdaiNormalPostRequest = Extract<OdaiPostRequestParams, { type: 'normal' }> & {
+  id: string
+}
 export type OdaiIpponPostRequest = Extract<OdaiPostRequestParams, { type: 'ippon' }>
 
 export type OdaiStatus = 'posting' | 'voting' | 'finished'

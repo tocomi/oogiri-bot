@@ -29,6 +29,7 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
     createdBy,
     imageUrl,
     slackTeamId,
+    id,
   }: OdaiNormalPostRequest): Promise<boolean> {
     const data: OdaiNormalPostData = {
       type: 'normal',
@@ -39,7 +40,7 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
       status: 'posting',
       createdAt: new Date(),
     }
-    const docRef = odaiCollection(slackTeamId).doc()
+    const docRef = odaiCollection(slackTeamId).doc(id)
     const result = await createDoc<OdaiNormalPostData>(docRef, data)
     return result
   }

@@ -31,6 +31,7 @@ import { Kotae } from '../kotae/Kotae'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
 import { getUserNameMapFromUserId } from '../slack/getUserNameFromUserId'
+import { generateId } from '../util/generateId'
 
 export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<ApiPostStatus>
@@ -63,9 +64,10 @@ export class OdaiServiceImpl implements OdaiService {
     if (currentOdai) return OdaiDuplicationError
 
     if (params.type === 'normal') {
+      const id = generateId()
       const [resultA, resultB] = await Promise.all([
-        this.repository.createNormal(params),
-        this.newRepository.createNormal(params),
+        this.repository.createNormal({ ...params, id }),
+        this.newRepository.createNormal({ ...params, id }),
       ])
       if (!resultA || !resultB) return InternalServerError
     } else {
