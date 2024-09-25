@@ -1,4 +1,3 @@
-import { v7 as uuidv7 } from 'uuid'
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
@@ -24,6 +23,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     createdBy,
     imageUrl,
     slackTeamId,
+    id,
   }: OdaiNormalPostRequest): Promise<boolean> {
     const data: OdaiNormalPostData = {
       type: 'normal',
@@ -39,7 +39,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         data: {
           ...data,
           teamId: slackTeamId,
-          id: uuidv7(),
+          id,
         },
       })
       .then(() => {
