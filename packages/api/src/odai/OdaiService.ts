@@ -106,11 +106,17 @@ export class OdaiServiceImpl implements OdaiService {
     if (hasError(currentOdai)) return currentOdai
     if (currentOdai.status !== 'posting') return NoPostingOdaiError
 
-    const result = await this.repository.updateStatus(
-      { slackTeamId: params.slackTeamId, status: 'voting' },
-      currentOdai.docId
-    )
-    return result ? 'ok' : InternalServerError
+    const [resultA, resultB] = await Promise.all([
+      this.repository.updateStatus(
+        { slackTeamId: params.slackTeamId, status: 'voting' },
+        currentOdai.docId
+      ),
+      this.newRepository.updateStatus(
+        { slackTeamId: params.slackTeamId, status: 'voting' },
+        currentOdai.docId
+      ),
+    ])
+    return resultA && resultB ? 'ok' : InternalServerError
   }
 
   async finish({ slackTeamId, kotaeList }: OdaiFinishParams): Promise<OdaiPutApiStatus> {
@@ -122,11 +128,11 @@ export class OdaiServiceImpl implements OdaiService {
     const odaiResult = this.makeOdaiResult({ odaiId: currentOdai.docId, kotaeList })
     await this.repository.addResultField({ slackTeamId, odaiResult })
 
-    const result = await this.repository.updateStatus(
-      { slackTeamId, status: 'finished' },
-      currentOdai.docId
-    )
-    return result ? 'ok' : InternalServerError
+    const [resultA, resultB] = await Promise.all([
+      this.repository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.docId),
+      this.newRepository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.docId),
+    ])
+    return resultA && resultB ? 'ok' : InternalServerError
   }
 
   async getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]> {

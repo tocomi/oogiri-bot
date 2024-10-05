@@ -65,8 +65,23 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
   getAllFinished(_params: OdaiFinishedListParams): Promise<OdaiResponseBase[]> {
     throw new Error('Method not implemented.')
   }
-  updateStatus(_params: OdaiPutStatusData, _odaiDocId: string): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  async updateStatus(params: OdaiPutStatusData, odaiId: string): Promise<boolean> {
+    return prismaClient.odai
+      .update({
+        where: {
+          id: odaiId,
+        },
+        data: {
+          status: params.status,
+        },
+      })
+      .then(() => {
+        return true
+      })
+      .catch((e: Error) => {
+        console.error(e)
+        return false
+      })
   }
   addResultField(_params: OdaiAddResultParams): Promise<boolean> {
     throw new Error('Method not implemented.')
