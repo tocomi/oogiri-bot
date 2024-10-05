@@ -32,6 +32,7 @@ model Odai {
   createdBy String
   createdAt DateTime
   kotaes Kotae[]
+  votes Vote[]
 }
 
 model Kotae {
@@ -46,6 +47,8 @@ model Kotae {
 
 model Vote {
   id String @unique @id
+  odai Odai @relation(fields: [odaiId], references: [id])
+  odaiId String
   kotae Kotae @relation(fields: [kotaeId], references: [id])
   kotaeId String
   rank Int

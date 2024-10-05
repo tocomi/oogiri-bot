@@ -10,7 +10,8 @@
     "dev:api": "yarn workspace api serve",
     "dev:bot": "yarn workspace slackbot watch",
     "lint": "yarn workspace api lint && yarn workspace slackbot lint",
-    "lint:fix": "yarn workspace api lint:fix && yarn workspace slackbot lint:fix"
+    "lint:fix": "yarn workspace api lint:fix && yarn workspace slackbot lint:fix",
+    "migrate": "prisma migrate dev --schema ./packages/api/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "5.19.1",
