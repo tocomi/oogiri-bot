@@ -24,7 +24,9 @@ import { OdaiPostgresRepositoryImpl } from './odai/OdaiPostgresRepositoryImpl'
 import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import { VoteCountByUserParams, VoteCountParams, VoteCreateRequest } from './vote/Vote'
-import { VoteRepository, VoteRepositoryImpl } from './vote/VoteRepository'
+import { VoteFirestoreRepositoryImpl } from './vote/VoteFirestoreRepositoryImpl'
+import { VotePostgresRepositoryImpl } from './vote/VotePostgresRepositoryImpl'
+import { VoteRepository } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
 
 const app = express()
@@ -48,9 +50,11 @@ const kotaeService: KotaeService = new KotaeServiceImpl(
 )
 const ipponRepository: IpponRepository = new IpponRepositoryImpl()
 const ipponService: IpponService = new IpponServiceImpl(ipponRepository, kotaeService, odaiService)
-const voteRepository: VoteRepository = new VoteRepositoryImpl()
+const voteRepository: VoteRepository = new VoteFirestoreRepositoryImpl()
+const voteNewRepository: VoteRepository = new VotePostgresRepositoryImpl()
 const voteService: VoteService = new VoteServiceImpl(
   voteRepository,
+  voteNewRepository,
   odaiService,
   kotaeService,
   ipponService

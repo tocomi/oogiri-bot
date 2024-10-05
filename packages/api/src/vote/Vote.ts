@@ -15,8 +15,14 @@ export type Vote = VoteBase & {
   kotaeCreatedBy: string
 }
 
+export type VoteCheckDuplicationParams = SlackParams &
+  VoteBase & {
+    odaiId: string
+    kotaeId: string
+  }
 export type VoteCreateRequest = SlackParams &
   VoteBase & {
+    id: string
     content: string
   }
 export type VoteCreateResponse =

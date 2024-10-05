@@ -13,12 +13,12 @@ import {
   AlreadySameRankVotedError,
   AlreadyVotedError,
   hasError,
-  InternalServerError,
   NoVotingOdaiError,
 } from '../api/Error'
 import { IpponService } from '../ippon/IpponService'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
+import { generateId } from '../util/generateId'
 
 export interface VoteService {
   create(params: VoteCreateRequest): Promise<VoteCreateResponse>
@@ -28,17 +28,20 @@ export interface VoteService {
 
 export class VoteServiceImpl implements VoteService {
   repository: VoteRepository
+  newRepository: VoteRepository
   odaiService: OdaiService
   kotaeService: KotaeService
   ipponService: IpponService
 
   constructor(
     repository: VoteRepository,
+    newRepository: VoteRepository,
     odaiService: OdaiService,
     kotaeService: KotaeService,
     ipponService: IpponService
   ) {
     this.repository = repository
+    this.newRepository = newRepository
     this.odaiService = odaiService
     this.kotaeService = kotaeService
     this.ipponService = ipponService
@@ -59,18 +62,40 @@ export class VoteServiceImpl implements VoteService {
     const kotae = await this.kotaeService.getByContent({ slackTeamId, content })
     if (hasError(kotae)) return kotae
 
-    const voteResult = await this.repository.create({
+    // NOTE: 投票の重複チェック
+    const duplicationResult = await this.repository.checkDuplication({
       slackTeamId,
-      content,
       votedBy,
       rank,
-      odaiDocId: currentOdai.docId,
-      kotaeDocId: kotae.docId,
-      kotaeCreatedBy: kotae.createdBy,
+      odaiId: currentOdai.docId,
+      kotaeId: kotae.docId,
     })
-    if (!voteResult) return InternalServerError
-    if (voteResult === 'alreadyVoted') return AlreadyVotedError
-    if (voteResult === 'alreadySameRankVoted') return AlreadySameRankVotedError
+    if (duplicationResult === 'alreadyVoted') return AlreadyVotedError
+    if (duplicationResult === 'alreadySameRankVoted') return AlreadySameRankVotedError
+
+    const id = generateId()
+    const [voteResultA, _voteResultB] = await Promise.all([
+      this.repository.create({
+        id,
+        slackTeamId,
+        content,
+        votedBy,
+        rank,
+        odaiId: currentOdai.docId,
+        kotaeId: kotae.docId,
+        kotaeCreatedBy: kotae.createdBy,
+      }),
+      this.newRepository.create({
+        id,
+        slackTeamId,
+        content,
+        votedBy,
+        rank,
+        odaiId: currentOdai.docId,
+        kotaeId: kotae.docId,
+        kotaeCreatedBy: kotae.createdBy,
+      }),
+    ])
 
     await this.kotaeService.incrementVoteCount({
       slackTeamId,
@@ -97,13 +122,13 @@ export class VoteServiceImpl implements VoteService {
       })
       if (hasError(ipponResult)) return ipponResult
       return {
-        vote: voteResult,
+        vote: voteResultA,
         ippon: ipponResult.ippon,
         winResult: ipponResult.winResult,
       }
     }
 
-    return { vote: voteResult }
+    return { vote: voteResultA }
   }
 
   async getVoteCount(params: VoteCountParams): Promise<VoteCountResponse> {
