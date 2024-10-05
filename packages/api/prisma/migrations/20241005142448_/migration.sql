@@ -35,9 +35,10 @@ CREATE TABLE "Kotae" (
 -- CreateTable
 CREATE TABLE "Vote" (
     "id" TEXT NOT NULL,
+    "odaiId" TEXT NOT NULL,
     "kotaeId" TEXT NOT NULL,
     "rank" INTEGER NOT NULL,
-    "cteatedBy" TEXT NOT NULL,
+    "createdBy" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Vote_pkey" PRIMARY KEY ("id")
@@ -76,6 +77,9 @@ ALTER TABLE "Odai" ADD CONSTRAINT "Odai_teamId_fkey" FOREIGN KEY ("teamId") REFE
 
 -- AddForeignKey
 ALTER TABLE "Kotae" ADD CONSTRAINT "Kotae_odaiId_fkey" FOREIGN KEY ("odaiId") REFERENCES "Odai"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Vote" ADD CONSTRAINT "Vote_odaiId_fkey" FOREIGN KEY ("odaiId") REFERENCES "Odai"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Vote" ADD CONSTRAINT "Vote_kotaeId_fkey" FOREIGN KEY ("kotaeId") REFERENCES "Kotae"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -52,7 +52,7 @@ model Vote {
   kotae Kotae @relation(fields: [kotaeId], references: [id])
   kotaeId String
   rank Int
-  cteatedBy String
+  createdBy String
   createdAt DateTime
 }
 
