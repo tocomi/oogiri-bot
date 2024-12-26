@@ -68,7 +68,7 @@ export class VoteServiceImpl implements VoteService {
       votedBy,
       rank,
       odaiId: currentOdai.docId,
-      kotaeId: kotae.docId,
+      kotaeId: kotae.id,
     })
     if (duplicationResult === 'alreadyVoted') return AlreadyVotedError
     if (duplicationResult === 'alreadySameRankVoted') return AlreadySameRankVotedError
@@ -82,7 +82,7 @@ export class VoteServiceImpl implements VoteService {
         votedBy,
         rank,
         odaiId: currentOdai.docId,
-        kotaeId: kotae.docId,
+        kotaeId: kotae.id,
         kotaeCreatedBy: kotae.createdBy,
       }),
       this.newRepository.create({
@@ -92,7 +92,7 @@ export class VoteServiceImpl implements VoteService {
         votedBy,
         rank,
         odaiId: currentOdai.docId,
-        kotaeId: kotae.docId,
+        kotaeId: kotae.id,
         kotaeCreatedBy: kotae.createdBy,
       }),
     ])
@@ -112,7 +112,7 @@ export class VoteServiceImpl implements VoteService {
       const ipponResult = await this.ipponService.create({
         slackTeamId,
         userId: kotae.createdBy,
-        kotaeId: kotae.docId,
+        kotaeId: kotae.id,
         kotaeContent: kotae.content,
         odaiId: currentOdai.docId,
         odaiTitle: currentOdai.title,

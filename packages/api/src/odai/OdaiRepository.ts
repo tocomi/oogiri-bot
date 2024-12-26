@@ -21,7 +21,7 @@ export interface OdaiRepository {
   getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null>
   getAllFinished(params: OdaiFinishedListParams): Promise<OdaiResponseBase[]>
   updateStatus(params: OdaiPutStatusData, odaiId: string): Promise<boolean>
-  addResultField(params: OdaiAddResultParams): Promise<boolean>
+  createResult(params: OdaiAddResultParams): Promise<boolean>
   getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResult[]>
   getResult(params: OdaiGetResultParams): Promise<OdaiWithResult | null>
 }

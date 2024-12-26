@@ -1,13 +1,13 @@
 import {
   KotaePostRequestParams,
   KotaeOfCurrentOdaiParams,
-  KotaeResponse,
   KotaePersonalResultParams,
   KotaeVotedByParams,
   KotaeVotedBy,
   KotaeByContentParams,
   KotaeByContentResponse,
   KotaeIncrementVoteCountParams,
+  Kotae,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
 import { prismaClient } from '../prisma/client'
@@ -35,28 +35,22 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
         return false
       })
   }
-  getAllOfCurrentOdai(
-    params: KotaeOfCurrentOdaiParams,
-    odaiDocId: string
-  ): Promise<KotaeResponse[]> {
+  getAllOfCurrentOdai(_params: KotaeOfCurrentOdaiParams, _odaiDocId: string): Promise<Kotae[]> {
     throw new Error('Method not implemented.')
   }
-  getPersonalResult(
-    params: KotaePersonalResultParams,
-    odaiDocId: string
-  ): Promise<KotaeResponse[]> {
+  getPersonalResult(_params: KotaePersonalResultParams, _odaiDocId: string): Promise<Kotae[]> {
     throw new Error('Method not implemented.')
   }
-  getVotedBy(params: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
+  getVotedBy(_params: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
     throw new Error('Method not implemented.')
   }
   getByContent(
-    params: KotaeByContentParams & { odaiDocId: string }
+    _params: KotaeByContentParams & { odaiDocId: string }
   ): Promise<KotaeByContentResponse | null> {
     throw new Error('Method not implemented.')
   }
   incrementVoteCount(
-    params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
+    _params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
       odaiDocId: string
       kotaeDocId: string
     }

@@ -2,6 +2,7 @@ import { RankedKotae } from '../../Kotae'
 import { makePointRanking } from '../makePointRanking'
 
 const kotae00 = {
+  id: 'kotae00',
   content: 'ナマステ',
   createdBy: 'U5S9CURD2',
   votedCount: 0,
@@ -13,6 +14,7 @@ const kotae00 = {
 }
 
 const kotae01 = {
+  id: 'kotae01',
   content: '相当な猛者',
   createdBy: 'U5S9CURD2',
   votedCount: 0,
@@ -24,6 +26,7 @@ const kotae01 = {
 }
 
 const kotae10 = {
+  id: 'kotae10',
   content: 'なかなかにやばい',
   createdBy: 'U5S9CURD2',
   votedCount: 2,
@@ -35,6 +38,7 @@ const kotae10 = {
 }
 
 const kotae11 = {
+  id: 'kotae11',
   content: '店長がダルい',
   createdBy: 'A123456',
   votedCount: 2,
@@ -46,6 +50,7 @@ const kotae11 = {
 }
 
 const kotae20 = {
+  id: 'kotae20',
   content: 'ハンパねぇ',
   createdBy: 'A123456',
   votedCount: 4,
@@ -57,6 +62,7 @@ const kotae20 = {
 }
 
 const kotae21 = {
+  id: 'kotae21',
   content: 'ウルトラソウル',
   createdBy: 'U5S9CURD2',
   votedCount: 4,
@@ -68,6 +74,7 @@ const kotae21 = {
 }
 
 const kotae30 = {
+  id: 'kotae30',
   content:
     '長い回答長い回答長い回答長い回答長い回答長い回答長い回答長い回答長い回答長い回答長い回答',
   createdBy: 'A123456',
@@ -80,6 +87,7 @@ const kotae30 = {
 }
 
 const kotae31 = {
+  id: 'kotae31',
   content: 'めちゃくちゃたくましい',
   createdBy: 'A123456',
   votedCount: 6,

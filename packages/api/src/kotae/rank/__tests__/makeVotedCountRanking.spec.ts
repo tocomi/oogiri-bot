@@ -2,6 +2,7 @@ import { RankedKotae } from '../../Kotae'
 import { makeVotedCountRanking } from '../makeVotedCountRanking'
 
 const kotae10 = {
+  id: 'kotae10',
   content: '10',
   createdBy: 'U5S9CURD2',
   votedCount: 3,
@@ -13,6 +14,7 @@ const kotae10 = {
 }
 
 const kotae20 = {
+  id: 'kotae20',
   content: '20',
   createdBy: 'U5S9CURD2',
   votedCount: 6,
@@ -24,6 +26,7 @@ const kotae20 = {
 }
 
 const kotae30 = {
+  id: 'kotae30',
   content: '30',
   createdBy: 'U5S9CURD2',
   votedCount: 8,
@@ -35,6 +38,7 @@ const kotae30 = {
 }
 
 const kotae31 = {
+  id: 'kotae31',
   content: '31',
   createdBy: 'U5S9CURD2',
   votedCount: 9,
@@ -46,6 +50,7 @@ const kotae31 = {
 }
 
 const kotae40 = {
+  id: 'kotae40',
   content: '40',
   createdBy: 'U5S9CURD2',
   votedCount: 12,

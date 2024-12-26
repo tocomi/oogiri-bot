@@ -125,8 +125,13 @@ export class OdaiServiceImpl implements OdaiService {
     if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
     // NOTE: お題の結果を result フィールドに格納する
+    // TODO: トランザクション管理できてない
     const odaiResult = this.makeOdaiResult({ odaiId: currentOdai.docId, kotaeList })
-    await this.repository.addResultField({ slackTeamId, odaiResult })
+    const [result1, result2] = await Promise.all([
+      this.repository.createResult({ slackTeamId, odaiResult }),
+      this.newRepository.createResult({ slackTeamId, odaiResult }),
+    ])
+    if (!result1 || !result2) return InternalServerError
 
     const [resultA, resultB] = await Promise.all([
       this.repository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.docId),
@@ -188,9 +193,11 @@ export class OdaiServiceImpl implements OdaiService {
       pointStats: pointRanking
         .map((kotae) => ({
           type: 'point' as const,
+          kotaeId: kotae.id,
           kotaeContent: kotae.content,
           userName: kotae.createdBy,
           point: kotae.point,
+          rank: kotae.rank,
           votedFirstCount: kotae.votedFirstCount,
           votedSecondCount: kotae.votedSecondCount,
           votedThirdCount: kotae.votedThirdCount,
@@ -199,8 +206,10 @@ export class OdaiServiceImpl implements OdaiService {
         .filter((stat) => !isNaN(stat.point)),
       countStats: votedCountRanking.map((kotae) => ({
         type: 'count' as const,
+        kotaeId: kotae.id,
         kotaeContent: kotae.content,
         userName: kotae.createdBy,
+        rank: kotae.rank,
         votedCount: kotae.votedCount,
       })),
     }

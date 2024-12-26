@@ -125,7 +125,7 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
     return result
   }
 
-  async addResultField({ slackTeamId, odaiResult }: OdaiAddResultParams): Promise<boolean> {
+  async createResult({ slackTeamId, odaiResult }: OdaiAddResultParams): Promise<boolean> {
     const docRef = odaiCollection(slackTeamId).doc(odaiResult.id)
     const success = await docRef
       .update({

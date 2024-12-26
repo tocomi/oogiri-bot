@@ -12,9 +12,11 @@ import {
   OdaiWithResult,
   OdaiGetAllResultsParams,
   OdaiNormalPostData,
+  Result,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
 import { prismaClient } from '../prisma/client'
+import { generateId } from '../util/generateId'
 
 export class OdaiPostgresRepositoryImpl implements OdaiRepository {
   async createNormal({
@@ -83,8 +85,43 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         return false
       })
   }
-  addResultField(_params: OdaiAddResultParams): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  async createResult({ odaiResult }: OdaiAddResultParams): Promise<boolean> {
+    const createdAt = new Date()
+    const data: Result[] = [
+      ...odaiResult.pointStats.map((result) => {
+        return {
+          id: generateId(),
+          odaiId: odaiResult.id,
+          kotaeId: result.kotaeId,
+          type: 'point' as const,
+          point: result.point,
+          rank: result.rank,
+          createdAt,
+        }
+      }),
+      ...odaiResult.countStats.map((result) => {
+        return {
+          id: generateId(),
+          odaiId: odaiResult.id,
+          kotaeId: result.kotaeId,
+          type: 'count' as const,
+          point: result.votedCount,
+          rank: result.rank,
+          createdAt,
+        }
+      }),
+    ]
+    return prismaClient.result
+      .createMany({
+        data,
+      })
+      .then(() => {
+        return true
+      })
+      .catch((e: Error) => {
+        console.error(e)
+        return false
+      })
   }
   getAllResults(_params: OdaiGetAllResultsParams): Promise<OdaiWithResult[]> {
     throw new Error('Method not implemented.')

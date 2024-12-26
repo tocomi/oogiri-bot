@@ -6,9 +6,9 @@ import {
   KotaePersonalResultParams,
   KotaePostData,
   KotaePostRequestParams,
-  KotaeResponse,
   KotaeVotedByParams,
   KotaeVotedBy,
+  Kotae,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
 import { convertVoteFieldName } from './convertVoteFieldName'
@@ -65,12 +65,12 @@ export class KotaeFirestoreRepositoryImpl implements KotaeRepository {
   async getAllOfCurrentOdai(
     { slackTeamId }: KotaeOfCurrentOdaiParams,
     odaiDocId: string
-  ): Promise<KotaeResponse[]> {
+  ): Promise<Kotae[]> {
     const snapshot = await kotaeCollection({ slackTeamId, odaiDocId }).get()
     return snapshot.docs.map((doc) => {
       const data = doc.data()
       return {
-        docId: doc.id,
+        id: doc.id,
         content: data.content,
         createdBy: data.createdBy,
         votedCount: data.votedCount,
@@ -85,14 +85,14 @@ export class KotaeFirestoreRepositoryImpl implements KotaeRepository {
   async getPersonalResult(
     { slackTeamId, userId }: KotaePersonalResultParams,
     odaiDocId: string
-  ): Promise<KotaeResponse[]> {
+  ): Promise<Kotae[]> {
     const snapshot = await kotaeCollection({ slackTeamId, odaiDocId })
       .where('createdBy', '==', userId)
       .get()
     return snapshot.docs.map((doc) => {
       const data = doc.data()
       return {
-        docId: doc.id,
+        id: doc.id,
         content: data.content,
         createdBy: data.createdBy,
         votedCount: data.votedCount,
@@ -141,7 +141,7 @@ export class KotaeFirestoreRepositoryImpl implements KotaeRepository {
 
     const data = kotaeDoc.data()
     return {
-      docId: kotaeDoc.id,
+      id: kotaeDoc.id,
       content: data.content,
       createdBy: data.createdBy,
       votedCount: data.votedCount,

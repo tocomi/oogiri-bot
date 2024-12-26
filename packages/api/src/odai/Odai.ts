@@ -22,7 +22,9 @@ type Odai = OdaiBase &
   )
 
 type StatBase = {
+  kotaeId: string
   kotaeContent: string
+  rank: 1 | 2 | 3
   userName: string
 }
 
@@ -102,3 +104,17 @@ export type OdaiAddResultParams = SlackParams & { odaiResult: OdaiResult }
 export type OdaiGetAllResultsParams = SlackParams
 
 export type OdaiGetResultParams = SlackParams & { odaiId: string }
+
+/**
+ * RDB 用に格納する結果データ
+ */
+export type Result = {
+  id: string
+  odaiId: string
+  kotaeId: string
+  type: 'point' | 'count'
+  /** point の場合は得点数。count の場合は投票数 */
+  point: number
+  rank: 1 | 2 | 3
+  createdAt: Date
+}

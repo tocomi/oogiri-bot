@@ -82,7 +82,7 @@ export class KotaeServiceImpl implements KotaeService {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
     if (hasError(currentOdai)) return currentOdai
 
-    // FIXME: 一旦ノーマルモードのみ対応
+    // TODO: 一旦ノーマルモードのみ対応
     if (currentOdai.type === 'ippon') throw InternalServerError
 
     const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
@@ -115,7 +115,7 @@ export class KotaeServiceImpl implements KotaeService {
       const votes = await this.repository.getVotedBy({
         slackTeamId,
         odaiDocId: recentFinishedOdai.docId,
-        kotaeDocId: kotae.docId,
+        kotaeDocId: kotae.id,
       })
       const kotaeWithVote = {
         ...kotae,
@@ -163,7 +163,7 @@ export class KotaeServiceImpl implements KotaeService {
     const result = await this.repository.incrementVoteCount({
       slackTeamId,
       odaiDocId: currentOdai.docId,
-      kotaeDocId: kotae.docId,
+      kotaeDocId: kotae.id,
       rank,
     })
 
