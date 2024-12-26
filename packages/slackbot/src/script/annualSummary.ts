@@ -1,7 +1,13 @@
+/**
+ * 年度のサマリを集計するスクリプト
+ * - TARGET_YEAR で指定した年度のデータを集計する
+ * - command) npx ts-node ./packages/slackbot/src/script/annualSummary.ts
+ */
+
 import admin from 'firebase-admin'
 import { config } from '../config'
 
-const TARGET_YEAR = 2023
+const TARGET_YEAR = 2024
 
 admin.initializeApp({
   credential: admin.credential.cert({
@@ -52,6 +58,8 @@ const getAllVote = async (): Promise<Vote[]> => {
 }
 
 type Result = {
+  kotaeCount: number
+  voteCount: number
   uniquekotaeUserCount: number
   uniqueVoteUserCount: number
 }
@@ -75,6 +83,9 @@ const main = async () => {
   const uniqueVoteUserList = Array.from(new Set(annualVoteList.map((vote) => vote.votedBy)))
 
   const result: Result = {
+    kotaeCount: annualKotaeList.length,
+    // NOTE: vote はサブコレクションが2つあるので2で割る
+    voteCount: annualVoteList.length / 2,
     uniquekotaeUserCount: uniquekotaeUserList.length,
     uniqueVoteUserCount: uniqueVoteUserList.length,
   }
