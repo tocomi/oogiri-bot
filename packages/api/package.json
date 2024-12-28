@@ -1,0 +1,22 @@
+{
+  "name": "api",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "lint:fix": "eslint --ext .js,.ts ./src --fix",
+    "build": "tsc",
+    "serve": "tsc-watch --onFirstSuccess 'firebase emulators:start --only functions'",
+    "shell": "yarn build && firebase functions:shell",
+    "start": "yarn shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "plugin": "echo dummyCommandForAvoidingFirebaseError"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "volta": {
+    "node": "20.9.0",
+    "yarn": "4.0.2"
+  }
+}

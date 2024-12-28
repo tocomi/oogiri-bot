@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Team {
+  id String @unique @id
+  name String
+  odais Odai[]
+}
+
+model Odai {
+  id String @unique @id
+  team Team @relation(fields: [teamId], references: [id])
+  teamId String
+  title String
+  type String
+  status String
+  dueDate DateTime
+  imageUrl String?
+  createdBy String
+  createdAt DateTime
+  kotaes Kotae[]
+  votes Vote[]
+}
+
+model Kotae {
+  id String @unique @id
+  odai Odai @relation(fields: [odaiId], references: [id])
+  odaiId String
+  content String
+  createdBy String
+  createdAt DateTime
+  votes Vote[]
+}
+
+model Vote {
+  id String @unique @id
+  odai Odai @relation(fields: [odaiId], references: [id])
+  odaiId String
+  kotae Kotae @relation(fields: [kotaeId], references: [id])
+  kotaeId String
+  rank Int
+  createdBy String
+  createdAt DateTime
+}
+
+model Result {
+  id String @unique @id
+  odaiId String
+  kotaeId String
+  type String
+  point Int
+  rank Int
+  createdAt DateTime
+}

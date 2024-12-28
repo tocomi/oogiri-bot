@@ -23,13 +23,8 @@ module.exports = {
         'plugin:@typescript-eslint/recommended', // TypeScript rules
         'plugin:prettier/recommended', // Prettier recommended rules
       ],
-      plugins: [
-        'import',
-      ],
+      plugins: ['import', 'unused-imports'],
       rules: {
-        // Why would you want unused vars?
-        '@typescript-eslint/no-unused-vars': ['error'],
-
         // I suggest this setting for requiring return types on functions only where useful
         '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -38,17 +33,24 @@ module.exports = {
         'prettier/prettier': ['error', {}, { usePrettierrc: true }],
 
         // import
+        '@typescript-eslint/no-unused-vars': 'off',
+        'unused-imports/no-unused-vars': [
+          'warn',
+          {
+            vars: 'all',
+            varsIgnorePattern: '^_',
+            args: 'after-used',
+            argsIgnorePattern: '^_',
+          },
+        ],
+        'unused-imports/no-unused-imports': 'error',
         'sort-imports': 'off',
         'import/order': [
           'warn',
-          { 
-            'groups': [
-              'builtin',
-              'external',
-              'internal',
-            ],
-            'alphabetize': {
-              'order': 'asc',
+          {
+            groups: ['builtin', 'external', 'internal'],
+            alphabetize: {
+              order: 'asc',
             },
           },
         ],
