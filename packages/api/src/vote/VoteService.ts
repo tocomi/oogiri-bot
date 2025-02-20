@@ -139,7 +139,6 @@ export class VoteServiceImpl implements VoteService {
     if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
     const votes = await this.newRepository.getAllOfCurrentOdai(params, currentOdai.id)
-    console.log('👾 -> votes:', votes)
     return {
       odaiTitle: currentOdai.title,
       odaiImageUrl: currentOdai.imageUrl,
