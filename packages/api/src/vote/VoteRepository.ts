@@ -4,6 +4,7 @@ import {
   VoteOfCurrentOdaiParams,
   VoteCreateRequest,
   VoteCheckDuplicationParams,
+  VoteOfCurrentOdaiResponse,
 } from './Vote'
 
 export interface VoteRepository {
@@ -17,6 +18,9 @@ export interface VoteRepository {
       kotaeCreatedBy: string
     }
   ): Promise<Vote>
-  getAllOfCurrentOdai(params: VoteOfCurrentOdaiParams, odaiId: string): Promise<Vote[]>
+  getAllOfCurrentOdai(
+    params: VoteOfCurrentOdaiParams,
+    odaiId: string
+  ): Promise<VoteOfCurrentOdaiResponse>
   getAllByUser(params: VoteCountByUserParams): Promise<Vote[]>
 }

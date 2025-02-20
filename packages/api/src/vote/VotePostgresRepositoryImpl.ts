@@ -4,6 +4,7 @@ import {
   VoteOfCurrentOdaiParams,
   VoteCountByUserParams,
   VoteCheckDuplicationParams,
+  VoteOfCurrentOdaiResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
 import { prismaClient } from '../prisma/client'
@@ -48,8 +49,23 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
       kotaeContent: content,
     }
   }
-  getAllOfCurrentOdai(_params: VoteOfCurrentOdaiParams, _odaiDocId: string): Promise<Vote[]> {
-    throw new Error('Method not implemented.')
+  async getAllOfCurrentOdai(
+    _params: VoteOfCurrentOdaiParams,
+    odaiId: string
+  ): Promise<VoteOfCurrentOdaiResponse> {
+    const votes = await prismaClient.vote.findMany({
+      where: {
+        odaiId,
+      },
+    })
+
+    return votes.map((vote) => ({
+      votedBy: vote.createdBy,
+      rank: vote.rank as Vote['rank'],
+      kotaeId: vote.kotaeId,
+      kotaeCreatedBy: vote.createdBy,
+      createdAt: vote.createdAt,
+    }))
   }
   getAllByUser(_params: VoteCountByUserParams): Promise<Vote[]> {
     throw new Error('Method not implemented.')

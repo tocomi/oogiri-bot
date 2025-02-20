@@ -60,7 +60,7 @@ export class KotaeServiceImpl implements KotaeService {
     const sameContentKotae = await this.repository.getByContent({
       slackTeamId: params.slackTeamId,
       content: params.content,
-      odaiDocId: currentOdai.docId,
+      odaiDocId: currentOdai.id,
     })
     if (sameContentKotae) {
       console.warn('Same content kotae is posted.')
@@ -69,8 +69,8 @@ export class KotaeServiceImpl implements KotaeService {
 
     const id = generateId()
     const [resultA, resultB] = await Promise.all([
-      this.repository.create({ ...params, id }, currentOdai.docId),
-      this.newRepository.create({ ...params, id }, currentOdai.docId),
+      this.repository.create({ ...params, id }, currentOdai.id),
+      this.newRepository.create({ ...params, id }, currentOdai.id),
     ])
     if (!resultA || !resultB) return InternalServerError
     return 'ok'
@@ -85,7 +85,7 @@ export class KotaeServiceImpl implements KotaeService {
     // TODO: 一旦ノーマルモードのみ対応
     if (currentOdai.type === 'ippon') throw InternalServerError
 
-    const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
+    const kotaeList = await this.newRepository.getAllOfCurrentOdai(params, currentOdai.id)
     return {
       odaiTitle: currentOdai.title,
       odaiImageUrl: currentOdai.imageUrl,
@@ -106,7 +106,7 @@ export class KotaeServiceImpl implements KotaeService {
 
     const kotaeList = await this.repository.getPersonalResult(
       { slackTeamId, userId },
-      recentFinishedOdai.docId
+      recentFinishedOdai.id
     )
 
     // NOTE: 回答ごとに投票の情報を取得する
@@ -114,7 +114,7 @@ export class KotaeServiceImpl implements KotaeService {
     for (const kotae of kotaeList) {
       const votes = await this.repository.getVotedBy({
         slackTeamId,
-        odaiDocId: recentFinishedOdai.docId,
+        odaiDocId: recentFinishedOdai.id,
         kotaeDocId: kotae.id,
       })
       const kotaeWithVote = {
@@ -143,7 +143,7 @@ export class KotaeServiceImpl implements KotaeService {
     const kotae = await this.repository.getByContent({
       slackTeamId,
       content,
-      odaiDocId: currentOdai.docId,
+      odaiDocId: currentOdai.id,
     })
     if (!kotae) return NoTargetKotaeError
     return kotae
@@ -162,7 +162,7 @@ export class KotaeServiceImpl implements KotaeService {
 
     const result = await this.repository.incrementVoteCount({
       slackTeamId,
-      odaiDocId: currentOdai.docId,
+      odaiDocId: currentOdai.id,
       kotaeDocId: kotae.id,
       rank,
     })
@@ -174,7 +174,7 @@ export class KotaeServiceImpl implements KotaeService {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
     if (hasError(currentOdai)) return currentOdai
 
-    const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
+    const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.id)
 
     return {
       kotaeCount: kotaeList.length,

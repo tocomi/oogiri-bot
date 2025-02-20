@@ -13,6 +13,7 @@ import {
   OdaiGetAllResultsParams,
   OdaiNormalPostData,
   Result,
+  OdaiStatus,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
 import { prismaClient } from '../prisma/client'
@@ -58,8 +59,28 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
       resolve(true)
     })
   }
-  getCurrent(_params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
-    throw new Error('Method not implemented.')
+  async getCurrent(_params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
+    const odai = await prismaClient.odai.findFirst({
+      where: {
+        NOT: {
+          status: 'finished',
+        },
+      },
+    })
+    if (!odai) {
+      console.log('No active odai.')
+      return null
+    }
+
+    return {
+      ...odai,
+      imageUrl: odai.imageUrl || undefined,
+      // TODO: 一旦 ippon は無視
+      type: odai.type as 'normal',
+      dueDate: odai.dueDate.getTime(),
+      status: odai.status as OdaiStatus,
+      createdAt: odai.createdAt.getTime(),
+    }
   }
   getRecentFinished(_params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null> {
     throw new Error('Method not implemented.')

@@ -35,6 +35,8 @@ export type VoteCreateResponse =
 
 export type VoteOfCurrentOdaiParams = SlackParams
 
+export type VoteOfCurrentOdaiResponse = Omit<Vote, 'kotaeContent'>[]
+
 export type VoteCount = {
   odaiTitle: string
   odaiImageUrl?: string
