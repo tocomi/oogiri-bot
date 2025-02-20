@@ -8,7 +8,7 @@ type OdaiBase = {
   imageUrl?: string
 }
 
-type Odai = OdaiBase &
+export type Odai = OdaiBase &
   (
     | {
         type: 'normal'
@@ -85,7 +85,7 @@ export type OdaiPutStatusData = Pick<OdaiApiBase, 'status'> & SlackParams
 export type OdaiCurrentParams = SlackParams
 
 export type OdaiResponseBase = OdaiApiBase & {
-  docId: string
+  id: string
   createdAt: number
 }
 

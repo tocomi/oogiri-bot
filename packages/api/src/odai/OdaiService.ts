@@ -81,7 +81,7 @@ export class OdaiServiceImpl implements OdaiService {
   }
 
   async getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse> {
-    const currentOdai = await this.repository.getCurrent(params)
+    const currentOdai = await this.newRepository.getCurrent(params)
     if (!currentOdai) return NoActiveOdaiError
 
     return currentOdai
@@ -109,11 +109,11 @@ export class OdaiServiceImpl implements OdaiService {
     const [resultA, resultB] = await Promise.all([
       this.repository.updateStatus(
         { slackTeamId: params.slackTeamId, status: 'voting' },
-        currentOdai.docId
+        currentOdai.id
       ),
       this.newRepository.updateStatus(
         { slackTeamId: params.slackTeamId, status: 'voting' },
-        currentOdai.docId
+        currentOdai.id
       ),
     ])
     return resultA && resultB ? 'ok' : InternalServerError
@@ -126,7 +126,7 @@ export class OdaiServiceImpl implements OdaiService {
 
     // NOTE: お題の結果を result フィールドに格納する
     // TODO: トランザクション管理できてない
-    const odaiResult = this.makeOdaiResult({ odaiId: currentOdai.docId, kotaeList })
+    const odaiResult = this.makeOdaiResult({ odaiId: currentOdai.id, kotaeList })
     const [result1, result2] = await Promise.all([
       this.repository.createResult({ slackTeamId, odaiResult }),
       this.newRepository.createResult({ slackTeamId, odaiResult }),
@@ -134,8 +134,8 @@ export class OdaiServiceImpl implements OdaiService {
     if (!result1 || !result2) return InternalServerError
 
     const [resultA, resultB] = await Promise.all([
-      this.repository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.docId),
-      this.newRepository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.docId),
+      this.repository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
+      this.newRepository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
     ])
     return resultA && resultB ? 'ok' : InternalServerError
   }

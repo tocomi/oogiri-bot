@@ -194,7 +194,7 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
   private makeResponse(doc: FirebaseFirestore.QueryDocumentSnapshot): OdaiResponseBase {
     const data = doc.data()
     const responseBase = {
-      docId: doc.id,
+      id: doc.id,
       title: data.title,
       imageUrl: data.imageUrl,
       createdBy: data.createdBy,

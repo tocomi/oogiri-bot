@@ -67,7 +67,7 @@ export class VoteServiceImpl implements VoteService {
       slackTeamId,
       votedBy,
       rank,
-      odaiId: currentOdai.docId,
+      odaiId: currentOdai.id,
       kotaeId: kotae.id,
     })
     if (duplicationResult === 'alreadyVoted') return AlreadyVotedError
@@ -81,7 +81,7 @@ export class VoteServiceImpl implements VoteService {
         content,
         votedBy,
         rank,
-        odaiId: currentOdai.docId,
+        odaiId: currentOdai.id,
         kotaeId: kotae.id,
         kotaeCreatedBy: kotae.createdBy,
       }),
@@ -91,7 +91,7 @@ export class VoteServiceImpl implements VoteService {
         content,
         votedBy,
         rank,
-        odaiId: currentOdai.docId,
+        odaiId: currentOdai.id,
         kotaeId: kotae.id,
         kotaeCreatedBy: kotae.createdBy,
       }),
@@ -114,7 +114,7 @@ export class VoteServiceImpl implements VoteService {
         userId: kotae.createdBy,
         kotaeId: kotae.id,
         kotaeContent: kotae.content,
-        odaiId: currentOdai.docId,
+        odaiId: currentOdai.id,
         odaiTitle: currentOdai.title,
         odaiImageUrl: currentOdai.imageUrl,
         winIpponCount: currentOdai.winIpponCount,
@@ -138,7 +138,7 @@ export class VoteServiceImpl implements VoteService {
     // NOTE: IPPON グランプリモードでは voting のステータスはない
     if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
-    const votes = await this.repository.getAllOfCurrentOdai(params, currentOdai.docId)
+    const votes = await this.repository.getAllOfCurrentOdai(params, currentOdai.id)
     return {
       odaiTitle: currentOdai.title,
       odaiImageUrl: currentOdai.imageUrl,
