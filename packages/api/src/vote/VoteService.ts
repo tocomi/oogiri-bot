@@ -138,7 +138,8 @@ export class VoteServiceImpl implements VoteService {
     // NOTE: IPPON グランプリモードでは voting のステータスはない
     if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
 
-    const votes = await this.repository.getAllOfCurrentOdai(params, currentOdai.id)
+    const votes = await this.newRepository.getAllOfCurrentOdai(params, currentOdai.id)
+    console.log('👾 -> votes:', votes)
     return {
       odaiTitle: currentOdai.title,
       odaiImageUrl: currentOdai.imageUrl,

@@ -5,6 +5,7 @@ import {
   VoteOfCurrentOdaiParams,
   VoteCreateRequest,
   VoteCheckDuplicationParams,
+  VoteOfCurrentOdaiResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
 import { convertTimestamp, createDoc, db } from '../firebase/firestore'
@@ -125,7 +126,7 @@ export class VoteFirestoreRepositoryImpl implements VoteRepository {
   async getAllOfCurrentOdai(
     { slackTeamId }: VoteOfCurrentOdaiParams,
     odaiDocId: string
-  ): Promise<Vote[]> {
+  ): Promise<VoteOfCurrentOdaiResponse> {
     const snapshot = await voteOdaiCollection({
       slackTeamId,
       odaiDocId,
@@ -137,7 +138,6 @@ export class VoteFirestoreRepositoryImpl implements VoteRepository {
         rank: data.rank,
         createdAt: convertTimestamp(data.createdAt),
         kotaeId: data.kotaeId,
-        kotaeContent: data.kotaeContent,
         kotaeCreatedBy: data.kotaeCreatedBy,
       }
     })
