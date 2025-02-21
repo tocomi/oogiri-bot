@@ -59,9 +59,10 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
       resolve(true)
     })
   }
-  async getCurrent(_params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
+  async getCurrent({ slackTeamId }: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
     const odai = await prismaClient.odai.findFirst({
       where: {
+        teamId: slackTeamId,
         NOT: {
           status: 'finished',
         },
