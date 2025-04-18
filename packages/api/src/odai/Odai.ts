@@ -28,7 +28,7 @@ type StatBase = {
   userName: string
 }
 
-type PointStat = StatBase & {
+export type PointStat = StatBase & {
   type: 'point'
   point: number
   votedFirstCount: number
@@ -36,7 +36,7 @@ type PointStat = StatBase & {
   votedThirdCount: number
 }
 
-type CountStat = StatBase & {
+export type CountStat = StatBase & {
   type: 'count'
   votedCount: number
 }
