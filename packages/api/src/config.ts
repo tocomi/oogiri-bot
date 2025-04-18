@@ -11,4 +11,7 @@ export const config = {
     appToken: process.env.SLACK_APP_TOKEN || '',
     teamId: process.env.SLACK_TEAM_ID || '',
   },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || '',
+  },
 }
