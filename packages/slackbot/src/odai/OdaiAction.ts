@@ -45,6 +45,7 @@ import {
   createOdaiNothingBlocks,
 } from './blocks'
 import { createOdaiIpponCreateBlocks } from './blocks/createOdaiIpponCreateBlocks'
+import { createAiCommentaryBlocks } from '../vote/blocks/createAiCommentaryBlocks'
 
 export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
 const VOTING_ACTION_ID = 'vote-kotae'
@@ -389,11 +390,14 @@ export const finishOdai = (app: App) => {
       userInfoMap,
     })
 
+    const aiCommentaryBlocks = createAiCommentaryBlocks(result.aiCommentary)
+
     const blocks = [
       ...headerBlocks,
       ...pointRankingBlocks,
       // ...voted1stCountRankingBlocks,
       ...votedCountRankingBlocks,
+      ...aiCommentaryBlocks,
       ...footerBlocks,
     ]
     await postMessage({ client, blocks })
