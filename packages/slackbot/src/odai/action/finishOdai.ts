@@ -45,6 +45,13 @@ export const finish = async ({
               text: 'よろしいですか？',
             },
           },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '*結果の集計に少々時間がかかります。OKボタンを押してからしばらくお待ちください:pray:*',
+            },
+          },
         ],
       },
     })

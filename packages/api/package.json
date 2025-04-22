@@ -9,7 +9,8 @@
     "start": "yarn shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "gcp-build": "npx prisma generate",
+    "generate-schema": "npx prisma@5.19.1 generate",
+    "gcp-build": "yarn generate-schema",
     "plugin": "echo dummyCommandForAvoidingFirebaseError"
   },
   "engines": {
@@ -29,6 +30,7 @@
     "express": "^4.17.1",
     "firebase-admin": "^10.0.2",
     "firebase-functions": "^6.0.1",
+    "openai": "^4.95.0",
     "uuid": "^10.0.0"
   }
 }

@@ -2,6 +2,7 @@ import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
   OdaiFinishParams,
+  OdaiFinishResponse,
   OdaiFinishedListParams,
   OdaiFinishedListResponse,
   OdaiGetAllResultsParams,
@@ -16,6 +17,7 @@ import {
   OdaiWithResultSummary,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
+import { generateCommentary } from '../ai/generateCommentary'
 import { ApiPostStatus } from '../api/Api'
 import {
   ApiError,
@@ -41,7 +43,7 @@ export interface OdaiService {
   startVoting(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus>
 
   /** お題の完了。ステータスの更新と結果データの登録を行う。 */
-  finish(params: OdaiFinishParams): Promise<OdaiPutApiStatus>
+  finish(params: OdaiFinishParams): Promise<OdaiFinishResponse>
 
   /** 過去のお題の結果のサマリをすべて取得する。詳細な回答内容は含めない */
   getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]>
@@ -119,7 +121,7 @@ export class OdaiServiceImpl implements OdaiService {
     return resultA && resultB ? 'ok' : InternalServerError
   }
 
-  async finish({ slackTeamId, kotaeList }: OdaiFinishParams): Promise<OdaiPutApiStatus> {
+  async finish({ slackTeamId, kotaeList }: OdaiFinishParams): Promise<OdaiFinishResponse> {
     const currentOdai = await this.getCurrent({ slackTeamId })
     if (hasError(currentOdai)) return currentOdai
     if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
@@ -133,11 +135,24 @@ export class OdaiServiceImpl implements OdaiService {
     ])
     if (!result1 || !result2) return InternalServerError
 
+    let aiCommentary: string | undefined
+    try {
+      aiCommentary = await generateCommentary({
+        odaiTitle: currentOdai.title,
+        kotaeList,
+        pointStats: odaiResult.pointStats,
+        countStats: odaiResult.countStats,
+      })
+    } catch (error) {
+      console.error('AI講評の生成に失敗しました', error)
+      // エラー時は講評なしで続行
+    }
+
     const [resultA, resultB] = await Promise.all([
       this.repository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
       this.newRepository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
     ])
-    return resultA && resultB ? 'ok' : InternalServerError
+    return resultA && resultB ? { aiCommentary: aiCommentary ?? '' } : InternalServerError
   }
 
   async getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]> {

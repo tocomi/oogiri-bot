@@ -39,4 +39,6 @@ export type OdaiStartVotingResponse = KotaeListResponse
 
 export type OdaiFinishRequestParams = SlackParams
 
-export type OdaiFinishResponse = KotaeListResponse
+export type OdaiFinishResponse = KotaeListResponse & {
+  aiCommentary: string
+}
