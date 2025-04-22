@@ -14,6 +14,9 @@
     "tsc": "tsc",
     "deploy:heroku": "yarn tsc && yarn start"
   },
+  "devDependencies": {
+    "typescript": "^4.3.4"
+  },
   "volta": {
     "node": "20.9.0",
     "yarn": "4.0.2"

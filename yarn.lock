@@ -7207,6 +7207,8 @@ __metadata:
 "slackbot@workspace:packages/slackbot":
   version: 0.0.0-use.local
   resolution: "slackbot@workspace:packages/slackbot"
+  dependencies:
+    typescript: "npm:^4.3.4"
   languageName: unknown
   linkType: soft
 
