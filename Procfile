@@ -1,1 +1,1 @@
-worker: yarn deploy:heroku
+worker: yarn && yarn deploy:bot
