@@ -24,6 +24,8 @@ export async function generateCommentary({
 
 講評は3〜4段落程度で、フレンドリーかつユーモアのある口調で作成してください。
 
+また、講評は400文字程度にまとめてください。
+
 【お題】
 ${odaiTitle}
 
