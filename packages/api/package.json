@@ -5,12 +5,12 @@
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "build": "tsc",
     "serve": "tsc-watch --onFirstSuccess 'firebase emulators:start --only functions'",
-    "shell": "yarn build && firebase functions:shell",
-    "start": "yarn shell",
+    "shell": "pnpm build && firebase functions:shell",
+    "start": "pnpm shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "generate-schema": "npx prisma@5.19.1 generate",
-    "gcp-build": "yarn generate-schema",
+    "gcp-build": "pnpm generate-schema",
     "plugin": "echo dummyCommandForAvoidingFirebaseError"
   },
   "engines": {
@@ -19,7 +19,7 @@
   "main": "lib/index.js",
   "volta": {
     "node": "20.9.0",
-    "yarn": "4.0.2"
+    "pnpm": "9.0.0"
   },
   "dependencies": {
     "@prisma/client": "5.19.1",
