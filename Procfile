@@ -1,1 +1,1 @@
-worker: pnpm i && pnpm deploy:bot
+worker: pnpm deploy:bot
