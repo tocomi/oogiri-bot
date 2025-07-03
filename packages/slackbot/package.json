@@ -7,16 +7,16 @@
   "license": "MIT",
   "scripts": {
     "start": "node ./dist/index.js",
-    "watch": "tsc-watch --onSuccess 'yarn start'",
+    "watch": "tsc-watch --onSuccess 'pnpm start'",
     "lint": "eslint --ext .js,.ts ./src",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "test": "jest",
     "tsc": "tsc",
-    "deploy:heroku": "yarn tsc && yarn start"
+    "deploy:heroku": "pnpm tsc && pnpm start"
   },
   "volta": {
     "node": "20.9.0",
-    "yarn": "4.0.2"
+    "pnpm": "9.0.0"
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "pnpm@9.0.0"
 }
