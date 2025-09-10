@@ -15,6 +15,9 @@
     "type-check": "echo '# slackbot type-check' && tsc --noEmit --diagnostics",
     "deploy:heroku": "yarn tsc && yarn start"
   },
+  "devDependencies": {
+    "typescript": "*"
+  },
   "volta": {
     "node": "20.9.0",
     "yarn": "4.0.2"
