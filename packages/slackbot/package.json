@@ -14,9 +14,10 @@
     "tsc": "tsc",
     "deploy:heroku": "pnpm tsc && pnpm start"
   },
-  "volta": {
-    "node": "20.9.0",
-    "pnpm": "9.0.0"
-  },
-  "packageManager": "pnpm@9.0.0"
+  "packageManager": "pnpm@10.15.1",
+  "pnpm": {
+    "executionEnv": {
+      "nodeVersion": "22.19.0"
+    }
+  }
 }

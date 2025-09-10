@@ -43,11 +43,12 @@
     "tsc-watch": "^4.4.0",
     "typescript": "^4.3.4"
   },
-  "volta": {
-    "node": "20.9.0",
-    "pnpm": "9.0.0"
+  "packageManager": "pnpm@10.15.1",
+  "pnpm": {
+    "executionEnv": {
+      "nodeVersion": "22.19.0"
+    }
   },
-  "packageManager": "pnpm@9.0.0",
   "workspaces": [
     "packages/*"
   ],
