@@ -12,6 +12,7 @@
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "test": "jest",
     "tsc": "tsc",
+    "type-check": "echo '# slackbot type-check' && tsc --noEmit --diagnostics",
     "deploy:heroku": "yarn tsc && yarn start"
   },
   "volta": {

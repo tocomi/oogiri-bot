@@ -13,7 +13,8 @@
     "lint:fix": "yarn workspace api lint:fix && yarn workspace slackbot lint:fix",
     "migrate": "prisma migrate dev --schema ./packages/api/prisma/schema.prisma",
     "deploy:api": "yarn workspace api deploy",
-    "deploy:bot": "yarn workspace slackbot deploy:heroku"
+    "deploy:bot": "yarn workspace slackbot deploy:heroku",
+    "type-check": "yarn workspace api type-check && yarn workspace slackbot type-check"
   },
   "dependencies": {
     "@slack/bolt": "3",

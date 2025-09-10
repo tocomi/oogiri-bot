@@ -4,6 +4,7 @@
     "lint": "eslint --ext .js,.ts .",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "build": "tsc",
+    "type-check": "echo '# api type-check' && tsc --noEmit --diagnostics",
     "serve": "tsc-watch --onFirstSuccess 'firebase emulators:start --only functions'",
     "shell": "yarn build && firebase functions:shell",
     "start": "yarn shell",
