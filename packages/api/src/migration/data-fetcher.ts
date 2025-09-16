@@ -71,17 +71,17 @@ function filterNonUuidRecords<T extends { id: string }>(records: T[]): T[] {
  * - typeがundefinedのレコードはnormalとして扱い移行対象
  */
 function filterMigratableOdais(odais: FirestoreOdaiData[]): FirestoreOdaiData[] {
-  return odais.filter(odai => {
+  return odais.filter((odai) => {
     // UUID形式のIDは除外
     if (isUuidFormat(odai.id)) {
       return false
     }
-    
+
     // typeがipponの場合は除外
     if (odai.type === 'ippon') {
       return false
     }
-    
+
     // typeがundefinedまたはnormalの場合は移行対象
     return true
   })
@@ -172,10 +172,14 @@ export class FirestoreDataFetcher {
       const migratableOdais = filterMigratableOdais(allOdais)
 
       // 除外の内訳を計算
-      const uuidCount = allOdais.filter(odai => isUuidFormat(odai.id)).length
-      const ipponCount = allOdais.filter(odai => !isUuidFormat(odai.id) && odai.type === 'ippon').length
+      const uuidCount = allOdais.filter((odai) => isUuidFormat(odai.id)).length
+      const ipponCount = allOdais.filter(
+        (odai) => !isUuidFormat(odai.id) && odai.type === 'ippon'
+      ).length
 
-      console.log(`✅ Fetched ${allOdais.length} total odais, ${migratableOdais.length} migratable odais for team: ${teamId}`)
+      console.log(
+        `✅ Fetched ${allOdais.length} total odais, ${migratableOdais.length} migratable odais for team: ${teamId}`
+      )
       if (allOdais.length > migratableOdais.length) {
         console.log(`   📤 Excluded ${uuidCount} UUID-format odais (already migrated)`)
         console.log(`   📤 Excluded ${ipponCount} ippon-type odais (migration not supported)`)
@@ -185,9 +189,9 @@ export class FirestoreDataFetcher {
         const createdAt = odai.createdAt ? convertTimestamp(odai.createdAt) : 'N/A'
         const type = odai.type || 'normal' // undefinedはnormalとして表示
         console.log(
-          `   ${index + 1}. Odai: ${odai.id} - "${odai.title}" (${type}, ${
-            odai.status
-          }, ${new Date(createdAt as number).toISOString()})`
+          `   ${index + 1}. Odai: ${odai.id} - "${odai.title}" (${type}, ${odai.status}, ${new Date(
+            createdAt as number
+          ).toISOString()})`
         )
       })
 
