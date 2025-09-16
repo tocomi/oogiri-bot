@@ -159,8 +159,7 @@ export class FirestoreToPostgresMigrator {
     }
   }
 
-  // 将来の実装: 実際のデータ挿入
-  //  TODO: 将来の実装
+  //  実際のデータ挿入
   private async insertData(data: {
     teams: PostgresTeamData[]
     odais: PostgresOdaiData[]
