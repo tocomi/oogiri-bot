@@ -46,6 +46,24 @@ export type FirestoreVoteData = {
 
 export type CollectionName = 'team' | 'odai' | 'kotae' | 'vote' | 'all'
 
+// UUID v7 format regex pattern (also matches v4 for compatibility)
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+/**
+ * IDがUUID形式かどうかを判定する
+ * UUID形式のIDは既にSupabaseに移行済みのため、移行対象から除外する
+ */
+function isUuidFormat(id: string): boolean {
+  return UUID_REGEX.test(id)
+}
+
+/**
+ * UUID形式でないIDのレコードのみをフィルタリングする
+ */
+function filterNonUuidRecords<T extends { id: string }>(records: T[]): T[] {
+  return records.filter((record) => !isUuidFormat(record.id))
+}
+
 export class FirestoreDataFetcher {
   private db: admin.firestore.Firestore
 
@@ -64,16 +82,25 @@ export class FirestoreDataFetcher {
         return []
       }
 
-      const teams: FirestoreTeamData[] = []
+      const allTeams: FirestoreTeamData[] = []
       snapshot.docs.forEach((doc) => {
         const data = doc.data()
-        teams.push({
+        allTeams.push({
           id: doc.id,
           name: data.name || doc.id, // fallback to ID if name is missing
         })
       })
 
-      console.log(`✅ Fetched ${teams.length} teams`)
+      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
+      const teams = filterNonUuidRecords(allTeams)
+
+      console.log(`✅ Fetched ${allTeams.length} total teams, ${teams.length} non-UUID teams`)
+      if (allTeams.length > teams.length) {
+        console.log(
+          `   📤 Excluded ${allTeams.length - teams.length} UUID-format teams (already migrated)`
+        )
+      }
+
       teams.forEach((team, index) => {
         console.log(`   ${index + 1}. Team: ${team.id} (${team.name})`)
       })
@@ -100,10 +127,10 @@ export class FirestoreDataFetcher {
         return []
       }
 
-      const odais: FirestoreOdaiData[] = []
+      const allOdais: FirestoreOdaiData[] = []
       snapshot.docs.forEach((doc) => {
         const data = doc.data()
-        odais.push({
+        allOdais.push({
           id: doc.id,
           teamId,
           title: data.title,
@@ -118,7 +145,18 @@ export class FirestoreDataFetcher {
         })
       })
 
-      console.log(`✅ Fetched ${odais.length} odais for team: ${teamId}`)
+      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
+      const odais = filterNonUuidRecords(allOdais)
+
+      console.log(
+        `✅ Fetched ${allOdais.length} total odais, ${odais.length} non-UUID odais for team: ${teamId}`
+      )
+      if (allOdais.length > odais.length) {
+        console.log(
+          `   📤 Excluded ${allOdais.length - odais.length} UUID-format odais (already migrated)`
+        )
+      }
+
       odais.forEach((odai, index) => {
         const createdAt = odai.createdAt ? convertTimestamp(odai.createdAt) : 'N/A'
         console.log(
@@ -152,10 +190,10 @@ export class FirestoreDataFetcher {
         return []
       }
 
-      const kotaes: FirestoreKotaeData[] = []
+      const allKotaes: FirestoreKotaeData[] = []
       snapshot.docs.forEach((doc) => {
         const data = doc.data()
-        kotaes.push({
+        allKotaes.push({
           id: doc.id,
           odaiId,
           content: data.content,
@@ -168,7 +206,18 @@ export class FirestoreDataFetcher {
         })
       })
 
-      console.log(`✅ Fetched ${kotaes.length} kotaes for odai: ${odaiId}`)
+      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
+      const kotaes = filterNonUuidRecords(allKotaes)
+
+      console.log(
+        `✅ Fetched ${allKotaes.length} total kotaes, ${kotaes.length} non-UUID kotaes for odai: ${odaiId}`
+      )
+      if (allKotaes.length > kotaes.length) {
+        console.log(
+          `   📤 Excluded ${allKotaes.length - kotaes.length} UUID-format kotaes (already migrated)`
+        )
+      }
+
       kotaes.forEach((kotae, index) => {
         const createdAt = kotae.createdAt ? convertTimestamp(kotae.createdAt) : 'N/A'
         console.log(
@@ -203,10 +252,10 @@ export class FirestoreDataFetcher {
         return []
       }
 
-      const votes: FirestoreVoteData[] = []
+      const allVotes: FirestoreVoteData[] = []
       snapshot.docs.forEach((doc) => {
         const data = doc.data()
-        votes.push({
+        allVotes.push({
           id: doc.id,
           odaiId,
           kotaeId: data.kotaeId,
@@ -218,7 +267,18 @@ export class FirestoreDataFetcher {
         })
       })
 
-      console.log(`✅ Fetched ${votes.length} votes for odai: ${odaiId}`)
+      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
+      const votes = filterNonUuidRecords(allVotes)
+
+      console.log(
+        `✅ Fetched ${allVotes.length} total votes, ${votes.length} non-UUID votes for odai: ${odaiId}`
+      )
+      if (allVotes.length > votes.length) {
+        console.log(
+          `   📤 Excluded ${allVotes.length - votes.length} UUID-format votes (already migrated)`
+        )
+      }
+
       votes.forEach((vote, index) => {
         const createdAt = vote.createdAt ? convertTimestamp(vote.createdAt) : 'N/A'
         console.log(
