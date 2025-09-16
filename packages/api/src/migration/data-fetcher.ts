@@ -38,7 +38,7 @@ export type FirestoreVoteData = {
   odaiId: string
   kotaeId: string
   votedBy: string
-  rank: 1 | 2 | 3
+  rank?: 1 | 2 | 3 // undefinedの場合は3として扱う
   createdAt: admin.firestore.Timestamp
   kotaeContent: string
   kotaeCreatedBy: string
@@ -281,7 +281,7 @@ export class FirestoreDataFetcher {
           odaiId,
           kotaeId: data.kotaeId,
           votedBy: data.votedBy,
-          rank: data.rank,
+          rank: data.rank || 3, // undefinedの場合は3として扱う
           createdAt: data.createdAt,
           kotaeContent: data.kotaeContent,
           kotaeCreatedBy: data.kotaeCreatedBy,

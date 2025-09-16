@@ -100,7 +100,7 @@ export class DataTransformer {
       id: firestoreVote.id,
       odaiId: firestoreVote.odaiId,
       kotaeId: firestoreVote.kotaeId,
-      rank: firestoreVote.rank,
+      rank: firestoreVote.rank || 3, // undefinedの場合は3として扱う
       createdBy: firestoreVote.votedBy, // PostgreSQLでは createdBy に統一
       createdAt: firestoreVote.createdAt.toDate(),
     }
