@@ -114,47 +114,100 @@ export class DataTransformer {
     const results: PostgresResultData[] = []
     const kotaeMap = new Map(kotaes.map((k) => [k.id, k]))
 
-    // 投票データから各kotaeのポイントを計算
-    const kotaePoints = new Map<string, number>()
-
+    // odaiごとの最新投票日時を計算
+    const odaiLatestVoteDate = new Map<string, Date>()
     votes.forEach((vote) => {
-      const currentPoints = kotaePoints.get(vote.kotaeId) || 0
-      let points = 0
-
-      // ランクに応じたポイント計算
-      switch (vote.rank) {
-        case 1:
-          points = 3
-          break
-        case 2:
-          points = 2
-          break
-        case 3:
-          points = 1
-          break
-        default:
-          points = 0
+      const voteDate = vote.createdAt.toDate()
+      const kotae = kotaeMap.get(vote.kotaeId)
+      if (kotae) {
+        const currentLatest = odaiLatestVoteDate.get(kotae.odaiId)
+        if (!currentLatest || voteDate > currentLatest) {
+          odaiLatestVoteDate.set(kotae.odaiId, voteDate)
+        }
       }
-
-      kotaePoints.set(vote.kotaeId, currentPoints + points)
     })
 
-    // ポイント順でランキングを作成
-    const sortedKotaes = Array.from(kotaePoints.entries()).sort(
-      ([, pointsA], [, pointsB]) => pointsB - pointsA
-    )
+    // 各kotaeのrank別投票数を集計
+    const kotaeStats = new Map<string, { 
+      first: number, 
+      second: number, 
+      third: number 
+    }>()
 
-    sortedKotaes.forEach(([kotaeId, points], index) => {
+    // 投票データから各kotaeの順位別投票数を計算
+    votes.forEach((vote) => {
+      const current = kotaeStats.get(vote.kotaeId) || { first: 0, second: 0, third: 0 }
+      
+      switch (vote.rank || 3) { // rankがundefinedの場合は3として扱う
+        case 1:
+          current.first += 1
+          break
+        case 2:
+          current.second += 1
+          break
+        case 3:
+          current.third += 1
+          break
+      }
+      
+      kotaeStats.set(vote.kotaeId, current)
+    })
+
+    // ポイント計算（既存のAPIと同じロジック）
+    const FIRST_RANK_POINT = 5
+    const SECOND_RANK_POINT = 3
+    const THIRD_RANK_POINT = 1
+
+    const pointedKotaes = Array.from(kotaeStats.entries()).map(([kotaeId, stats]) => {
       const kotae = kotaeMap.get(kotaeId)
-      if (kotae) {
+      if (!kotae) return null
+
+      const point = 
+        FIRST_RANK_POINT * stats.first +
+        SECOND_RANK_POINT * stats.second +
+        THIRD_RANK_POINT * stats.third
+
+      return {
+        kotaeId,
+        odaiId: kotae.odaiId,
+        point,
+      }
+    }).filter(Boolean) as Array<{ kotaeId: string, odaiId: string, point: number }>
+
+    // ポイント順でソート
+    const sortedKotaes = pointedKotaes.sort((a, b) => b.point - a.point)
+
+    // ランキング生成（同点の場合は同順位）
+    let rank = 1
+    let beforePoint = -1
+    let stockRank = 1
+
+    sortedKotaes.forEach((kotae) => {
+      if (beforePoint >= 0) {
+        if (beforePoint === kotae.point) {
+          // 同点の場合は同じランク
+          stockRank += 1
+        } else {
+          // 点数が異なる場合はランクを進める
+          rank += stockRank
+          stockRank = 1
+        }
+      }
+      beforePoint = kotae.point
+
+      // 上位3位以内のみresultとして保存
+      if (rank <= 3) {
+        // そのodaiの最新投票日時を使用（投票の締切を表す）
+        const resultCreatedAt = odaiLatestVoteDate.get(kotae.odaiId) || new Date()
+
         results.push({
-          id: `result_${kotae.id}`, // result用のIDを生成
+          id: `result_${kotae.kotaeId}`,
           odaiId: kotae.odaiId,
-          kotaeId: kotae.id,
+          kotaeId: kotae.kotaeId,
           type: 'point',
-          point: points,
-          rank: index + 1,
-          createdAt: new Date(), // 現在時刻をresult作成時刻とする
+          point: kotae.point,
+          rank: rank,
+          createdAt: resultCreatedAt,
         })
       }
     })
