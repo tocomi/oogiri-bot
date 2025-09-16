@@ -240,6 +240,9 @@ export class FirestoreDataFetcher {
     votes: FirestoreVoteData[]
   }> {
     console.log('🚀 Starting full data fetch from Firestore...')
+    console.log(
+      'ℹ️  Note: Team data will be fetched for reference but excluded from migration (already migrated manually)'
+    )
 
     const teams = await this.fetchAllTeams()
     const allOdais: FirestoreOdaiData[] = []
@@ -264,7 +267,7 @@ export class FirestoreDataFetcher {
     }
 
     console.log('\n📊 Data fetch summary:')
-    console.log(`   Teams: ${teams.length}`)
+    console.log(`   Teams: ${teams.length} (for reference only - will be excluded from migration)`)
     console.log(`   Odais: ${allOdais.length}`)
     console.log(`   Kotaes: ${allKotaes.length}`)
     console.log(`   Votes: ${allVotes.length}`)

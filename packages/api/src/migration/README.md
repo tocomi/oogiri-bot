@@ -89,12 +89,14 @@ node lib/migration/run-migration.js full
 
 ### Firestore → PostgreSQL マッピング
 
-| Firestore | PostgreSQL |
-|-----------|------------|
-| `team/{teamId}` | `Team.id` |
-| `team/{teamId}/odai/{odaiId}` | `Odai.id`, `Odai.teamId` |
-| `team/{teamId}/odai/{odaiId}/kotae/{kotaeId}` | `Kotae.id`, `Kotae.odaiId` |
-| `team/{teamId}/odai/{odaiId}/vote/{voteId}` | `Vote.id`, `Vote.odaiId`, `Vote.kotaeId` |
+| Firestore | PostgreSQL | 移行ステータス |
+|-----------|------------|----------------|
+| `team/{teamId}` | `Team.id` | ✅ **手動移行完了（除外）** |
+| `team/{teamId}/odai/{odaiId}` | `Odai.id`, `Odai.teamId` | 🔄 移行対象 |
+| `team/{teamId}/odai/{odaiId}/kotae/{kotaeId}` | `Kotae.id`, `Kotae.odaiId` | 🔄 移行対象 |
+| `team/{teamId}/odai/{odaiId}/vote/{voteId}` | `Vote.id`, `Vote.odaiId`, `Vote.kotaeId` | 🔄 移行対象 |
+
+**注意**: Teamテーブルは既に手動で移行済みのため、このスクリプトでは除外されます。
 
 ### 重要な変換処理
 

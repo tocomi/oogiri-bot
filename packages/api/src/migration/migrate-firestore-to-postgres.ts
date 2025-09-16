@@ -69,7 +69,9 @@ export class FirestoreToPostgresMigrator {
 
       console.log('\n📊 Migration analysis complete!')
       console.log(`   Data validation: ${isValid ? '✅ PASSED' : '❌ FAILED'}`)
-      console.log(`   Teams to migrate: ${transformedData.teams.length}`)
+      console.log(
+        `   Teams to migrate: ${transformedData.teams.length} (excluded - already migrated manually)`
+      )
       console.log(`   Odais to migrate: ${transformedData.odais.length}`)
       console.log(`   Kotaes to migrate: ${transformedData.kotaes.length}`)
       console.log(`   Votes to migrate: ${transformedData.votes.length}`)

@@ -182,15 +182,17 @@ export class DataTransformer {
     results: PostgresResultData[]
   } {
     console.log('🔄 Starting data transformation...')
+    console.log('ℹ️  Note: Team data transformation skipped (already migrated manually)')
 
-    const teams = firestoreData.teams.map((team) => this.transformTeam(team))
+    // Teams は参照用のみで、実際の変換はスキップ
+    const teams: PostgresTeamData[] = []
     const odais = firestoreData.odais.map((odai) => this.transformOdai(odai))
     const kotaes = firestoreData.kotaes.map((kotae) => this.transformKotae(kotae))
     const votes = firestoreData.votes.map((vote) => this.transformVote(vote))
     const results = this.generateResultsFromVotes(firestoreData.votes, firestoreData.kotaes)
 
     console.log('\n📊 Data transformation summary:')
-    console.log(`   Teams: ${teams.length}`)
+    console.log(`   Teams: 0 (excluded - already migrated manually)`)
     console.log(`   Odais: ${odais.length}`)
     console.log(`   Kotaes: ${kotaes.length}`)
     console.log(`   Votes: ${votes.length}`)
@@ -213,21 +215,15 @@ export class DataTransformer {
     results: PostgresResultData[]
   }): boolean {
     console.log('🔍 Validating transformed data...')
+    console.log('ℹ️  Note: Team validation skipped (already migrated manually)')
 
     const errors: string[] = []
 
-    // Team validation
-    const teamIds = new Set(data.teams.map((t) => t.id))
-    if (teamIds.size !== data.teams.length) {
-      errors.push('Duplicate team IDs found')
-    }
+    // Team validation をスキップ（手動移行済み）
+    console.log('   ⏭️  Skipping team validation (manual migration completed)')
 
-    // Odai validation
-    data.odais.forEach((odai) => {
-      if (!teamIds.has(odai.teamId)) {
-        errors.push(`Odai ${odai.id} references non-existent team ${odai.teamId}`)
-      }
-    })
+    // Odai validation - team参照チェックもスキップ
+    console.log('   ⏭️  Skipping odai team reference validation (teams already migrated)')
 
     // Kotae validation
     const odaiIds = new Set(data.odais.map((o) => o.id))
