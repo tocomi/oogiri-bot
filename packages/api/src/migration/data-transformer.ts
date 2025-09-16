@@ -62,11 +62,13 @@ export class DataTransformer {
   }
 
   transformOdai(firestoreOdai: FirestoreOdaiData): PostgresOdaiData {
-    console.log(`🔄 Transforming odai: ${firestoreOdai.id} (${firestoreOdai.type})`)
+    // typeがundefinedの場合はnormalとして扱う
+    const type = firestoreOdai.type || 'normal'
+    console.log(`🔄 Transforming odai: ${firestoreOdai.id} (${type})`)
 
     // dueDateの処理: normalタイプの場合は必須、ipponの場合はダミー値
     let dueDate: Date
-    if (firestoreOdai.type === 'normal' && firestoreOdai.dueDate) {
+    if (type === 'normal' && firestoreOdai.dueDate) {
       dueDate = firestoreOdai.dueDate.toDate()
     } else {
       // ipponタイプまたはdueDateがない場合はcreatedAtを使用
@@ -77,7 +79,7 @@ export class DataTransformer {
       id: firestoreOdai.id,
       teamId: firestoreOdai.teamId,
       title: firestoreOdai.title,
-      type: firestoreOdai.type,
+      type: type, // undefinedの場合はnormalに変換済み
       status: firestoreOdai.status,
       dueDate,
       imageUrl: firestoreOdai.imageUrl || null,

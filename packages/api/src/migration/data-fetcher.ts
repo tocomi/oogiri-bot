@@ -11,7 +11,7 @@ export type FirestoreOdaiData = {
   id: string
   teamId: string
   title: string
-  type: 'normal' | 'ippon'
+  type?: 'normal' | 'ippon' // undefinedの場合はnormalとして扱う
   status: string
   dueDate?: admin.firestore.Timestamp
   imageUrl?: string
@@ -62,6 +62,29 @@ function isUuidFormat(id: string): boolean {
  */
 function filterNonUuidRecords<T extends { id: string }>(records: T[]): T[] {
   return records.filter((record) => !isUuidFormat(record.id))
+}
+
+/**
+ * odaiの移行対象をフィルタリングする
+ * - UUID形式でないIDのレコードのみ
+ * - typeがipponのレコードは除外（移行対象外）
+ * - typeがundefinedのレコードはnormalとして扱い移行対象
+ */
+function filterMigratableOdais(odais: FirestoreOdaiData[]): FirestoreOdaiData[] {
+  return odais.filter(odai => {
+    // UUID形式のIDは除外
+    if (isUuidFormat(odai.id)) {
+      return false
+    }
+    
+    // typeがipponの場合は除外
+    if (odai.type === 'ippon') {
+      return false
+    }
+    
+    // typeがundefinedまたはnormalの場合は移行対象
+    return true
+  })
 }
 
 export class FirestoreDataFetcher {
@@ -134,7 +157,7 @@ export class FirestoreDataFetcher {
           id: doc.id,
           teamId,
           title: data.title,
-          type: data.type,
+          type: data.type, // undefinedもそのまま保持
           status: data.status,
           dueDate: data.dueDate,
           imageUrl: data.imageUrl,
@@ -145,28 +168,30 @@ export class FirestoreDataFetcher {
         })
       })
 
-      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
-      const odais = filterNonUuidRecords(allOdais)
+      // 移行対象のodaiのみをフィルタリング
+      const migratableOdais = filterMigratableOdais(allOdais)
 
-      console.log(
-        `✅ Fetched ${allOdais.length} total odais, ${odais.length} non-UUID odais for team: ${teamId}`
-      )
-      if (allOdais.length > odais.length) {
-        console.log(
-          `   📤 Excluded ${allOdais.length - odais.length} UUID-format odais (already migrated)`
-        )
+      // 除外の内訳を計算
+      const uuidCount = allOdais.filter(odai => isUuidFormat(odai.id)).length
+      const ipponCount = allOdais.filter(odai => !isUuidFormat(odai.id) && odai.type === 'ippon').length
+
+      console.log(`✅ Fetched ${allOdais.length} total odais, ${migratableOdais.length} migratable odais for team: ${teamId}`)
+      if (allOdais.length > migratableOdais.length) {
+        console.log(`   📤 Excluded ${uuidCount} UUID-format odais (already migrated)`)
+        console.log(`   📤 Excluded ${ipponCount} ippon-type odais (migration not supported)`)
       }
 
-      odais.forEach((odai, index) => {
+      migratableOdais.forEach((odai, index) => {
         const createdAt = odai.createdAt ? convertTimestamp(odai.createdAt) : 'N/A'
+        const type = odai.type || 'normal' // undefinedはnormalとして表示
         console.log(
-          `   ${index + 1}. Odai: ${odai.id} - "${odai.title}" (${odai.type}, ${
+          `   ${index + 1}. Odai: ${odai.id} - "${odai.title}" (${type}, ${
             odai.status
           }, ${new Date(createdAt as number).toISOString()})`
         )
       })
 
-      return odais
+      return migratableOdais
     } catch (error) {
       console.error(`❌ Error fetching odais for team ${teamId}:`, error)
       throw error
