@@ -2,7 +2,14 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { PrismaClient } from '@prisma/client'
 import { FirestoreDataFetcher, CollectionName } from './data-fetcher'
-import { DataTransformer } from './data-transformer'
+import {
+  DataTransformer,
+  PostgresTeamData,
+  PostgresOdaiData,
+  PostgresKotaeData,
+  PostgresVoteData,
+  PostgresResultData,
+} from './data-transformer'
 
 export class FirestoreToPostgresMigrator {
   private fetcher: FirestoreDataFetcher
@@ -104,48 +111,131 @@ export class FirestoreToPostgresMigrator {
     console.log(`🎯 Target collections: ${collections.join(', ')}`)
 
     try {
-      // まずデータ取得と検証を実行
-      await this.runDataFetchOnly(collections)
+      // データ取得と変換
+      console.log('\n📥 Step 1: Fetching and transforming data...')
+      const firestoreData = await this.fetcher.fetchAllData(collections)
+      const transformedData = this.transformer.transformAllData(firestoreData, collections)
 
-      // 実際の移行処理はここに実装
-      console.log('\n⚠️  Actual data insertion is not yet implemented.')
-      console.log('   This prevents accidental data corruption.')
-      console.log('   To implement data insertion:')
-      console.log('   1. Review the generated log files')
-      console.log('   2. Backup your PostgreSQL database')
-      console.log('   3. Implement the insertData() method')
+      // データ検証
+      console.log('\n🔍 Step 2: Validating transformed data...')
+      const isValid = this.transformer.validateTransformedData(transformedData)
+
+      if (!isValid) {
+        throw new Error('Data validation failed. Migration aborted.')
+      }
+
+      // ログファイル出力
+      console.log('\n📝 Step 3: Writing log files...')
+      this.writeLogFile('firestore-raw-data.json', firestoreData)
+      this.writeLogFile('postgres-transformed-data.json', transformedData)
+      this.writeLogFile('validation-result.json', {
+        isValid,
+        summary: {
+          teams: transformedData.teams.length,
+          odais: transformedData.odais.length,
+          kotaes: transformedData.kotaes.length,
+          votes: transformedData.votes.length,
+          results: transformedData.results.length,
+        },
+        timestamp: new Date().toISOString(),
+      })
+
+      // 実際のデータ挿入
+      console.log('\n💾 Step 4: Inserting data to PostgreSQL...')
+      await this.insertData(transformedData)
+
+      console.log('\n🎉 Migration completed successfully!')
     } catch (error) {
       console.error('❌ Full migration failed:', error)
+
+      // エラーログも保存
+      this.writeLogFile('migration-error.json', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString(),
+      })
+
       throw error
     }
   }
 
   // 将来の実装: 実際のデータ挿入
-  // @ts-expect-error TODO: 将来の実装
-  private async insertData(_data: {
-    teams: unknown[]
-    odais: unknown[]
-    kotaes: unknown[]
-    votes: unknown[]
-    results: unknown[]
+  //  TODO: 将来の実装
+  private async insertData(data: {
+    teams: PostgresTeamData[]
+    odais: PostgresOdaiData[]
+    kotaes: PostgresKotaeData[]
+    votes: PostgresVoteData[]
+    results: PostgresResultData[]
   }): Promise<void> {
     console.log('🔄 Starting data insertion to PostgreSQL...')
+    console.log('📊 Data summary:')
+    console.log(`   Teams: ${data.teams.length} (excluded - already migrated manually)`)
+    console.log(`   Odais: ${data.odais.length}`)
+    console.log(`   Kotaes: ${data.kotaes.length}`)
+    console.log(`   Votes: ${data.votes.length}`)
+    console.log(`   Results: ${data.results.length}`)
 
-    // TODO: トランザクション内でバッチ挿入を実装
-    // await this.prisma.$transaction(async (tx) => {
-    //   // Teams
-    //   await tx.team.createMany({ data: data.teams })
-    //   // Odais
-    //   await tx.odai.createMany({ data: data.odais })
-    //   // Kotaes
-    //   await tx.kotae.createMany({ data: data.kotaes })
-    //   // Votes
-    //   await tx.vote.createMany({ data: data.votes })
-    //   // Results
-    //   await tx.result.createMany({ data: data.results })
-    // })
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        console.log('🗄️  Starting database transaction...')
 
-    console.log('⚠️  Data insertion not implemented yet')
+        // Teams: スキップ（既に手動で移行済み）
+        console.log('⏭️  Skipping teams insertion (already migrated manually)')
+
+        // Odais
+        if (data.odais.length > 0) {
+          console.log(`📝 Inserting ${data.odais.length} odais...`)
+          await tx.odai.createMany({
+            data: data.odais,
+            skipDuplicates: true, // 重複スキップ
+          })
+          console.log('✅ Odais inserted successfully')
+        }
+
+        // Kotaes
+        if (data.kotaes.length > 0) {
+          console.log(`💬 Inserting ${data.kotaes.length} kotaes...`)
+          await tx.kotae.createMany({
+            data: data.kotaes,
+            skipDuplicates: true, // 重複スキップ
+          })
+          console.log('✅ Kotaes inserted successfully')
+        }
+
+        // Votes
+        if (data.votes.length > 0) {
+          console.log(`🗳️  Inserting ${data.votes.length} votes...`)
+          await tx.vote.createMany({
+            data: data.votes,
+            skipDuplicates: true, // 重複スキップ
+          })
+          console.log('✅ Votes inserted successfully')
+        }
+
+        // Results
+        if (data.results.length > 0) {
+          console.log(`🏆 Inserting ${data.results.length} results...`)
+          await tx.result.createMany({
+            data: data.results,
+            skipDuplicates: true, // 重複スキップ
+          })
+          console.log('✅ Results inserted successfully')
+        }
+
+        console.log('✅ All data inserted successfully within transaction')
+      })
+
+      console.log('🎉 Migration completed successfully!')
+      console.log('📊 Final summary:')
+      console.log(`   ✅ Odais migrated: ${data.odais.length}`)
+      console.log(`   ✅ Kotaes migrated: ${data.kotaes.length}`)
+      console.log(`   ✅ Votes migrated: ${data.votes.length}`)
+      console.log(`   ✅ Results generated: ${data.results.length}`)
+    } catch (error) {
+      console.error('❌ Transaction failed, rolling back all changes:', error)
+      throw error
+    }
   }
 
   async cleanup(): Promise<void> {
