@@ -128,17 +128,23 @@ export class DataTransformer {
     })
 
     // 各kotaeのrank別投票数を集計
-    const kotaeStats = new Map<string, { 
-      first: number, 
-      second: number, 
-      third: number 
-    }>()
+    const kotaeStats = new Map<
+      string,
+      {
+        first: number
+        second: number
+        third: number
+      }
+    >()
 
     // 投票データから各kotaeの順位別投票数を計算
     votes.forEach((vote) => {
       const current = kotaeStats.get(vote.kotaeId) || { first: 0, second: 0, third: 0 }
-      
-      switch (vote.rank || 3) { // rankがundefinedの場合は3として扱う
+
+      switch (
+        vote.rank ||
+        3 // rankがundefinedの場合は3として扱う
+      ) {
         case 1:
           current.first += 1
           break
@@ -149,7 +155,7 @@ export class DataTransformer {
           current.third += 1
           break
       }
-      
+
       kotaeStats.set(vote.kotaeId, current)
     })
 
@@ -158,21 +164,23 @@ export class DataTransformer {
     const SECOND_RANK_POINT = 3
     const THIRD_RANK_POINT = 1
 
-    const pointedKotaes = Array.from(kotaeStats.entries()).map(([kotaeId, stats]) => {
-      const kotae = kotaeMap.get(kotaeId)
-      if (!kotae) return null
+    const pointedKotaes = Array.from(kotaeStats.entries())
+      .map(([kotaeId, stats]) => {
+        const kotae = kotaeMap.get(kotaeId)
+        if (!kotae) return null
 
-      const point = 
-        FIRST_RANK_POINT * stats.first +
-        SECOND_RANK_POINT * stats.second +
-        THIRD_RANK_POINT * stats.third
+        const point =
+          FIRST_RANK_POINT * stats.first +
+          SECOND_RANK_POINT * stats.second +
+          THIRD_RANK_POINT * stats.third
 
-      return {
-        kotaeId,
-        odaiId: kotae.odaiId,
-        point,
-      }
-    }).filter(Boolean) as Array<{ kotaeId: string, odaiId: string, point: number }>
+        return {
+          kotaeId,
+          odaiId: kotae.odaiId,
+          point,
+        }
+      })
+      .filter(Boolean) as Array<{ kotaeId: string; odaiId: string; point: number }>
 
     // ポイント順でソート
     const sortedKotaes = pointedKotaes.sort((a, b) => b.point - a.point)
