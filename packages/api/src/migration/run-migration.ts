@@ -9,13 +9,21 @@
  */
 
 import { FirestoreToPostgresMigrator } from './migrate-firestore-to-postgres'
+import { CollectionName } from './data-fetcher'
 
 async function main() {
   const args = process.argv.slice(2)
   const command = args[0] || 'fetch'
 
+  // コレクション指定の解析
+  const collectionsArg = args[1]
+  const collections: CollectionName[] = collectionsArg
+    ? (collectionsArg.split(',').map((c) => c.trim()) as CollectionName[])
+    : ['all']
+
   console.log('🔧 Firestore to PostgreSQL Migration Tool')
   console.log(`📋 Command: ${command}`)
+  console.log(`🎯 Collections: ${collections.join(', ')}`)
   console.log(`⏰ Started at: ${new Date().toISOString()}`)
 
   const migrator = new FirestoreToPostgresMigrator()
@@ -26,7 +34,7 @@ async function main() {
         console.log('\n🔍 Running data fetch and analysis only...')
         console.log('   This is a safe operation that only reads Firestore data')
         console.log('   and generates log files for review.\n')
-        await migrator.runDataFetchOnly()
+        await migrator.runDataFetchOnly(collections)
         break
 
       case 'full':
@@ -39,14 +47,27 @@ async function main() {
         console.log('   Please review the fetch logs first and implement')
         console.log('   the actual data insertion code manually.\n')
 
-        await migrator.runDataFetchOnly() // 現在は安全なfetchのみ実行
+        await migrator.runDataFetchOnly(collections) // 現在は安全なfetchのみ実行
         break
 
       case 'help':
         console.log('\n📖 Available commands:')
-        console.log('   fetch  - Fetch data from Firestore and generate logs (safe)')
-        console.log('   full   - Run full migration (not implemented yet)')
-        console.log('   help   - Show this help message')
+        console.log('   fetch [collections]  - Fetch data from Firestore and generate logs (safe)')
+        console.log('   full  [collections]  - Run full migration (not implemented yet)')
+        console.log('   help                 - Show this help message')
+        console.log('')
+        console.log('📖 Collection options (comma-separated):')
+        console.log('   all    - All collections (default)')
+        console.log('   team   - Team data only (excluded from migration)')
+        console.log('   odai   - Odai (topics) data only')
+        console.log('   kotae  - Kotae (answers) data only')
+        console.log('   vote   - Vote data only')
+        console.log('')
+        console.log('📖 Examples:')
+        console.log('   npx ts-node run-migration.ts fetch')
+        console.log('   npx ts-node run-migration.ts fetch odai')
+        console.log('   npx ts-node run-migration.ts fetch odai,kotae')
+        console.log('   npx ts-node run-migration.ts fetch vote')
         return
 
       default:

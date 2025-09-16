@@ -3,6 +3,7 @@ import {
   FirestoreOdaiData,
   FirestoreKotaeData,
   FirestoreVoteData,
+  CollectionName,
 } from './data-fetcher'
 
 // PostgreSQL挿入用のデータ型
@@ -169,34 +170,59 @@ export class DataTransformer {
     return results
   }
 
-  transformAllData(firestoreData: {
-    teams: FirestoreTeamData[]
-    odais: FirestoreOdaiData[]
-    kotaes: FirestoreKotaeData[]
-    votes: FirestoreVoteData[]
-  }): {
+  transformAllData(
+    firestoreData: {
+      teams: FirestoreTeamData[]
+      odais: FirestoreOdaiData[]
+      kotaes: FirestoreKotaeData[]
+      votes: FirestoreVoteData[]
+    },
+    collections: CollectionName[] = ['all']
+  ): {
     teams: PostgresTeamData[]
     odais: PostgresOdaiData[]
     kotaes: PostgresKotaeData[]
     votes: PostgresVoteData[]
     results: PostgresResultData[]
   } {
-    console.log('🔄 Starting data transformation...')
+    const shouldTransform = (collectionName: CollectionName): boolean => {
+      return collections.includes('all') || collections.includes(collectionName)
+    }
+
+    console.log('🔄 Starting selective data transformation...')
+    console.log(`📋 Collections to transform: ${collections.join(', ')}`)
     console.log('ℹ️  Note: Team data transformation skipped (already migrated manually)')
 
     // Teams は参照用のみで、実際の変換はスキップ
     const teams: PostgresTeamData[] = []
-    const odais = firestoreData.odais.map((odai) => this.transformOdai(odai))
-    const kotaes = firestoreData.kotaes.map((kotae) => this.transformKotae(kotae))
-    const votes = firestoreData.votes.map((vote) => this.transformVote(vote))
-    const results = this.generateResultsFromVotes(firestoreData.votes, firestoreData.kotaes)
+
+    // 各コレクションの変換処理
+    const odais = shouldTransform('odai')
+      ? firestoreData.odais.map((odai) => this.transformOdai(odai))
+      : []
+
+    const kotaes = shouldTransform('kotae')
+      ? firestoreData.kotaes.map((kotae) => this.transformKotae(kotae))
+      : []
+
+    const votes = shouldTransform('vote')
+      ? firestoreData.votes.map((vote) => this.transformVote(vote))
+      : []
+
+    // Results は vote データがある場合のみ生成
+    const results =
+      shouldTransform('vote') && firestoreData.votes.length > 0
+        ? this.generateResultsFromVotes(firestoreData.votes, firestoreData.kotaes)
+        : []
 
     console.log('\n📊 Data transformation summary:')
     console.log(`   Teams: 0 (excluded - already migrated manually)`)
-    console.log(`   Odais: ${odais.length}`)
-    console.log(`   Kotaes: ${kotaes.length}`)
-    console.log(`   Votes: ${votes.length}`)
-    console.log(`   Results: ${results.length}`)
+    console.log(`   Odais: ${odais.length} ${shouldTransform('odai') ? '' : '(skipped)'}`)
+    console.log(`   Kotaes: ${kotaes.length} ${shouldTransform('kotae') ? '' : '(skipped)'}`)
+    console.log(`   Votes: ${votes.length} ${shouldTransform('vote') ? '' : '(skipped)'}`)
+    console.log(
+      `   Results: ${results.length} ${shouldTransform('vote') ? '' : '(skipped - no votes)'}`
+    )
 
     return {
       teams,

@@ -60,12 +60,31 @@ cd packages/api
 # TypeScript のビルド
 yarn build
 
-# Firestore からデータを取得してログを生成（読み取り専用）
+# すべてのデータを取得（デフォルト）
 npx ts-node ./src/migration/run-migration.ts fetch
+
+# 特定のコレクションのみ取得
+npx ts-node ./src/migration/run-migration.ts fetch odai
+npx ts-node ./src/migration/run-migration.ts fetch kotae
+npx ts-node ./src/migration/run-migration.ts fetch vote
+
+# 複数のコレクションを取得（カンマ区切り）
+npx ts-node ./src/migration/run-migration.ts fetch odai,kotae
+npx ts-node ./src/migration/run-migration.ts fetch kotae,vote
 ```
 
+#### コレクション指定オプション
+
+| コレクション | 説明 | 移行対象 |
+|-------------|------|----------|
+| `all` | すべてのコレクション（デフォルト） | ✅ |
+| `team` | チーム情報 | ❌（手動移行済み） |
+| `odai` | お題データ | ✅ |
+| `kotae` | 回答データ | ✅ |
+| `vote` | 投票データ | ✅ |
+
 このコマンドは以下を実行します：
-- Firestoreからすべてのデータを取得
+- Firestoreから指定されたデータを取得
 - PostgreSQL形式に変換
 - データの整合性を検証
 - 結果をJSONファイルとして出力
@@ -82,7 +101,11 @@ npx ts-node ./src/migration/run-migration.ts fetch
 
 ```bash
 # ⚠️ 現在は未実装 - 安全のため
-node lib/migration/run-migration.js full
+npx ts-node ./src/migration/run-migration.ts full
+
+# 特定のコレクションのみ移行（将来実装予定）
+npx ts-node ./src/migration/run-migration.ts full odai
+npx ts-node ./src/migration/run-migration.ts full vote
 ```
 
 ## データ構造の変換
@@ -154,6 +177,13 @@ Error: JavaScript heap out of memory
 1. `data-fetcher.ts` にフェッチロジックを追加
 2. `data-transformer.ts` に変換ロジックを追加
 3. `migrate-firestore-to-postgres.ts` にインサートロジックを追加
+
+### コレクション単位での移行のメリット
+
+- **段階的移行**: 一度に全データではなく、コレクション単位で移行可能
+- **デバッグしやすさ**: 問題が発生した場合の切り分けが容易
+- **リソース効率**: 必要なデータのみを処理してメモリ使用量を削減
+- **テスト実行**: 小さなデータセットでの動作確認が可能
 
 ### テスト実行
 

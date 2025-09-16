@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { PrismaClient } from '@prisma/client'
-import { FirestoreDataFetcher } from './data-fetcher'
+import { FirestoreDataFetcher, CollectionName } from './data-fetcher'
 import { DataTransformer } from './data-transformer'
 
 export class FirestoreToPostgresMigrator {
@@ -34,19 +34,20 @@ export class FirestoreToPostgresMigrator {
     }
   }
 
-  async runDataFetchOnly(): Promise<void> {
+  async runDataFetchOnly(collections: CollectionName[] = ['all']): Promise<void> {
     console.log('🚀 Starting Firestore data fetch (dry run mode)...')
     console.log(`📁 Logs will be saved to: ${this.logDir}`)
+    console.log(`🎯 Target collections: ${collections.join(', ')}`)
 
     try {
-      // Firestoreからすべてのデータを取得
-      const firestoreData = await this.fetcher.fetchAllData()
+      // Firestoreから指定されたデータを取得
+      const firestoreData = await this.fetcher.fetchAllData(collections)
 
       // 取得したデータをログファイルに保存
       this.writeLogFile('firestore-raw-data.json', firestoreData)
 
       // データ変換
-      const transformedData = this.transformer.transformAllData(firestoreData)
+      const transformedData = this.transformer.transformAllData(firestoreData, collections)
 
       // 変換後データをログファイルに保存
       this.writeLogFile('postgres-transformed-data.json', transformedData)
@@ -97,13 +98,14 @@ export class FirestoreToPostgresMigrator {
     }
   }
 
-  async runFullMigration(): Promise<void> {
+  async runFullMigration(collections: CollectionName[] = ['all']): Promise<void> {
     console.log('🚀 Starting full Firestore to PostgreSQL migration...')
     console.log(`📁 Logs will be saved to: ${this.logDir}`)
+    console.log(`🎯 Target collections: ${collections.join(', ')}`)
 
     try {
       // まずデータ取得と検証を実行
-      await this.runDataFetchOnly()
+      await this.runDataFetchOnly(collections)
 
       // 実際の移行処理はここに実装
       console.log('\n⚠️  Actual data insertion is not yet implemented.')

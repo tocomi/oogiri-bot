@@ -44,6 +44,8 @@ export type FirestoreVoteData = {
   kotaeCreatedBy: string
 }
 
+export type CollectionName = 'team' | 'odai' | 'kotae' | 'vote' | 'all'
+
 export class FirestoreDataFetcher {
   private db: admin.firestore.Firestore
 
@@ -233,17 +235,26 @@ export class FirestoreDataFetcher {
     }
   }
 
-  async fetchAllData(): Promise<{
+  async fetchAllData(collections: CollectionName[] = ['all']): Promise<{
     teams: FirestoreTeamData[]
     odais: FirestoreOdaiData[]
     kotaes: FirestoreKotaeData[]
     votes: FirestoreVoteData[]
   }> {
-    console.log('🚀 Starting full data fetch from Firestore...')
-    console.log(
-      'ℹ️  Note: Team data will be fetched for reference but excluded from migration (already migrated manually)'
-    )
+    const shouldFetch = (collectionName: CollectionName): boolean => {
+      return collections.includes('all') || collections.includes(collectionName)
+    }
 
+    console.log('🚀 Starting selective data fetch from Firestore...')
+    console.log(`📋 Collections to process: ${collections.join(', ')}`)
+
+    if (collections.includes('team') || collections.includes('all')) {
+      console.log(
+        'ℹ️  Note: Team data will be fetched for reference but excluded from migration (already migrated manually)'
+      )
+    }
+
+    // 常にteamデータは参照用に取得（他のコレクションのために必要）
     const teams = await this.fetchAllTeams()
     const allOdais: FirestoreOdaiData[] = []
     const allKotaes: FirestoreKotaeData[] = []
@@ -252,25 +263,41 @@ export class FirestoreDataFetcher {
     for (const team of teams) {
       console.log(`\n🔄 Processing team: ${team.id}`)
 
-      const odais = await this.fetchAllOdais(team.id)
-      allOdais.push(...odais)
+      // Odai の処理
+      if (shouldFetch('odai')) {
+        const odais = await this.fetchAllOdais(team.id)
+        allOdais.push(...odais)
 
-      for (const odai of odais) {
-        console.log(`\n   🔄 Processing odai: ${odai.id}`)
+        for (const odai of odais) {
+          console.log(`\n   🔄 Processing odai: ${odai.id}`)
 
-        const kotaes = await this.fetchAllKotaes(team.id, odai.id)
-        allKotaes.push(...kotaes)
+          // Kotae の処理
+          if (shouldFetch('kotae')) {
+            const kotaes = await this.fetchAllKotaes(team.id, odai.id)
+            allKotaes.push(...kotaes)
+          }
 
-        const votes = await this.fetchAllVotes(team.id, odai.id)
-        allVotes.push(...votes)
+          // Vote の処理
+          if (shouldFetch('vote')) {
+            const votes = await this.fetchAllVotes(team.id, odai.id)
+            allVotes.push(...votes)
+          }
+        }
+      } else {
+        // Odaiを処理しない場合でも、KotaeやVoteが指定されていたら警告
+        if (shouldFetch('kotae') || shouldFetch('vote')) {
+          console.log(
+            '   ⚠️  Skipping kotae/vote processing because odai is not included in collections'
+          )
+        }
       }
     }
 
     console.log('\n📊 Data fetch summary:')
     console.log(`   Teams: ${teams.length} (for reference only - will be excluded from migration)`)
-    console.log(`   Odais: ${allOdais.length}`)
-    console.log(`   Kotaes: ${allKotaes.length}`)
-    console.log(`   Votes: ${allVotes.length}`)
+    console.log(`   Odais: ${allOdais.length} ${shouldFetch('odai') ? '' : '(skipped)'}`)
+    console.log(`   Kotaes: ${allKotaes.length} ${shouldFetch('kotae') ? '' : '(skipped)'}`)
+    console.log(`   Votes: ${allVotes.length} ${shouldFetch('vote') ? '' : '(skipped)'}`)
 
     return {
       teams,
