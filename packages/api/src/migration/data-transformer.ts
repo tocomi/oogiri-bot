@@ -53,8 +53,6 @@ export type PostgresResultData = {
 
 export class DataTransformer {
   transformTeam(firestoreTeam: FirestoreTeamData): PostgresTeamData {
-    console.log(`🔄 Transforming team: ${firestoreTeam.id}`)
-
     return {
       id: firestoreTeam.id,
       name: firestoreTeam.name || firestoreTeam.id, // fallback to ID if name is missing
@@ -64,7 +62,6 @@ export class DataTransformer {
   transformOdai(firestoreOdai: FirestoreOdaiData): PostgresOdaiData {
     // typeがundefinedの場合はnormalとして扱う
     const type = firestoreOdai.type || 'normal'
-    console.log(`🔄 Transforming odai: ${firestoreOdai.id} (${type})`)
 
     // dueDateの処理: normalタイプの場合は必須、ipponの場合はダミー値
     let dueDate: Date
@@ -89,8 +86,6 @@ export class DataTransformer {
   }
 
   transformKotae(firestoreKotae: FirestoreKotaeData): PostgresKotaeData {
-    console.log(`🔄 Transforming kotae: ${firestoreKotae.id}`)
-
     return {
       id: firestoreKotae.id,
       odaiId: firestoreKotae.odaiId,
@@ -101,8 +96,6 @@ export class DataTransformer {
   }
 
   transformVote(firestoreVote: FirestoreVoteData): PostgresVoteData {
-    console.log(`🔄 Transforming vote: ${firestoreVote.id} (rank ${firestoreVote.rank})`)
-
     return {
       id: firestoreVote.id,
       odaiId: firestoreVote.odaiId,
@@ -118,8 +111,6 @@ export class DataTransformer {
     votes: FirestoreVoteData[],
     kotaes: FirestoreKotaeData[]
   ): PostgresResultData[] {
-    console.log(`🔄 Generating result data from ${votes.length} votes`)
-
     const results: PostgresResultData[] = []
     const kotaeMap = new Map(kotaes.map((k) => [k.id, k]))
 
@@ -168,7 +159,6 @@ export class DataTransformer {
       }
     })
 
-    console.log(`✅ Generated ${results.length} result records`)
     return results
   }
 

@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin'
 import { COLLECTION_NAME } from '../const'
-import { getMigrationFirestore, convertTimestamp } from './firebase-config'
+import { getMigrationFirestore } from './firebase-config'
 
 export type FirestoreTeamData = {
   id: string
@@ -114,19 +114,14 @@ export class FirestoreDataFetcher {
         })
       })
 
-      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
+      // UUID形式でないIDのレコードのみをフィルタリング
       const teams = filterNonUuidRecords(allTeams)
 
       console.log(`✅ Fetched ${allTeams.length} total teams, ${teams.length} non-UUID teams`)
-      if (allTeams.length > teams.length) {
-        console.log(
-          `   📤 Excluded ${allTeams.length - teams.length} UUID-format teams (already migrated)`
-        )
+      const uuidCount = allTeams.length - teams.length
+      if (uuidCount > 0) {
+        console.log(`   📤 Excluded ${uuidCount} UUID-format teams (already migrated)`)
       }
-
-      teams.forEach((team, index) => {
-        console.log(`   ${index + 1}. Team: ${team.id} (${team.name})`)
-      })
 
       return teams
     } catch (error) {
@@ -180,20 +175,41 @@ export class FirestoreDataFetcher {
       console.log(
         `✅ Fetched ${allOdais.length} total odais, ${migratableOdais.length} migratable odais for team: ${teamId}`
       )
-      if (allOdais.length > migratableOdais.length) {
+      if (uuidCount > 0) {
         console.log(`   📤 Excluded ${uuidCount} UUID-format odais (already migrated)`)
+      }
+      if (ipponCount > 0) {
         console.log(`   📤 Excluded ${ipponCount} ippon-type odais (migration not supported)`)
       }
 
-      migratableOdais.forEach((odai, index) => {
-        const createdAt = odai.createdAt ? convertTimestamp(odai.createdAt) : 'N/A'
-        const type = odai.type || 'normal' // undefinedはnormalとして表示
+      // 各お題の詳細情報（回答数、投票数）を表示
+      for (const [index, odai] of migratableOdais.entries()) {
+        const type = odai.type || 'normal'
+
+        // 回答数を取得
+        const kotaeSnapshot = await this.db
+          .collection(COLLECTION_NAME.ROOT)
+          .doc(teamId)
+          .collection(COLLECTION_NAME.ODAI)
+          .doc(odai.id)
+          .collection(COLLECTION_NAME.KOTAE)
+          .get()
+        const kotaeCount = kotaeSnapshot.size
+
+        // 投票数を取得
+        const voteSnapshot = await this.db
+          .collection(COLLECTION_NAME.ROOT)
+          .doc(teamId)
+          .collection(COLLECTION_NAME.ODAI)
+          .doc(odai.id)
+          .collection(COLLECTION_NAME.VOTE)
+          .get()
+        const voteCount = voteSnapshot.size
+
         console.log(
-          `   ${index + 1}. Odai: ${odai.id} - "${odai.title}" (${type}, ${odai.status}, ${new Date(
-            createdAt as number
-          ).toISOString()})`
+          `   ${index + 1}. "${odai.title}" (${type}) - 回答: ${kotaeCount}件, 投票: ${voteCount}件`
         )
-      })
+      }
 
       return migratableOdais
     } catch (error) {
@@ -203,8 +219,6 @@ export class FirestoreDataFetcher {
   }
 
   async fetchAllKotaes(teamId: string, odaiId: string): Promise<FirestoreKotaeData[]> {
-    console.log(`📝 Fetching kotaes for odai: ${odaiId} (team: ${teamId})`)
-
     try {
       const snapshot = await this.db
         .collection(COLLECTION_NAME.ROOT)
@@ -215,7 +229,6 @@ export class FirestoreDataFetcher {
         .get()
 
       if (snapshot.empty) {
-        console.log(`⚠️  No kotaes found for odai: ${odaiId}`)
         return []
       }
 
@@ -235,26 +248,8 @@ export class FirestoreDataFetcher {
         })
       })
 
-      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
+      // UUID形式でないIDのレコードのみをフィルタリング
       const kotaes = filterNonUuidRecords(allKotaes)
-
-      console.log(
-        `✅ Fetched ${allKotaes.length} total kotaes, ${kotaes.length} non-UUID kotaes for odai: ${odaiId}`
-      )
-      if (allKotaes.length > kotaes.length) {
-        console.log(
-          `   📤 Excluded ${allKotaes.length - kotaes.length} UUID-format kotaes (already migrated)`
-        )
-      }
-
-      kotaes.forEach((kotae, index) => {
-        const createdAt = kotae.createdAt ? convertTimestamp(kotae.createdAt) : 'N/A'
-        console.log(
-          `   ${index + 1}. Kotae: ${kotae.id} - "${kotae.content}" by ${kotae.createdBy} (votes: ${
-            kotae.votedCount
-          }, ${new Date(createdAt as number).toISOString()})`
-        )
-      })
 
       return kotaes
     } catch (error) {
@@ -264,8 +259,6 @@ export class FirestoreDataFetcher {
   }
 
   async fetchAllVotes(teamId: string, odaiId: string): Promise<FirestoreVoteData[]> {
-    console.log(`📝 Fetching votes for odai: ${odaiId} (team: ${teamId})`)
-
     try {
       // Firestoreでは投票データは odai/{odaiId}/vote に格納されている
       const snapshot = await this.db
@@ -277,7 +270,6 @@ export class FirestoreDataFetcher {
         .get()
 
       if (snapshot.empty) {
-        console.log(`⚠️  No votes found for odai: ${odaiId}`)
         return []
       }
 
@@ -296,26 +288,8 @@ export class FirestoreDataFetcher {
         })
       })
 
-      // UUID形式でないIDのレコードのみをフィルタリング（既にSupabaseに移行済みのレコードを除外）
+      // UUID形式でないIDのレコードのみをフィルタリング
       const votes = filterNonUuidRecords(allVotes)
-
-      console.log(
-        `✅ Fetched ${allVotes.length} total votes, ${votes.length} non-UUID votes for odai: ${odaiId}`
-      )
-      if (allVotes.length > votes.length) {
-        console.log(
-          `   📤 Excluded ${allVotes.length - votes.length} UUID-format votes (already migrated)`
-        )
-      }
-
-      votes.forEach((vote, index) => {
-        const createdAt = vote.createdAt ? convertTimestamp(vote.createdAt) : 'N/A'
-        console.log(
-          `   ${index + 1}. Vote: ${vote.id} - rank ${vote.rank} by ${vote.votedBy} for kotae ${
-            vote.kotaeId
-          } (${new Date(createdAt as number).toISOString()})`
-        )
-      })
 
       return votes
     } catch (error) {
@@ -358,8 +332,6 @@ export class FirestoreDataFetcher {
         allOdais.push(...odais)
 
         for (const odai of odais) {
-          console.log(`\n   🔄 Processing odai: ${odai.id}`)
-
           // Kotae の処理
           if (shouldFetch('kotae')) {
             const kotaes = await this.fetchAllKotaes(team.id, odai.id)
