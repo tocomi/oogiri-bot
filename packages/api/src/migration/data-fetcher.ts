@@ -164,13 +164,31 @@ export class FirestoreDataFetcher {
       })
 
       // 移行対象のodaiのみをフィルタリング
-      const migratableOdais = filterMigratableOdais(allOdais)
+      const candidateOdais = filterMigratableOdais(allOdais)
+
+      // 回答数が3件以下のお題を除外
+      const migratableOdais: FirestoreOdaiData[] = []
+      for (const odai of candidateOdais) {
+        const kotaeSnapshot = await this.db
+          .collection(COLLECTION_NAME.ROOT)
+          .doc(teamId)
+          .collection(COLLECTION_NAME.ODAI)
+          .doc(odai.id)
+          .collection(COLLECTION_NAME.KOTAE)
+          .get()
+        const kotaeCount = kotaeSnapshot.size
+
+        if (kotaeCount > 3) {
+          migratableOdais.push(odai)
+        }
+      }
 
       // 除外の内訳を計算
       const uuidCount = allOdais.filter((odai) => isUuidFormat(odai.id)).length
       const ipponCount = allOdais.filter(
         (odai) => !isUuidFormat(odai.id) && odai.type === 'ippon'
       ).length
+      const lowKotaeCount = candidateOdais.length - migratableOdais.length
 
       console.log(
         `✅ Fetched ${allOdais.length} total odais, ${migratableOdais.length} migratable odais for team: ${teamId}`
@@ -180,6 +198,9 @@ export class FirestoreDataFetcher {
       }
       if (ipponCount > 0) {
         console.log(`   📤 Excluded ${ipponCount} ippon-type odais (migration not supported)`)
+      }
+      if (lowKotaeCount > 0) {
+        console.log(`   📤 Excluded ${lowKotaeCount} odais with ≤3 kotaes (insufficient responses)`)
       }
 
       // 各お題の詳細情報（回答数、投票数）を表示
