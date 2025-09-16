@@ -61,7 +61,7 @@ cd packages/api
 yarn build
 
 # Firestore からデータを取得してログを生成（読み取り専用）
-node lib/migration/run-migration.js fetch
+npx ts-node ./src/migration/run-migration.ts fetch
 ```
 
 このコマンドは以下を実行します：
