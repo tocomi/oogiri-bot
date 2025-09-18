@@ -87,7 +87,6 @@ export class FirestoreToPostgresMigrator {
 
       if (isValid) {
         console.log('\n✅ Data is ready for migration!')
-        this.runFullMigration(collections)
       } else {
         console.log('\n❌ Data validation failed. Please check the validation log for details.')
       }

@@ -8,8 +8,8 @@
  * - 完全移行（危険）: yarn migration:full
  */
 
-import { FirestoreToPostgresMigrator } from './migrate-firestore-to-postgres'
 import { CollectionName } from './data-fetcher'
+import { FirestoreToPostgresMigrator } from './migrate-firestore-to-postgres'
 
 async function main() {
   const args = process.argv.slice(2)
@@ -47,7 +47,7 @@ async function main() {
         console.log('   Please review the fetch logs first and implement')
         console.log('   the actual data insertion code manually.\n')
 
-        await migrator.runDataFetchOnly(collections) // 現在は安全なfetchのみ実行
+        await migrator.runFullMigration(collections) // 現在は安全なfetchのみ実行
         break
 
       case 'help':
