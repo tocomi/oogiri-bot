@@ -114,18 +114,74 @@ export class DataTransformer {
     const results: PostgresResultData[] = []
     const kotaeMap = new Map(kotaes.map((k) => [k.id, k]))
 
-    // odaiごとの最新投票日時を計算
-    const odaiLatestVoteDate = new Map<string, Date>()
+    // odaiごとにデータを分離
+    const odaiGroups = new Map<
+      string,
+      {
+        votes: FirestoreVoteData[]
+        kotaes: FirestoreKotaeData[]
+      }
+    >()
+
+    // odaiごとにvoteとkotaeをグループ化
     votes.forEach((vote) => {
-      const voteDate = vote.createdAt.toDate()
       const kotae = kotaeMap.get(vote.kotaeId)
       if (kotae) {
-        const currentLatest = odaiLatestVoteDate.get(kotae.odaiId)
-        if (!currentLatest || voteDate > currentLatest) {
-          odaiLatestVoteDate.set(kotae.odaiId, voteDate)
+        if (!odaiGroups.has(kotae.odaiId)) {
+          odaiGroups.set(kotae.odaiId, { votes: [], kotaes: [] })
         }
+        odaiGroups.get(kotae.odaiId)?.votes.push(vote)
       }
     })
+
+    kotaes.forEach((kotae) => {
+      if (!odaiGroups.has(kotae.odaiId)) {
+        odaiGroups.set(kotae.odaiId, { votes: [], kotaes: [] })
+      }
+      odaiGroups.get(kotae.odaiId)?.kotaes.push(kotae)
+    })
+
+    // 各odaiについてresultを生成
+    odaiGroups.forEach((group, odaiId) => {
+      // odaiの最新投票日時を計算
+      const latestVoteDate =
+        group.votes.length > 0
+          ? group.votes.reduce((latest, vote) => {
+              const voteDate = vote.createdAt.toDate()
+              return voteDate > latest ? voteDate : latest
+            }, new Date(0))
+          : new Date()
+
+      // 1. ポイントランキングの生成
+      const pointResults = this.generatePointRanking(
+        group.votes,
+        group.kotaes,
+        odaiId,
+        latestVoteDate
+      )
+      results.push(...pointResults)
+
+      // 2. 投票数ランキングの生成
+      const voteResults = this.generateVoteCountRanking(
+        group.votes,
+        group.kotaes,
+        odaiId,
+        latestVoteDate
+      )
+      results.push(...voteResults)
+    })
+
+    return results
+  }
+
+  // ポイントランキング生成
+  private generatePointRanking(
+    votes: FirestoreVoteData[],
+    kotaes: FirestoreKotaeData[],
+    odaiId: string,
+    createdAt: Date
+  ): PostgresResultData[] {
+    const kotaeMap = new Map(kotaes.map((k) => [k.id, k]))
 
     // 各kotaeのrank別投票数を集計
     const kotaeStats = new Map<
@@ -137,14 +193,10 @@ export class DataTransformer {
       }
     >()
 
-    // 投票データから各kotaeの順位別投票数を計算
     votes.forEach((vote) => {
       const current = kotaeStats.get(vote.kotaeId) || { first: 0, second: 0, third: 0 }
 
-      switch (
-        vote.rank ||
-        3 // rankがundefinedの場合は3として扱う
-      ) {
+      switch (vote.rank || 3) {
         case 1:
           current.first += 1
           break
@@ -159,7 +211,7 @@ export class DataTransformer {
       kotaeStats.set(vote.kotaeId, current)
     })
 
-    // ポイント計算（既存のAPIと同じロジック）
+    // ポイント計算
     const FIRST_RANK_POINT = 5
     const SECOND_RANK_POINT = 3
     const THIRD_RANK_POINT = 1
@@ -174,18 +226,48 @@ export class DataTransformer {
           SECOND_RANK_POINT * stats.second +
           THIRD_RANK_POINT * stats.third
 
-        return {
-          kotaeId,
-          odaiId: kotae.odaiId,
-          point,
-        }
+        return { kotaeId, point }
       })
-      .filter(Boolean) as Array<{ kotaeId: string; odaiId: string; point: number }>
+      .filter(Boolean) as Array<{ kotaeId: string; point: number }>
 
-    // ポイント順でソート
+    // ポイント順でソートしてランキング生成
     const sortedKotaes = pointedKotaes.sort((a, b) => b.point - a.point)
+    return this.createRankingResults(sortedKotaes, odaiId, 'point', createdAt)
+  }
 
-    // ランキング生成（同点の場合は同順位）
+  // 投票数ランキング生成
+  private generateVoteCountRanking(
+    votes: FirestoreVoteData[],
+    kotaes: FirestoreKotaeData[],
+    odaiId: string,
+    createdAt: Date
+  ): PostgresResultData[] {
+    // 各kotaeの投票数を集計
+    const kotaeVoteCounts = new Map<string, number>()
+
+    votes.forEach((vote) => {
+      const currentCount = kotaeVoteCounts.get(vote.kotaeId) || 0
+      kotaeVoteCounts.set(vote.kotaeId, currentCount + 1)
+    })
+
+    const votedKotaes = Array.from(kotaeVoteCounts.entries()).map(([kotaeId, voteCount]) => ({
+      kotaeId,
+      point: voteCount, // pointフィールドに投票数を格納
+    }))
+
+    // 投票数順でソートしてランキング生成
+    const sortedKotaes = votedKotaes.sort((a, b) => b.point - a.point)
+    return this.createRankingResults(sortedKotaes, odaiId, 'count', createdAt)
+  }
+
+  // ランキング結果作成の共通処理
+  private createRankingResults(
+    sortedKotaes: Array<{ kotaeId: string; point: number }>,
+    odaiId: string,
+    type: 'point' | 'count',
+    createdAt: Date
+  ): PostgresResultData[] {
+    const results: PostgresResultData[] = []
     let rank = 1
     let beforePoint = -1
     let stockRank = 1
@@ -193,10 +275,8 @@ export class DataTransformer {
     sortedKotaes.forEach((kotae) => {
       if (beforePoint >= 0) {
         if (beforePoint === kotae.point) {
-          // 同点の場合は同じランク
           stockRank += 1
         } else {
-          // 点数が異なる場合はランクを進める
           rank += stockRank
           stockRank = 1
         }
@@ -205,21 +285,19 @@ export class DataTransformer {
 
       // 上位3位以内のみresultとして保存
       if (rank <= 3) {
-        // そのodaiの最新投票日時を使用（投票の締切を表す）
-        const resultCreatedAt = odaiLatestVoteDate.get(kotae.odaiId) || new Date()
-
         results.push({
-          id: `result_${kotae.kotaeId}`,
-          odaiId: kotae.odaiId,
+          id: `result_${type}_${kotae.kotaeId}`,
+          odaiId: odaiId,
           kotaeId: kotae.kotaeId,
-          type: 'point',
+          type: type,
           point: kotae.point,
           rank: rank,
-          createdAt: resultCreatedAt,
+          createdAt: createdAt,
         })
       }
     })
 
+    console.log('👾 -> results:', results)
     return results
   }
 
@@ -262,9 +340,9 @@ export class DataTransformer {
       ? firestoreData.votes.map((vote) => this.transformVote(vote))
       : []
 
-    // Results は vote データがある場合のみ生成
+    // Results は vote または kotae データがある場合に常に生成（fetchモードでも実施）
     const results =
-      shouldTransform('vote') && firestoreData.votes.length > 0
+      firestoreData.votes.length > 0 && firestoreData.kotaes.length > 0
         ? this.generateResultsFromVotes(firestoreData.votes, firestoreData.kotaes)
         : []
 
@@ -274,7 +352,9 @@ export class DataTransformer {
     console.log(`   Kotaes: ${kotaes.length} ${shouldTransform('kotae') ? '' : '(skipped)'}`)
     console.log(`   Votes: ${votes.length} ${shouldTransform('vote') ? '' : '(skipped)'}`)
     console.log(
-      `   Results: ${results.length} ${shouldTransform('vote') ? '' : '(skipped - no votes)'}`
+      `   Results: ${results.length} ${
+        results.length > 0 ? '(generated from available data)' : '(no data to process)'
+      }`
     )
 
     return {
