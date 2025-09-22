@@ -1,3 +1,4 @@
+import { v7 as uuidv7 } from 'uuid'
 import {
   FirestoreTeamData,
   FirestoreOdaiData,
@@ -49,6 +50,12 @@ export type PostgresResultData = {
   point: number
   rank: number
   createdAt: Date
+}
+
+export const generateId = ({ timestamp }: { timestamp?: Date }): string => {
+  return uuidv7({
+    msecs: timestamp,
+  })
 }
 
 export class DataTransformer {
@@ -286,7 +293,7 @@ export class DataTransformer {
       // 上位3位以内のみresultとして保存
       if (rank <= 3) {
         results.push({
-          id: `result_${type}_${kotae.kotaeId}`,
+          id: generateId({ timestamp: createdAt }),
           odaiId: odaiId,
           kotaeId: kotae.kotaeId,
           type: type,
