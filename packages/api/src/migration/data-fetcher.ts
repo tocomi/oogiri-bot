@@ -138,6 +138,7 @@ export class FirestoreDataFetcher {
         .collection(COLLECTION_NAME.ROOT)
         .doc(teamId)
         .collection(COLLECTION_NAME.ODAI)
+        .orderBy('createdAt', 'asc')
         .get()
 
       if (snapshot.empty) {
@@ -201,35 +202,6 @@ export class FirestoreDataFetcher {
       }
       if (lowKotaeCount > 0) {
         console.log(`   📤 Excluded ${lowKotaeCount} odais with ≤3 kotaes (insufficient responses)`)
-      }
-
-      // 各お題の詳細情報（回答数、投票数）を表示
-      for (const [index, odai] of migratableOdais.entries()) {
-        const type = odai.type || 'normal'
-
-        // 回答数を取得
-        const kotaeSnapshot = await this.db
-          .collection(COLLECTION_NAME.ROOT)
-          .doc(teamId)
-          .collection(COLLECTION_NAME.ODAI)
-          .doc(odai.id)
-          .collection(COLLECTION_NAME.KOTAE)
-          .get()
-        const kotaeCount = kotaeSnapshot.size
-
-        // 投票数を取得
-        const voteSnapshot = await this.db
-          .collection(COLLECTION_NAME.ROOT)
-          .doc(teamId)
-          .collection(COLLECTION_NAME.ODAI)
-          .doc(odai.id)
-          .collection(COLLECTION_NAME.VOTE)
-          .get()
-        const voteCount = voteSnapshot.size
-
-        console.log(
-          `   ${index + 1}. "${odai.title}" (${type}) - 回答: ${kotaeCount}件, 投票: ${voteCount}件`
-        )
       }
 
       return migratableOdais
