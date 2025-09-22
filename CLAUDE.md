@@ -133,4 +133,4 @@ yarn test
 - API は Firebase Functions で動作するため、`firebase emulators:start` が必要
 - Bot は Socket Mode で動作するため、インターネット接続が必要
 - データベースマイグレーションは `yarn migrate` で実行
-- Node.js バージョンは 20.9.0 を使用（Volta で管理）
+- Node.js バージョンは 20.19.5 を使用（Volta で管理）

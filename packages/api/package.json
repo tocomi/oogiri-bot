@@ -19,7 +19,7 @@
   },
   "main": "lib/index.js",
   "volta": {
-    "node": "20.9.0",
+    "node": "20.19.5",
     "yarn": "4.0.2"
   },
   "dependencies": {

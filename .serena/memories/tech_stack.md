@@ -2,7 +2,7 @@
 
 ## 言語・ランタイム
 
-- Node.js 20.9.0 (Volta で管理)
+- Node.js 20.19.5 (Volta で管理)
 - TypeScript 4.3.4
 
 ## フレームワーク・ライブラリ
