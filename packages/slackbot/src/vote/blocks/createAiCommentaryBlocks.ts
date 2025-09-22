@@ -30,7 +30,7 @@ export const createAiCommentaryBlocks = (commentary?: CommentatorCommentary): Kn
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `:giraffe_face: *川島明*\n${commentary.kawashima}`,
+        text: `:giraffe_face: *麒麟川島*\n${commentary.kawashima}`,
       },
     },
     {
