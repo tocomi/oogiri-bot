@@ -80,10 +80,15 @@ export type OdaiPutStatusParams = SlackParams
 
 export type OdaiFinishParams = OdaiPutStatusParams & { kotaeList: Kotae[] }
 
+export type CommentatorCommentary = {
+  matsumoto: string
+  bakarism: string
+  kawashima: string
+}
 export type OdaiFinishResponse =
   | ApiError
   | {
-      aiCommentary: string
+      aiCommentary: CommentatorCommentary
     }
 
 export type OdaiPutStatusData = Pick<OdaiApiBase, 'status'> & SlackParams

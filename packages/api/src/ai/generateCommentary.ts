@@ -1,6 +1,6 @@
 import { openai } from './openai'
 import { Kotae } from '../kotae/Kotae'
-import { CountStat, PointStat } from '../odai/Odai'
+import { CountStat, PointStat, CommentatorCommentary } from '../odai/Odai'
 
 export async function generateCommentary({
   odaiTitle,
@@ -12,20 +12,8 @@ export async function generateCommentary({
   kotaeList: Kotae[]
   pointStats: PointStat[]
   countStats: CountStat[]
-}): Promise<string> {
-  const prompt = `
-大喜利の結果について、面白く、ユーモアのある講評を作成してください。
-
-講評は以下の点を含めてください：
-1. 上位回答の特徴や傾向
-2. 特に面白かった回答へのコメント（ランキング外の回答も含む）
-3. お題に対する回答の全体的な傾向
-4. 次回への期待
-
-講評は3〜4段落程度で、フレンドリーかつユーモアのある口調で作成してください。
-
-また、講評は400文字程度にまとめてください。
-
+}): Promise<CommentatorCommentary> {
+  const baseData = `
 【お題】
 ${odaiTitle}
 
@@ -39,22 +27,82 @@ ${countStats.map((s) => `${s.votedCount}票 - ${s.kotaeContent}`).join('\n')}
 ${kotaeList.map((k) => k.content).join('\n')}
 `
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      {
-        role: 'system',
-        content:
-          'あなたは大喜利の結果を講評する専門家です。ユーモアがあり、的確な講評を提供します。',
-      },
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 2048,
-  })
+  // 3人分の講評を並行生成
+  const [matsumotoResponse, bakarismResponse, kawashimaResponse] = await Promise.all([
+    // 松本人志スタイル
+    openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'あなたは松本人志として大喜利の講評をします。関西弁で厳しく鋭い指摘をし、ダメなものはダメとはっきり言う辛口講評をしてください。「あかん」「センスない」「全然おもんない」などの表現を使って、歯に衣着せぬコメントをお願いします。',
+        },
+        {
+          role: 'user',
+          content: `大喜利の結果について、松本人志らしい厳しく鋭い講評を100文字程度で作成してください。関西弁で、良いものは褒めて、ダメなものは厳しく指摘してください。
+          
+重要：必ず全回答リストの中から具体的にお気に入りの回答を一つ以上挙げて「○○」の形で引用し、その回答について詳しくコメントしてください。
 
-  return response.choices[0].message.content || '講評を生成できませんでした。'
+${baseData}`,
+        },
+      ],
+      temperature: 0.8,
+      max_tokens: 300,
+    }),
+
+    // バカリズムスタイル
+    openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'あなたはバカリズムとして大喜利の講評をします。論理的で冷静な分析を行い、ボケの構造やパターンを技術的に解説してください。「これは○○系のボケですね」「構造的に見ると」などの表現を使った知的な講評をお願いします。',
+        },
+        {
+          role: 'user',
+          content: `大喜利の結果について、バカリズムらしい論理的で技術的な講評を100文字程度で作成してください。ボケの構造やパターンを分析的に解説してください。
+
+重要：必ず全回答リストの中から具体的にお気に入りの回答を一つ以上挙げて「○○」の形で引用し、その回答のボケの構造や技術的な面白さについて分析してください。
+
+${baseData}`,
+        },
+      ],
+      temperature: 0.6,
+      max_tokens: 300,
+    }),
+
+    // 麒麟川島スタイル
+    openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'あなたは麒麟川島として大喜利の講評をします。優しく包み込むような温かい講評で、すべての回答の良い面を見つけて褒めてください。「これもいいですねー」「みんな頑張りました」「素晴らしい発想」などの表現を使った励ましの講評をお願いします。',
+        },
+        {
+          role: 'user',
+          content: `大喜利の結果について、麒麟川島らしい優しく温かい講評を100文字程度で作成してください。全ての回答の良い面を見つけて、励ましの言葉をかけてください。
+
+重要：必ず全回答リストの中から具体的にお気に入りの回答を一つ以上挙げて「○○」の形で引用し、その回答の良い面や発想の素晴らしさについて優しくコメントしてください。
+
+${baseData}`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 300,
+    }),
+  ])
+
+  return {
+    matsumoto: matsumotoResponse.choices[0].message.content || 'あかん、講評でけへん。',
+    bakarism:
+      bakarismResponse.choices[0].message.content ||
+      '講評の生成に失敗しました。技術的な問題ですね。',
+    kawashima:
+      kawashimaResponse.choices[0].message.content ||
+      'あー、講評が作れませんでした。でも大丈夫です！',
+  }
 }

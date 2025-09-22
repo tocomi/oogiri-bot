@@ -1,35 +1,42 @@
 import { KnownBlock } from '@slack/types'
+import { CommentatorCommentary } from '../../odai/Odai'
 
-export const createAiCommentaryBlocks = (commentary?: string): KnownBlock[] => {
+export const createAiCommentaryBlocks = (commentary?: CommentatorCommentary): KnownBlock[] => {
   if (!commentary) return []
-
-  // 段落ごとに分割
-  const paragraphs = commentary.split('\n\n').filter((p) => p.trim().length > 0)
 
   const blocks: KnownBlock[] = [
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: ':robot_face: *笑撃のAI-GOROによる講評* :bulb:',
+        text: ':microphone: *有識者による講評*',
       },
     },
-  ]
-
-  // 各段落をブロックとして追加
-  paragraphs.forEach((paragraph) => {
-    blocks.push({
+    {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: paragraph,
+        text: `:fire: *松本人志*\n${commentary.matsumoto}`,
       },
-    })
-  })
-
-  blocks.push({
-    type: 'divider',
-  })
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `:brain: *バカリズム*\n${commentary.bakarism}`,
+      },
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `:giraffe_face: *麒麟川島*\n${commentary.kawashima}`,
+      },
+    },
+    {
+      type: 'divider',
+    },
+  ]
 
   return blocks
 }

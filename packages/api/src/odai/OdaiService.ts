@@ -15,6 +15,7 @@ import {
   OdaiResult,
   OdaiWithResult,
   OdaiWithResultSummary,
+  CommentatorCommentary,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
 import { generateCommentary } from '../ai/generateCommentary'
@@ -135,7 +136,7 @@ export class OdaiServiceImpl implements OdaiService {
     ])
     if (!result1 || !result2) return InternalServerError
 
-    let aiCommentary: string | undefined
+    let aiCommentary: CommentatorCommentary | undefined
     try {
       aiCommentary = await generateCommentary({
         odaiTitle: currentOdai.title,
@@ -145,14 +146,19 @@ export class OdaiServiceImpl implements OdaiService {
       })
     } catch (error) {
       console.error('AI講評の生成に失敗しました', error)
-      // エラー時は講評なしで続行
+      // エラー時はフォールバック講評で続行
+      aiCommentary = {
+        matsumoto: 'すんません、講評でけへんかった。',
+        bakarism: '技術的な問題で講評を生成できませんでした。',
+        kawashima: '講評が作れませんでしたが、みなさんお疲れ様でした！',
+      }
     }
 
     const [resultA, resultB] = await Promise.all([
       this.repository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
       this.newRepository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
     ])
-    return resultA && resultB ? { aiCommentary: aiCommentary ?? '' } : InternalServerError
+    return resultA && resultB ? { aiCommentary: aiCommentary } : InternalServerError
   }
 
   async getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]> {
