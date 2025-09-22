@@ -2,6 +2,8 @@ import { openai } from './openai'
 import { Kotae } from '../kotae/Kotae'
 import { CountStat, PointStat, CommentatorCommentary } from '../odai/Odai'
 
+const MODEL = 'gpt-5'
+
 export async function generateCommentary({
   odaiTitle,
   kotaeList,
@@ -31,7 +33,7 @@ ${kotaeList.map((k) => k.content).join('\n')}
   const [matsumotoResponse, bakarismResponse, kawashimaResponse] = await Promise.all([
     // 松本人志スタイル
     openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: MODEL,
       messages: [
         {
           role: 'system',
@@ -53,7 +55,7 @@ ${baseData}`,
 
     // バカリズムスタイル
     openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: MODEL,
       messages: [
         {
           role: 'system',
@@ -75,7 +77,7 @@ ${baseData}`,
 
     // 麒麟川島スタイル
     openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: MODEL,
       messages: [
         {
           role: 'system',
