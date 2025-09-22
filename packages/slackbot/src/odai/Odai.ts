@@ -39,6 +39,12 @@ export type OdaiStartVotingResponse = KotaeListResponse
 
 export type OdaiFinishRequestParams = SlackParams
 
+export type CommentatorCommentary = {
+  matsumoto: string
+  bakarism: string
+  kawashima: string
+}
+
 export type OdaiFinishResponse = KotaeListResponse & {
-  aiCommentary: string
+  aiCommentary: CommentatorCommentary
 }
