@@ -1,6 +1,7 @@
 # 推奨コマンド一覧
 
 ## 開発コマンド
+
 ```bash
 # API サーバーの開発起動（Firebase Emulator）
 yarn dev:api
@@ -19,6 +20,7 @@ yarn migrate
 ```
 
 ## テストコマンド
+
 ```bash
 # Bot パッケージのテスト実行
 cd packages/slackbot
@@ -26,6 +28,7 @@ yarn test
 ```
 
 ## デプロイコマンド
+
 ```bash
 # API のデプロイ（Firebase Functions）
 yarn deploy:api
@@ -40,6 +43,7 @@ yarn release
 ## 各パッケージでの作業
 
 ### API パッケージ (packages/api)
+
 ```bash
 cd packages/api
 
@@ -61,6 +65,7 @@ yarn lint:fix
 ```
 
 ### Bot パッケージ (packages/slackbot)
+
 ```bash
 cd packages/slackbot
 
@@ -79,8 +84,9 @@ yarn lint:fix
 ```
 
 ## システムユーティリティ (Darwin)
+
 - `git` - /opt/homebrew/bin/git
-- `ls` - /bin/ls  
+- `ls` - /bin/ls
 - `cd` - shell built-in
 - `grep` - /usr/bin/grep
 - `find` - /usr/bin/find

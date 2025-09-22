@@ -1,6 +1,7 @@
 # プロジェクト構造
 
 ## ルートディレクトリ構成
+
 ```
 oogiri-bot/
 ├── packages/
@@ -15,6 +16,7 @@ oogiri-bot/
 ```
 
 ## packages/api 構成
+
 ```
 packages/api/src/
 ├── ai/                # AI講評機能
@@ -33,6 +35,7 @@ packages/api/src/
 ```
 
 ## packages/slackbot 構成
+
 ```
 packages/slackbot/src/
 ├── api/               # API呼び出し
@@ -51,9 +54,10 @@ packages/slackbot/src/
 ```
 
 ## 重要な設定ファイル
-- `tsconfig.base.json` - TypeScript基底設定
-- `.eslintrc.js` - ESLint設定
-- `.prettierrc.js` - Prettier設定
-- `firebase.json` - Firebase設定
-- `jest.config.js` - Jest設定（Bot用）
-- `.yarnrc.yml` - Yarn設定
+
+- `tsconfig.base.json` - TypeScript 基底設定
+- `.eslintrc.js` - ESLint 設定
+- `.prettierrc.js` - Prettier 設定
+- `firebase.json` - Firebase 設定
+- `jest.config.js` - Jest 設定（Bot 用）
+- `.yarnrc.yml` - Yarn 設定

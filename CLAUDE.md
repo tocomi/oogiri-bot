@@ -8,9 +8,10 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 
 ## アーキテクチャ
 
-このプロジェクトは yarn workspaces を使ったモノレポ構成で、以下の2つのメインパッケージから構成されています：
+このプロジェクトは yarn workspaces を使ったモノレポ構成で、以下の 2 つのメインパッケージから構成されています：
 
 ### packages/api
+
 - Firebase Functions ベースの API サーバー
 - Express.js を使用した REST API
 - Firestore（従来）と PostgreSQL（新）の両方をサポートするデュアルデータベース構成
@@ -18,12 +19,14 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 - リポジトリパターンとサービス層を採用したアーキテクチャ
 
 ### packages/slackbot
+
 - Slack Bolt Framework を使用した Slack Bot
 - Socket Mode で動作
 - Slack のインタラクション（ボタン、モーダル等）を処理
 - API パッケージの REST エンドポイントを呼び出してデータ操作
 
 ### データモデル
+
 - **Team**: Slack チーム情報
 - **Odai**: 大喜利のお題
 - **Kotae**: お題への回答
@@ -33,6 +36,7 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 ## よく使用するコマンド
 
 ### 開発
+
 ```bash
 # API サーバーの開発起動（Firebase Emulator）
 yarn dev:api
@@ -51,6 +55,7 @@ yarn migrate
 ```
 
 ### テスト
+
 ```bash
 # Bot パッケージのテスト実行
 cd packages/slackbot
@@ -58,6 +63,7 @@ yarn test
 ```
 
 ### デプロイ
+
 ```bash
 # API のデプロイ（Firebase Functions）
 yarn deploy:api
@@ -72,6 +78,7 @@ yarn release
 ### 各パッケージでの作業
 
 #### API パッケージ (packages/api)
+
 ```bash
 cd packages/api
 
@@ -89,6 +96,7 @@ yarn deploy
 ```
 
 #### Bot パッケージ (packages/slackbot)
+
 ```bash
 cd packages/slackbot
 
@@ -114,12 +122,14 @@ yarn test
 ## 環境設定
 
 ### 必要な環境変数
+
 - Firebase プロジェクト設定
 - Slack App の設定（Bot Token, App Token）
 - PostgreSQL データベース接続情報（DATABASE_URL, DIRECT_URL）
 - OpenAI API キー
 
 ### 開発時の注意点
+
 - API は Firebase Functions で動作するため、`firebase emulators:start` が必要
 - Bot は Socket Mode で動作するため、インターネット接続が必要
 - データベースマイグレーションは `yarn migrate` で実行
