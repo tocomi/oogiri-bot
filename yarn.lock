@@ -1426,6 +1426,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node-fetch@npm:2.6.7":
+  version: 2.6.7
+  resolution: "@types/node-fetch@npm:2.6.7"
+  dependencies:
+    "@types/node": "npm:*"
+    form-data: "npm:^4.0.0"
+  checksum: 10c0/83dc3170a5951f7a4e83547b6f617ec219580fd85d693c3e1e11fcbe84058c82f20beeda7d19441cd42af7ef8d5a8fac802fe1fae369fd8fa1832509248d0aea
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*, @types/node@npm:>=12, @types/node@npm:>=12.0.0, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:>=18.0.0":
   version: 22.5.5
   resolution: "@types/node@npm:22.5.5"
@@ -6219,6 +6229,7 @@ __metadata:
     "@types/cors": "npm:^2.8.10"
     "@types/dotenv": "npm:^8.2.0"
     "@types/jest": "npm:^26.0.24"
+    "@types/node-fetch": "npm:2.6.7"
     "@types/uuid": "npm:^10"
     "@typescript-eslint/eslint-plugin": "npm:^4.28.0"
     "@typescript-eslint/parser": "npm:^4.28.0"

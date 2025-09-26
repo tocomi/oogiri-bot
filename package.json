@@ -29,6 +29,7 @@
     "@types/cors": "^2.8.10",
     "@types/dotenv": "^8.2.0",
     "@types/jest": "^26.0.24",
+    "@types/node-fetch": "2.6.7",
     "@types/uuid": "^10",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",
