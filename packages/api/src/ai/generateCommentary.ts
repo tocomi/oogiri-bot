@@ -1,8 +1,10 @@
+import type { ChatModel } from 'openai/resources/shared'
 import { openai } from './openai'
 import { Kotae } from '../kotae/Kotae'
 import { CountStat, PointStat, CommentatorCommentary } from '../odai/Odai'
 
-const MODEL = 'gpt-5'
+const MODEL: ChatModel = 'chatgpt-4o-latest'
+const MAX_TOKENS = 600
 
 export async function generateCommentary({
   odaiTitle,
@@ -49,7 +51,7 @@ ${kotaeList.map((k) => k.content).join('\n')}
 ${baseData}`,
         },
       ],
-      max_completion_tokens: 300,
+      max_tokens: MAX_TOKENS,
     }),
 
     // バカリズムスタイル
@@ -70,7 +72,7 @@ ${baseData}`,
 ${baseData}`,
         },
       ],
-      max_completion_tokens: 300,
+      max_tokens: MAX_TOKENS,
     }),
 
     // 麒麟川島スタイル
@@ -91,7 +93,7 @@ ${baseData}`,
 ${baseData}`,
         },
       ],
-      max_completion_tokens: 300,
+      max_tokens: MAX_TOKENS,
     }),
   ])
 
