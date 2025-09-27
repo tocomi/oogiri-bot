@@ -50,7 +50,7 @@ ${baseData}`,
         },
       ],
       temperature: 0.8,
-      max_tokens: 300,
+      max_completion_tokens: 300,
     }),
 
     // バカリズムスタイル
@@ -72,7 +72,7 @@ ${baseData}`,
         },
       ],
       temperature: 0.6,
-      max_tokens: 300,
+      max_completion_tokens: 300,
     }),
 
     // 麒麟川島スタイル
@@ -94,7 +94,7 @@ ${baseData}`,
         },
       ],
       temperature: 0.7,
-      max_tokens: 300,
+      max_completion_tokens: 300,
     }),
   ])
 
