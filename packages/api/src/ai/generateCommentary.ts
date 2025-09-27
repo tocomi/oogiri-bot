@@ -49,7 +49,6 @@ ${kotaeList.map((k) => k.content).join('\n')}
 ${baseData}`,
         },
       ],
-      temperature: 0.8,
       max_completion_tokens: 300,
     }),
 
@@ -71,7 +70,6 @@ ${baseData}`,
 ${baseData}`,
         },
       ],
-      temperature: 0.6,
       max_completion_tokens: 300,
     }),
 
@@ -93,7 +91,6 @@ ${baseData}`,
 ${baseData}`,
         },
       ],
-      temperature: 0.7,
       max_completion_tokens: 300,
     }),
   ])
