@@ -13,5 +13,3 @@ export const decodeHtmlEntities = (text: string): string => {
 
   return text.replace(HTML_ENTITY_PATTERN, (entity) => HTML_ENTITY_MAP[entity] ?? entity)
 }
-
-export default decodeHtmlEntities
