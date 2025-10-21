@@ -1,11 +1,12 @@
 import { App, KnownBlock } from '@slack/bolt'
 import { VoteUseCase } from './VoteUseCase'
+import { countVote } from './action/countVote'
+import { createVoteAlreadyBlocks, createVoteCompleteBlocks } from './blocks'
 import { createIppon, createWin } from '../ippon/IpponAction'
 import { VOTE_KOTAE_IPPON_ACTION_ID } from '../kotae/blocks/kotaeIpponCreatedBlocks'
 import { postEphemeral, postInternalErrorMessage } from '../slack/postMessage'
+import { decodeHtmlEntities } from '../util/decodeHtmlEntities'
 import { getSlackUserList } from '../util/getSlackUserList'
-import { countVote } from './action/countVote'
-import { createVoteAlreadyBlocks, createVoteCompleteBlocks } from './blocks'
 
 export const countVoteAction = (app: App) => {
   app.command('/oogiri-count-kusa', async ({ ack, body, client }) => {
@@ -163,7 +164,7 @@ export const voteKotaeIppon = (app: App) => {
     // @ts-ignore
     const text: string = body.message.blocks[0].text.text
     // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
-    const content = text.replace(/.*\n/, '').replace(/\*/g, '')
+    const content = decodeHtmlEntities(text.replace(/.*\n/, '').replace(/\*/g, ''))
 
     // TODO: ランクはないが暫定的に3を入れておく
     const voteRank = 3
