@@ -4,6 +4,7 @@ import { createIppon, createWin } from '../ippon/IpponAction'
 import { VOTE_KOTAE_IPPON_ACTION_ID } from '../kotae/blocks/kotaeIpponCreatedBlocks'
 import { postEphemeral, postInternalErrorMessage } from '../slack/postMessage'
 import { getSlackUserList } from '../util/getSlackUserList'
+import { decodeHtmlEntities } from '../util/decodeHtmlEntities'
 import { countVote } from './action/countVote'
 import { createVoteAlreadyBlocks, createVoteCompleteBlocks } from './blocks'
 
@@ -163,7 +164,7 @@ export const voteKotaeIppon = (app: App) => {
     // @ts-ignore
     const text: string = body.message.blocks[0].text.text
     // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
-    const content = text.replace(/.*\n/, '').replace(/\*/g, '')
+    const content = decodeHtmlEntities(text.replace(/.*\n/, '').replace(/\*/g, ''))
 
     // TODO: ランクはないが暫定的に3を入れておく
     const voteRank = 3
