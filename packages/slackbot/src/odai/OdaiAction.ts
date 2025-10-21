@@ -4,6 +4,7 @@ import { KotaeUseCase } from '../kotae/KotaeUseCase'
 import { makePointRanking } from '../kotae/rank/makePointRanking'
 import { makeVotedCountRanking } from '../kotae/rank/makeVotedCountRanking'
 import { postMessage, postEphemeral, postInternalErrorMessage } from '../slack/postMessage'
+import { decodeHtmlEntities } from '../util/decodeHtmlEntities'
 import { getSlackUserList } from '../util/getSlackUserList'
 import { isImageUrl } from '../util/isImageUrl'
 import { VoteUseCase } from '../vote/VoteUseCase'
@@ -256,7 +257,9 @@ export const startVoting = (app: App) => {
     // @ts-ignore
     const text: string = body.message.blocks[0].text.text
     // NOTE: textから回答部分のみを抜き出し。正規表現でバシッとできた方が良いけど。。
-    const content = text.replace(':speaking_head_in_silhouette: ', '').replace(/\*/g, '')
+    const content = decodeHtmlEntities(
+      text.replace(':speaking_head_in_silhouette: ', '').replace(/\*/g, '')
+    )
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
