@@ -141,8 +141,6 @@ export class OdaiServiceImpl implements OdaiService {
       aiCommentary = await generateCommentary({
         odaiTitle: currentOdai.title,
         kotaeList,
-        pointStats: odaiResult.pointStats,
-        countStats: odaiResult.countStats,
       })
     } catch (error) {
       console.error('AI講評の生成に失敗しました', error)

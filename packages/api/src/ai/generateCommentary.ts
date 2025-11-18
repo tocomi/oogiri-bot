@@ -1,7 +1,7 @@
 import type { ChatModel } from 'openai/resources/shared'
 import { openai } from './openai'
 import { Kotae } from '../kotae/Kotae'
-import { CountStat, PointStat, CommentatorCommentary } from '../odai/Odai'
+import { CommentatorCommentary } from '../odai/Odai'
 
 const MODEL: ChatModel = 'chatgpt-4o-latest'
 const MAX_TOKENS = 600
@@ -9,23 +9,13 @@ const MAX_TOKENS = 600
 export async function generateCommentary({
   odaiTitle,
   kotaeList,
-  pointStats,
-  countStats,
 }: {
   odaiTitle: string
   kotaeList: Kotae[]
-  pointStats: PointStat[]
-  countStats: CountStat[]
 }): Promise<CommentatorCommentary> {
   const baseData = `
 【お題】
 ${odaiTitle}
-
-【ポイントランキング上位】
-${pointStats.map((s) => `${s.point}P - ${s.kotaeContent}`).join('\n')}
-
-【投票数ランキング上位】
-${countStats.map((s) => `${s.votedCount}票 - ${s.kotaeContent}`).join('\n')}
 
 【全回答リスト】
 ${kotaeList.map((k) => k.content).join('\n')}
