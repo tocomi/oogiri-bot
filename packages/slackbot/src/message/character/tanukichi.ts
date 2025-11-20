@@ -14,7 +14,7 @@ export const tanukichi: CharacterMessages = {
     'お題がなくてさびしいだなも...',
   ],
   'odai-inspire-004': [
-    'お題のアイデアがほしかったら、 <https://oogiri-odai-generator.pages.dev|ぼくの友達のモアイさん> に聞いてみるだなも！',
+    'お題のアイデアがほしかったら、 <https://oogiri-odai-suggestions.vercel.app/|ぼくが経営してる工場> に行ってみるだなも！',
   ],
   'kotae-status': [
     'お疲れさまだなも！ ただいまの回答状況をお伝えするだなも！',
