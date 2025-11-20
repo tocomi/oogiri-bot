@@ -41,5 +41,7 @@ export const makePointRanking = ({
       }
       return ranked
     })
-  return filterTopKotae ? rankedList.filter((kotae) => kotae.rank <= 3) : rankedList
+  return filterTopKotae
+    ? rankedList.filter((kotae) => kotae.rank <= 3)
+    : rankedList
 }

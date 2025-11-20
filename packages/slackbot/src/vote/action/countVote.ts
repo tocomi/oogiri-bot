@@ -2,7 +2,11 @@ import { KnownBlock } from '@slack/bolt'
 import { WebClient } from '@slack/web-api'
 import { getCharacterMessage } from '../../message'
 import { FINISH_ODAI_ACTION_ID } from '../../odai/OdaiAction'
-import { postEphemeral, postInternalErrorMessage, postMessage } from '../../slack/postMessage'
+import {
+  postEphemeral,
+  postInternalErrorMessage,
+  postMessage,
+} from '../../slack/postMessage'
 import { VoteUseCase } from '../VoteUseCase'
 
 export const countVote = async ({
@@ -17,40 +21,42 @@ export const countVote = async ({
   isScheduler?: boolean
 }) => {
   const voteUseCase = new VoteUseCase()
-  const result = await voteUseCase.getVoteCount({ slackTeamId }).catch((error) => {
-    if (error.response.data.message === 'No Active Odai') {
-      console.warn(error.response.data.message)
-      const blocks: KnownBlock[] = [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: ':warning: お題が開始されていません :warning:',
+  const result = await voteUseCase
+    .getVoteCount({ slackTeamId })
+    .catch((error) => {
+      if (error.response.data.message === 'No Active Odai') {
+        console.warn(error.response.data.message)
+        const blocks: KnownBlock[] = [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':warning: お題が開始されていません :warning:',
+            },
           },
-        },
-      ]
-      if (userId) postEphemeral({ client, user: userId, blocks })
-    } else if (
-      error.response.data.message === 'No Voting Odai' ||
-      error.response.data.message === 'No Target Kotae'
-    ) {
-      console.warn(error.response.data.message)
-      const blocks: KnownBlock[] = [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: ':warning: この投票は締め切られています :warning:',
+        ]
+        if (userId) postEphemeral({ client, user: userId, blocks })
+      } else if (
+        error.response.data.message === 'No Voting Odai' ||
+        error.response.data.message === 'No Target Kotae'
+      ) {
+        console.warn(error.response.data.message)
+        const blocks: KnownBlock[] = [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':warning: この投票は締め切られています :warning:',
+            },
           },
-        },
-      ]
-      if (userId) postEphemeral({ client, user: userId, blocks })
-    } else {
-      console.error(error.response.config)
-      if (userId) postInternalErrorMessage({ client, user: userId })
-    }
-    return undefined
-  })
+        ]
+        if (userId) postEphemeral({ client, user: userId, blocks })
+      } else {
+        console.error(error.response.config)
+        if (userId) postInternalErrorMessage({ client, user: userId })
+      }
+      return undefined
+    })
   if (!result) return
   // NOTE: スケジューラー実行では投票受付中のみ実行
   if (isScheduler && result.odaiStatus !== 'voting') return

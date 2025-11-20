@@ -18,7 +18,7 @@
 
 - **パッケージマネージャー**: yarn 4.5.0 (workspaces)
 - **トランスパイラー**: TypeScript
-- **リンター**: ESLint + Prettier
+- **リンター**: ESLint + Biome
 - **テスト**: Jest (ts-jest)
 - **監視ツール**: tsc-watch
 

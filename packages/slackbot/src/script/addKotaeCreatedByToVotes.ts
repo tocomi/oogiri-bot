@@ -41,7 +41,7 @@ const addKotaeCreatedBy = async (kotaeList: Kotae[]) => {
       {
         kotaeCreatedBy: targetKotae.createdBy,
       },
-      { merge: true }
+      { merge: true },
     )
   })
 }

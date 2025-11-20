@@ -51,7 +51,9 @@ export class VoteFirestoreRepositoryImpl implements VoteRepository {
     rank,
     odaiId,
     kotaeId,
-  }: VoteCheckDuplicationParams): Promise<'ok' | 'alreadyVoted' | 'alreadySameRankVoted'> {
+  }: VoteCheckDuplicationParams): Promise<
+    'ok' | 'alreadyVoted' | 'alreadySameRankVoted'
+  > {
     const collection = voteKotaeCollection({
       slackTeamId,
       odaiDocId: odaiId,
@@ -67,7 +69,10 @@ export class VoteFirestoreRepositoryImpl implements VoteRepository {
 
     // NOTE: rank = 1 or 2は同じお題で複数投票することはできない
     if (rank === 1 || rank === 2) {
-      const odaiCollection = voteOdaiCollection({ slackTeamId, odaiDocId: odaiId })
+      const odaiCollection = voteOdaiCollection({
+        slackTeamId,
+        odaiDocId: odaiId,
+      })
       const voteRankSnapshot = await odaiCollection
         .where('votedBy', '==', votedBy)
         .where('rank', '==', rank)
@@ -125,7 +130,7 @@ export class VoteFirestoreRepositoryImpl implements VoteRepository {
 
   async getAllOfCurrentOdai(
     { slackTeamId }: VoteOfCurrentOdaiParams,
-    odaiDocId: string
+    odaiDocId: string,
   ): Promise<VoteOfCurrentOdaiResponse> {
     const snapshot = await voteOdaiCollection({
       slackTeamId,

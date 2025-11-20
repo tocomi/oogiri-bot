@@ -30,7 +30,7 @@ export const createVoteStartHeaderBlocks = ({
         type: 'mrkdwn',
         text: `:speech_balloon: *お題: ${title}*`,
       },
-    }
+    },
   )
   if (imageUrl) {
     blocks.push({

@@ -3,7 +3,11 @@
 import { Kotae, RankedKotae } from '../Kotae'
 import { makePointedList } from './makePointedList'
 
-export const makeVotedCountRanking = ({ kotaeList }: { kotaeList: Kotae[] }): RankedKotae[] => {
+export const makeVotedCountRanking = ({
+  kotaeList,
+}: {
+  kotaeList: Kotae[]
+}): RankedKotae[] => {
   const filteredList = kotaeList.filter((kotae) => {
     return kotae.votedCount > 0
   })

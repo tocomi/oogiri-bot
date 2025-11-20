@@ -1,6 +1,10 @@
 import { KnownBlock } from '@slack/types'
 
-export const createVoteAlreadyBlocks = ({ content }: { content: string }): KnownBlock[] => [
+export const createVoteAlreadyBlocks = ({
+  content,
+}: {
+  content: string
+}): KnownBlock[] => [
   {
     type: 'section',
     text: {

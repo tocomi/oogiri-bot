@@ -35,7 +35,7 @@ export const createWinContentBlocks = ({
             text: userInfo?.profile?.display_name || 'unknown',
           },
         ],
-      }
+      },
     )
   })
   return blocks

@@ -5,7 +5,7 @@ export type ApiError = {
 }
 
 export const hasError = (
-  response: Record<string, unknown> | unknown[] | 'ok'
+  response: Record<string, unknown> | unknown[] | 'ok',
 ): response is ApiError => {
   if (response === 'ok') return false
   return 'status' in response && 'code' in response && 'message' in response

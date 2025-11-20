@@ -25,7 +25,7 @@ export const createWinHeaderBlocks = ({
         type: 'mrkdwn',
         text: `:speech_balloon: *お題: ${odaiTitle}*`,
       },
-    }
+    },
   )
   if (odaiImageUrl) {
     blocks.push({
@@ -51,7 +51,7 @@ export const createWinHeaderBlocks = ({
     },
     {
       type: 'divider',
-    }
+    },
   )
   return blocks
 }

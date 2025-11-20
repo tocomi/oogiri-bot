@@ -1,6 +1,6 @@
 {
   "name": "slackbot",
-  "version": "2.1.1",
+  "version": "2.2.3",
   "description": "slack bot for oogiri",
   "main": "index.js",
   "author": "tocomi",
