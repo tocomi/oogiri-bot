@@ -39,15 +39,21 @@ import { generateId } from '../util/generateId'
 export interface OdaiService {
   create(params: OdaiPostRequestParams): Promise<ApiPostStatus>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse>
-  getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse>
-  getRecent5timesFinished(params: OdaiFinishedListParams): Promise<OdaiFinishedListResponse>
+  getRecentFinished(
+    params: OdaiRecentFinishedParams,
+  ): Promise<OdaiRecentFinishedResponse>
+  getRecent5timesFinished(
+    params: OdaiFinishedListParams,
+  ): Promise<OdaiFinishedListResponse>
   startVoting(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus>
 
   /** お題の完了。ステータスの更新と結果データの登録を行う。 */
   finish(params: OdaiFinishParams): Promise<OdaiFinishResponse>
 
   /** 過去のお題の結果のサマリをすべて取得する。詳細な回答内容は含めない */
-  getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]>
+  getAllResults(
+    params: OdaiGetAllResultsParams,
+  ): Promise<OdaiWithResultSummary[]>
 
   /** 特定のお題の結果を取得する。詳細な回答内容も含まれる */
   getResult(params: OdaiGetResultParams): Promise<OdaiWithResult | ApiError>
@@ -90,14 +96,18 @@ export class OdaiServiceImpl implements OdaiService {
     return currentOdai
   }
 
-  async getRecentFinished(params: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse> {
+  async getRecentFinished(
+    params: OdaiRecentFinishedParams,
+  ): Promise<OdaiRecentFinishedResponse> {
     const finishedOdaiList = await this.repository.getAllFinished(params)
     if (!finishedOdaiList.length) return NoFinishedOdaiError
 
     return finishedOdaiList[0]
   }
 
-  async getRecent5timesFinished(params: OdaiFinishedListParams): Promise<OdaiFinishedListResponse> {
+  async getRecent5timesFinished(
+    params: OdaiFinishedListParams,
+  ): Promise<OdaiFinishedListResponse> {
     const finishedOdaiList = await this.repository.getAllFinished(params)
     if (!finishedOdaiList.length) return NoFinishedOdaiError
 
@@ -105,31 +115,40 @@ export class OdaiServiceImpl implements OdaiService {
   }
 
   async startVoting(params: OdaiPutStatusParams): Promise<OdaiPutApiStatus> {
-    const currentOdai = await this.getCurrent({ slackTeamId: params.slackTeamId })
+    const currentOdai = await this.getCurrent({
+      slackTeamId: params.slackTeamId,
+    })
     if (hasError(currentOdai)) return currentOdai
     if (currentOdai.status !== 'posting') return NoPostingOdaiError
 
     const [resultA, resultB] = await Promise.all([
       this.repository.updateStatus(
         { slackTeamId: params.slackTeamId, status: 'voting' },
-        currentOdai.id
+        currentOdai.id,
       ),
       this.newRepository.updateStatus(
         { slackTeamId: params.slackTeamId, status: 'voting' },
-        currentOdai.id
+        currentOdai.id,
       ),
     ])
     return resultA && resultB ? 'ok' : InternalServerError
   }
 
-  async finish({ slackTeamId, kotaeList }: OdaiFinishParams): Promise<OdaiFinishResponse> {
+  async finish({
+    slackTeamId,
+    kotaeList,
+  }: OdaiFinishParams): Promise<OdaiFinishResponse> {
     const currentOdai = await this.getCurrent({ slackTeamId })
     if (hasError(currentOdai)) return currentOdai
-    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
+    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting')
+      return NoVotingOdaiError
 
     // NOTE: お題の結果を result フィールドに格納する
     // TODO: トランザクション管理できてない
-    const odaiResult = this.makeOdaiResult({ odaiId: currentOdai.id, kotaeList })
+    const odaiResult = this.makeOdaiResult({
+      odaiId: currentOdai.id,
+      kotaeList,
+    })
     const [result1, result2] = await Promise.all([
       this.repository.createResult({ slackTeamId, odaiResult }),
       this.newRepository.createResult({ slackTeamId, odaiResult }),
@@ -155,13 +174,23 @@ export class OdaiServiceImpl implements OdaiService {
     }
 
     const [resultA, resultB] = await Promise.all([
-      this.repository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
-      this.newRepository.updateStatus({ slackTeamId, status: 'finished' }, currentOdai.id),
+      this.repository.updateStatus(
+        { slackTeamId, status: 'finished' },
+        currentOdai.id,
+      ),
+      this.newRepository.updateStatus(
+        { slackTeamId, status: 'finished' },
+        currentOdai.id,
+      ),
     ])
-    return resultA && resultB ? { aiCommentary: aiCommentary } : InternalServerError
+    return resultA && resultB
+      ? { aiCommentary: aiCommentary }
+      : InternalServerError
   }
 
-  async getAllResults(params: OdaiGetAllResultsParams): Promise<OdaiWithResultSummary[]> {
+  async getAllResults(
+    params: OdaiGetAllResultsParams,
+  ): Promise<OdaiWithResultSummary[]> {
     const result = await this.repository.getAllResults(params)
     return result
       .map((odai) => ({
@@ -176,7 +205,9 @@ export class OdaiServiceImpl implements OdaiService {
       .sort((a, b) => b.dueDate - a.dueDate)
   }
 
-  async getResult(params: OdaiGetResultParams): Promise<OdaiWithResult | ApiError> {
+  async getResult(
+    params: OdaiGetResultParams,
+  ): Promise<OdaiWithResult | ApiError> {
     const result = await this.repository.getResult(params)
     if (!result) return NoFinishedOdaiError
     const userNameMap = await getUserNameMapFromUserId({

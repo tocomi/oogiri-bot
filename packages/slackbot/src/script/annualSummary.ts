@@ -78,9 +78,13 @@ const main = async () => {
     return date.getFullYear() === TARGET_YEAR
   })
 
-  const uniquekotaeUserList = Array.from(new Set(annualKotaeList.map((kotae) => kotae.createdBy)))
+  const uniquekotaeUserList = Array.from(
+    new Set(annualKotaeList.map((kotae) => kotae.createdBy)),
+  )
 
-  const uniqueVoteUserList = Array.from(new Set(annualVoteList.map((vote) => vote.votedBy)))
+  const uniqueVoteUserList = Array.from(
+    new Set(annualVoteList.map((vote) => vote.votedBy)),
+  )
 
   const result: Result = {
     kotaeCount: annualKotaeList.length,

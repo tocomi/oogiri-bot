@@ -23,7 +23,11 @@ import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
 import { OdaiPostgresRepositoryImpl } from './odai/OdaiPostgresRepositoryImpl'
 import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
-import { VoteCountByUserParams, VoteCountParams, VoteCreateRequest } from './vote/Vote'
+import {
+  VoteCountByUserParams,
+  VoteCountParams,
+  VoteCreateRequest,
+} from './vote/Vote'
 import { VoteFirestoreRepositoryImpl } from './vote/VoteFirestoreRepositoryImpl'
 import { VotePostgresRepositoryImpl } from './vote/VotePostgresRepositoryImpl'
 import { VoteRepository } from './vote/VoteRepository'
@@ -40,16 +44,23 @@ app.use((req, _res, next) => {
 
 const odaiRepository: OdaiRepository = new OdaiFirestoreRepositoryImpl()
 const odaiNewRepository: OdaiRepository = new OdaiPostgresRepositoryImpl()
-const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository, odaiNewRepository)
+const odaiService: OdaiService = new OdaiServiceImpl(
+  odaiRepository,
+  odaiNewRepository,
+)
 const kotaeRepository: KotaeRepository = new KotaeFirestoreRepositoryImpl()
 const kotaeNewRepository: KotaeRepository = new KotaePostgresRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(
   kotaeRepository,
   kotaeNewRepository,
-  odaiService
+  odaiService,
 )
 const ipponRepository: IpponRepository = new IpponRepositoryImpl()
-const ipponService: IpponService = new IpponServiceImpl(ipponRepository, kotaeService, odaiService)
+const ipponService: IpponService = new IpponServiceImpl(
+  ipponRepository,
+  kotaeService,
+  odaiService,
+)
 const voteRepository: VoteRepository = new VoteFirestoreRepositoryImpl()
 const voteNewRepository: VoteRepository = new VotePostgresRepositoryImpl()
 const voteService: VoteService = new VoteServiceImpl(
@@ -57,7 +68,7 @@ const voteService: VoteService = new VoteServiceImpl(
   voteNewRepository,
   odaiService,
   kotaeService,
-  ipponService
+  ipponService,
 )
 
 const errorResponse = (res: express.Response, error: ApiError) => {
@@ -65,7 +76,10 @@ const errorResponse = (res: express.Response, error: ApiError) => {
   return res.status(error.status).send({ error: true, message: error.message })
 }
 
-const sendResponse = (res: express.Response, result: Record<string, unknown> | unknown[]) => {
+const sendResponse = (
+  res: express.Response,
+  result: Record<string, unknown> | unknown[],
+) => {
   console.log(`response: ${JSON.stringify(result)}`)
   return res.send(result)
 }
@@ -187,12 +201,20 @@ app.get('/kotae/personal-result', async (req: express.Request, res) => {
     return errorResponse(res, result)
   }
 
-  return sendResponse(res, { odaiTitle: result.odaiTitle, kotaeList: result.kotaeList })
+  return sendResponse(res, {
+    odaiTitle: result.odaiTitle,
+    kotaeList: result.kotaeList,
+  })
 })
 
 app.post('/kotae/vote', async (req: express.Request, res) => {
   const params = req.body as VoteCreateRequest
-  if (!params.slackTeamId || !params.content || !params.votedBy || !params.rank) {
+  if (
+    !params.slackTeamId ||
+    !params.content ||
+    !params.votedBy ||
+    !params.rank
+  ) {
     return errorResponse(res, IllegalArgumentError)
   }
   const result = await voteService.create(params)

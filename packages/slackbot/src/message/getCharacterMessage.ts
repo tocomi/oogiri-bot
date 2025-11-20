@@ -21,6 +21,8 @@ function getCharacterMessages(characterType: CHARACTER_TYPE) {
     case 'tanukichi':
       return tanukichi
     default:
-      throw new Error(`指定されたキャラクターは存在しません。 characterType: ${characterType}`)
+      throw new Error(
+        `指定されたキャラクターは存在しません。 characterType: ${characterType}`,
+      )
   }
 }

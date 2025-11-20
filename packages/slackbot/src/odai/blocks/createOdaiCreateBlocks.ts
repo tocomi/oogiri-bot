@@ -34,7 +34,7 @@ export const createOdaiCreateBlocks = ({
         type: 'mrkdwn',
         text: `:speech_balloon: *お題: ${title}*`,
       },
-    }
+    },
   )
   if (imageUrl) {
     blocks.push({
@@ -64,7 +64,7 @@ export const createOdaiCreateBlocks = ({
           action_id: CREATE_KOTAE_ACTION_ID,
         },
       ],
-    }
+    },
   )
   return blocks
 }

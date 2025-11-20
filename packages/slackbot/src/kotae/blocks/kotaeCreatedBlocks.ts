@@ -1,6 +1,8 @@
 import { KnownBlock } from '@slack/bolt'
 
-export const kotaeCreatedBlocks: (kotae: string) => KnownBlock[] = (kotae: string) => [
+export const kotaeCreatedBlocks: (kotae: string) => KnownBlock[] = (
+  kotae: string,
+) => [
   {
     type: 'section',
     text: {

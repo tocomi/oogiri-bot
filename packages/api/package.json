@@ -1,5 +1,6 @@
 {
   "name": "api",
+  "version": "2.2.3",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",

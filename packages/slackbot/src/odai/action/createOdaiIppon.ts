@@ -1,4 +1,9 @@
-import { SlackShortcut, BlockAction, InteractiveMessage, WorkflowStepEdit } from '@slack/bolt'
+import {
+  SlackShortcut,
+  BlockAction,
+  InteractiveMessage,
+  WorkflowStepEdit,
+} from '@slack/bolt'
 import { WebClient, Logger } from '@slack/web-api'
 
 // TODO: 共通化

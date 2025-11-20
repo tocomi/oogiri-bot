@@ -48,7 +48,9 @@ const createErrorMessageBlocks = (overrideMessage?: string): KnownBlock[] => [
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: overrideMessage ? overrideMessage : '時間をおいて再度お試しください:pray:',
+      text: overrideMessage
+        ? overrideMessage
+        : '時間をおいて再度お試しください:pray:',
     },
   },
 ]

@@ -122,7 +122,9 @@ describe('ポイントと順位の計算', () => {
   })
 
   test('0票の回答は除外される', () => {
-    const result = makePointRanking({ kotaeList: [kotae00, kotae01, kotae10, kotae20] })
+    const result = makePointRanking({
+      kotaeList: [kotae00, kotae01, kotae10, kotae20],
+    })
     const expected: RankedKotae[] = [
       {
         ...kotae10,
@@ -140,7 +142,16 @@ describe('ポイントと順位の計算', () => {
 
   test('ポイントが同値の場合は同じ順位になる', () => {
     const result = makePointRanking({
-      kotaeList: [kotae00, kotae01, kotae10, kotae11, kotae20, kotae21, kotae30, kotae31],
+      kotaeList: [
+        kotae00,
+        kotae01,
+        kotae10,
+        kotae11,
+        kotae20,
+        kotae21,
+        kotae30,
+        kotae31,
+      ],
     })
     const expected: RankedKotae[] = [
       {

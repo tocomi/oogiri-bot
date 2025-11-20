@@ -5,7 +5,7 @@ module.exports = {
     es6: true,
   },
   parserOptions: { ecmaVersion: 8 }, // to enable features such as async/await
-  ignorePatterns: ['node_modules/*', 'dist/*', '!.prettierrc.js'], // We don't want to lint generated files nor node_modules, but we want to lint .prettierrc.js (ignored by default by eslint)
+  ignorePatterns: ['node_modules/*', 'dist/*'], // We don't want to lint generated files nor node_modules
   extends: ['eslint:recommended'],
   overrides: [
     // This configuration will apply only to TypeScript files
@@ -21,16 +21,12 @@ module.exports = {
       extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended', // TypeScript rules
-        'plugin:prettier/recommended', // Prettier recommended rules
       ],
       plugins: ['import', 'unused-imports'],
       rules: {
         // I suggest this setting for requiring return types on functions only where useful
         '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/explicit-module-boundary-types': 'off',
-
-        // Includes .prettierrc.js rules
-        'prettier/prettier': ['error', {}, { usePrettierrc: true }],
 
         // import
         '@typescript-eslint/no-unused-vars': 'off',

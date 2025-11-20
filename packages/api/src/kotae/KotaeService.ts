@@ -13,7 +13,12 @@ import {
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
 import { ApiPostStatus, SlackParams } from '../api/Api'
-import { ApiError, hasError, InternalServerError, NoTargetKotaeError } from '../api/Error'
+import {
+  ApiError,
+  hasError,
+  InternalServerError,
+  NoTargetKotaeError,
+} from '../api/Error'
 import { OdaiService } from '../odai/OdaiService'
 import { generateId } from '../util/generateId'
 
@@ -22,16 +27,22 @@ export interface KotaeService {
   create(params: KotaePostRequestParams): Promise<ApiPostStatus>
 
   /** 現在アクティブなお題の全回答を取得 */
-  getAllOfCurrentOdai(params: KotaeOfCurrentOdaiParams): Promise<KotaeGetAllResponse>
+  getAllOfCurrentOdai(
+    params: KotaeOfCurrentOdaiParams,
+  ): Promise<KotaeGetAllResponse>
 
   /** 直近終了したお題の個人成績を取得 */
-  getPersonalResult(params: KotaePersonalResultParams): Promise<KotaePersonalResultResponse>
+  getPersonalResult(
+    params: KotaePersonalResultParams,
+  ): Promise<KotaePersonalResultResponse>
 
   /** 回答内容をキーに情報を取得 */
   getByContent(params: KotaeByContentParams): Promise<KotaeByContentResponse>
 
   /** 投票数を加算する */
-  incrementVoteCount(params: KotaeIncrementVoteCountParams): Promise<ApiPostStatus>
+  incrementVoteCount(
+    params: KotaeIncrementVoteCountParams,
+  ): Promise<ApiPostStatus>
 
   /** 現在アクティブなお題の回答数と回答参加者数を取得 */
   getCurrentCounts(params: KotaeCountsRequest): Promise<KotaeCountsResponse>
@@ -45,15 +56,19 @@ export class KotaeServiceImpl implements KotaeService {
   constructor(
     repository: KotaeRepository,
     newRepository: KotaeRepository,
-    odaiService: OdaiService
+    odaiService: OdaiService,
   ) {
     this.repository = repository
     this.newRepository = newRepository
     this.odaiService = odaiService
   }
 
-  async create(params: Omit<KotaePostRequestParams, 'id'>): Promise<ApiPostStatus> {
-    const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
+  async create(
+    params: Omit<KotaePostRequestParams, 'id'>,
+  ): Promise<ApiPostStatus> {
+    const currentOdai = await this.odaiService.getCurrent({
+      slackTeamId: params.slackTeamId,
+    })
     if (hasError(currentOdai)) return currentOdai
 
     // NOTE: 同じ内容の答えがすでに存在する場合は何もしない
@@ -77,15 +92,20 @@ export class KotaeServiceImpl implements KotaeService {
   }
 
   async getAllOfCurrentOdai(
-    params: KotaeOfCurrentOdaiParams
+    params: KotaeOfCurrentOdaiParams,
   ): Promise<KotaeGetAllResponse | ApiError> {
-    const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
+    const currentOdai = await this.odaiService.getCurrent({
+      slackTeamId: params.slackTeamId,
+    })
     if (hasError(currentOdai)) return currentOdai
 
     // TODO: 一旦ノーマルモードのみ対応
     if (currentOdai.type === 'ippon') throw InternalServerError
 
-    const kotaeList = await this.newRepository.getAllOfCurrentOdai(params, currentOdai.id)
+    const kotaeList = await this.newRepository.getAllOfCurrentOdai(
+      params,
+      currentOdai.id,
+    )
     return {
       odaiTitle: currentOdai.title,
       odaiImageUrl: currentOdai.imageUrl,
@@ -98,7 +118,9 @@ export class KotaeServiceImpl implements KotaeService {
   async getPersonalResult({
     slackTeamId,
     userId,
-  }: KotaePersonalResultParams): Promise<KotaePersonalResultResponse | ApiError> {
+  }: KotaePersonalResultParams): Promise<
+    KotaePersonalResultResponse | ApiError
+  > {
     const recentFinishedOdai = await this.odaiService.getRecentFinished({
       slackTeamId,
     })
@@ -106,7 +128,7 @@ export class KotaeServiceImpl implements KotaeService {
 
     const kotaeList = await this.repository.getPersonalResult(
       { slackTeamId, userId },
-      recentFinishedOdai.id
+      recentFinishedOdai.id,
     )
 
     // NOTE: 回答ごとに投票の情報を取得する
@@ -127,7 +149,8 @@ export class KotaeServiceImpl implements KotaeService {
     return {
       odaiTitle: recentFinishedOdai.title,
       // NOTE: ippon の場合は dueDate は使わないのでダミーの値
-      odaiDueDate: recentFinishedOdai.type === 'normal' ? recentFinishedOdai.dueDate : 0,
+      odaiDueDate:
+        recentFinishedOdai.type === 'normal' ? recentFinishedOdai.dueDate : 0,
       odaiStatus: recentFinishedOdai.status,
       kotaeList: kotaeWithVoteList,
     }
@@ -171,10 +194,15 @@ export class KotaeServiceImpl implements KotaeService {
   }
 
   async getCurrentCounts(params: SlackParams): Promise<KotaeCountsResponse> {
-    const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
+    const currentOdai = await this.odaiService.getCurrent({
+      slackTeamId: params.slackTeamId,
+    })
     if (hasError(currentOdai)) return currentOdai
 
-    const kotaeList = await this.repository.getAllOfCurrentOdai(params, currentOdai.id)
+    const kotaeList = await this.repository.getAllOfCurrentOdai(
+      params,
+      currentOdai.id,
+    )
 
     return {
       kotaeCount: kotaeList.length,

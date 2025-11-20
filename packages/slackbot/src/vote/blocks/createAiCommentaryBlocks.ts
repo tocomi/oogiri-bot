@@ -1,7 +1,9 @@
 import { KnownBlock } from '@slack/types'
 import { CommentatorCommentary } from '../../odai/Odai'
 
-export const createAiCommentaryBlocks = (commentary?: CommentatorCommentary): KnownBlock[] => {
+export const createAiCommentaryBlocks = (
+  commentary?: CommentatorCommentary,
+): KnownBlock[] => {
   if (!commentary) return []
 
   const blocks: KnownBlock[] = [
