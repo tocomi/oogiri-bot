@@ -57,7 +57,7 @@ packages/slackbot/src/
 
 - `tsconfig.base.json` - TypeScript 基底設定
 - `.eslintrc.js` - ESLint 設定
-- `.prettierrc.js` - Prettier 設定
+- `biome.json` - Biome 設定
 - `firebase.json` - Firebase 設定
 - `jest.config.js` - Jest 設定（Bot 用）
 - `.yarnrc.yml` - Yarn 設定
