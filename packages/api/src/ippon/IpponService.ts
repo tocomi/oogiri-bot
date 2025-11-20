@@ -16,7 +16,7 @@ export class IpponServiceImpl implements IpponService {
   constructor(
     ipponRepository: IpponRepository,
     kotaeService: KotaeService,
-    odaiService: OdaiService
+    odaiService: OdaiService,
   ) {
     this.repository = ipponRepository
     this.kotaeService = kotaeService
@@ -42,14 +42,19 @@ export class IpponServiceImpl implements IpponService {
         slackTeamId: params.slackTeamId,
         odaiId: params.odaiId,
       }),
-      this.odaiService.finish({ slackTeamId: params.slackTeamId, kotaeList: [] }),
+      this.odaiService.finish({
+        slackTeamId: params.slackTeamId,
+        kotaeList: [],
+      }),
     ])
     if (hasError(kotaeCounts)) return kotaeCounts
 
     // NOTE: IPPON のデータからユーザーごとの IPPON 数を集計
     const ipponResult: WinResult['ipponResult'] = []
     for (const ippon of ipponList) {
-      const userIpponCount = ipponResult.find((result) => result.userId === ippon.userId)
+      const userIpponCount = ipponResult.find(
+        (result) => result.userId === ippon.userId,
+      )
       if (userIpponCount) {
         userIpponCount.ipponCount += 1
         continue

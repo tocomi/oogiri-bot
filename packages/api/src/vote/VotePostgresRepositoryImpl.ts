@@ -11,7 +11,7 @@ import { prismaClient } from '../prisma/client'
 
 export class VotePostgresRepositoryImpl implements VoteRepository {
   checkDuplication(
-    _params: VoteCheckDuplicationParams
+    _params: VoteCheckDuplicationParams,
   ): Promise<'ok' | 'alreadyVoted' | 'alreadySameRankVoted'> {
     throw new Error('Method not implemented.')
   }
@@ -51,7 +51,7 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
   }
   async getAllOfCurrentOdai(
     _params: VoteOfCurrentOdaiParams,
-    odaiId: string
+    odaiId: string,
   ): Promise<VoteOfCurrentOdaiResponse> {
     const votes = await prismaClient.vote.findMany({
       where: {

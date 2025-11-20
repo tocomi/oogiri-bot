@@ -12,7 +12,9 @@ import { api } from '../api/axios'
 
 export class OdaiUseCase {
   async getCurrent(data: OdaiGetCurrentRequestParams) {
-    const result = await api.get<OdaiGetCurrentResponse>('/odai/current', { params: data })
+    const result = await api.get<OdaiGetCurrentResponse>('/odai/current', {
+      params: data,
+    })
     return result.data
   }
   async create(data: OdaiPostRequestParams) {
@@ -20,7 +22,10 @@ export class OdaiUseCase {
     return result.data
   }
   async startVoting(data: OdaiStartVotingRequestParams) {
-    const result = await api.post<OdaiStartVotingResponse>('/odai/start-voting', data)
+    const result = await api.post<OdaiStartVotingResponse>(
+      '/odai/start-voting',
+      data,
+    )
     return result.data
   }
   async finish(data: OdaiFinishRequestParams) {

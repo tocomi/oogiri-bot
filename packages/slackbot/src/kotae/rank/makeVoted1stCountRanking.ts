@@ -1,7 +1,11 @@
 import { Kotae, RankedKotae } from '../Kotae'
 import { makePointedList } from './makePointedList'
 
-export const makeVoted1stCountRanking = ({ kotaeList }: { kotaeList: Kotae[] }): RankedKotae[] => {
+export const makeVoted1stCountRanking = ({
+  kotaeList,
+}: {
+  kotaeList: Kotae[]
+}): RankedKotae[] => {
   const filteredList = kotaeList.filter((kotae) => {
     return kotae.votedFirstCount > 0
   })

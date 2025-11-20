@@ -2,7 +2,11 @@ import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
 import { getCharacterMessage } from '../../message'
 import { START_VOTING_ACTION_ID } from '../../odai/OdaiAction'
-import { postEphemeral, postInternalErrorMessage, postMessage } from '../../slack/postMessage'
+import {
+  postEphemeral,
+  postInternalErrorMessage,
+  postMessage,
+} from '../../slack/postMessage'
 import {
   milliSecondsToYYYYMMDD,
   diffMessageFromCurrent,
@@ -23,25 +27,27 @@ export const countKotae = async ({
   isScheduler?: boolean
 }) => {
   const kotaeUseCase = new KotaeUseCase()
-  const result = await kotaeUseCase.getKotaeCount({ slackTeamId }).catch((error) => {
-    if (error.response.data.message === 'No Active Odai') {
-      console.warn(error.response.data.message)
-      const blocks: KnownBlock[] = [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: ':warning: お題が開始されていません :warning:',
+  const result = await kotaeUseCase
+    .getKotaeCount({ slackTeamId })
+    .catch((error) => {
+      if (error.response.data.message === 'No Active Odai') {
+        console.warn(error.response.data.message)
+        const blocks: KnownBlock[] = [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':warning: お題が開始されていません :warning:',
+            },
           },
-        },
-      ]
-      if (userId) postEphemeral({ client, user: userId, blocks })
-    } else {
-      console.error(error.response.config)
-      if (userId) postInternalErrorMessage({ client, user: userId })
-    }
-    return undefined
-  })
+        ]
+        if (userId) postEphemeral({ client, user: userId, blocks })
+      } else {
+        console.error(error.response.config)
+        if (userId) postInternalErrorMessage({ client, user: userId })
+      }
+      return undefined
+    })
   if (!result) return
   // NOTE: スケジューラー実行では回答受付中のみ実行
   if (isScheduler && result.odaiStatus !== 'posting') return
@@ -71,7 +77,7 @@ export const countKotae = async ({
         type: 'mrkdwn',
         text: `:speech_balloon: お題: ${result.odaiTitle}`,
       },
-    }
+    },
   )
   if (result.odaiImageUrl) {
     blocks.push({
@@ -86,7 +92,7 @@ export const countKotae = async ({
       text: {
         type: 'mrkdwn',
         text: `:calendar: 回答期限: ${milliSecondsToYYYYMMDD(
-          result.odaiDueDate
+          result.odaiDueDate,
         )} (${diffMessageFromCurrent(result.odaiDueDate)})`,
       },
     },
@@ -103,7 +109,7 @@ export const countKotae = async ({
           action_id: CREATE_KOTAE_ACTION_ID,
         },
       ],
-    }
+    },
   )
   if (displayStartVotingButton) {
     blocks.push({

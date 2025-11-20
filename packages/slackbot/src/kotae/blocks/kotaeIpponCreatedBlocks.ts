@@ -2,7 +2,9 @@ import { KnownBlock } from '@slack/bolt'
 
 export const VOTE_KOTAE_IPPON_ACTION_ID = 'vote-kotae-ippon'
 
-export const kotaeIpponCreatedBlocks: (kotae: string) => KnownBlock[] = (kotae: string) => [
+export const kotaeIpponCreatedBlocks: (kotae: string) => KnownBlock[] = (
+  kotae: string,
+) => [
   {
     type: 'section',
     text: {

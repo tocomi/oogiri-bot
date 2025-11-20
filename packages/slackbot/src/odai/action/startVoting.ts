@@ -1,4 +1,9 @@
-import { SlackShortcut, BlockAction, InteractiveMessage, WorkflowStepEdit } from '@slack/bolt'
+import {
+  SlackShortcut,
+  BlockAction,
+  InteractiveMessage,
+  WorkflowStepEdit,
+} from '@slack/bolt'
 import { WebClient, Logger } from '@slack/web-api'
 
 export const START_VOTING_CALLBACK_ID = 'start-voting'

@@ -30,10 +30,14 @@ export const tanukichi: CharacterMessages = {
     'みんな投票してくれだなも！',
     'ぼくはあの回答がお気に入りだなも！',
   ],
-  'vote-result-001': ['このような結果になっただなも！ 入賞者のみんなおめでとうだなも！ :clap:'],
+  'vote-result-001': [
+    'このような結果になっただなも！ 入賞者のみんなおめでとうだなも！ :clap:',
+  ],
   'vote-result-002': ['次回も奮って参加してほしいだなも！ :raised_hands:'],
   'vote-result-003': [
     '個人の結果は `/oogiri-check-my-result` で確認できるだなも！ (他の人には見えないだなも:ok_man:)',
   ],
-  'ippon-odai-start': ['IPPON グランプリスタートだなも！ たくさん回答するだなも！'],
+  'ippon-odai-start': [
+    'IPPON グランプリスタートだなも！ たくさん回答するだなも！',
+  ],
 }

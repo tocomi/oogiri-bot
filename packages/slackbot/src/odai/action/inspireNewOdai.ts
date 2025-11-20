@@ -11,12 +11,14 @@ export const inspireNewOdai = async ({
   client: WebClient
 }) => {
   const odaiUseCase = new OdaiUseCase()
-  const result = await odaiUseCase.getCurrent({ slackTeamId }).catch((error) => {
-    if (error.response.data.message === 'No Active Odai') {
-      return 'noActiveOdai'
-    }
-    console.error(error.response.config)
-  })
+  const result = await odaiUseCase
+    .getCurrent({ slackTeamId })
+    .catch((error) => {
+      if (error.response.data.message === 'No Active Odai') {
+        return 'noActiveOdai'
+      }
+      console.error(error.response.config)
+    })
   // NOTE: アクティブなお題がない場合のみ投稿する
   if (result !== 'noActiveOdai') return
 
@@ -63,7 +65,7 @@ export const inspireNewOdai = async ({
           action_id: 'oogiri-create-odai',
         },
       ],
-    }
+    },
   )
   await postMessage({ client, blocks })
 }

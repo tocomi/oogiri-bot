@@ -11,7 +11,7 @@ export const createVoteAlreadySameRankBlocks = ({
     text: {
       type: 'mrkdwn',
       text: `:warning: この投票は既に使用されています :warning: 種別: ${convertVoteRankText(
-        voteRank
+        voteRank,
       )}`,
     },
   },

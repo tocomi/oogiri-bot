@@ -12,7 +12,12 @@ import {
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
 import { convertVoteFieldName } from './convertVoteFieldName'
-import { convertTimestamp, createDoc, db, firestore } from '../firebase/firestore'
+import {
+  convertTimestamp,
+  createDoc,
+  db,
+  firestore,
+} from '../firebase/firestore'
 
 export const kotaeCollection = ({
   slackTeamId,
@@ -46,7 +51,7 @@ const kotaeVoteCollection = ({
 export class KotaeFirestoreRepositoryImpl implements KotaeRepository {
   async create(
     { content, createdBy, slackTeamId, id }: KotaePostRequestParams,
-    odaiDocId: string
+    odaiDocId: string,
   ): Promise<boolean> {
     const data: KotaePostData = {
       content,
@@ -64,7 +69,7 @@ export class KotaeFirestoreRepositoryImpl implements KotaeRepository {
 
   async getAllOfCurrentOdai(
     { slackTeamId }: KotaeOfCurrentOdaiParams,
-    odaiDocId: string
+    odaiDocId: string,
   ): Promise<Kotae[]> {
     const snapshot = await kotaeCollection({ slackTeamId, odaiDocId }).get()
     return snapshot.docs.map((doc) => {
@@ -84,7 +89,7 @@ export class KotaeFirestoreRepositoryImpl implements KotaeRepository {
 
   async getPersonalResult(
     { slackTeamId, userId }: KotaePersonalResultParams,
-    odaiDocId: string
+    odaiDocId: string,
   ): Promise<Kotae[]> {
     const snapshot = await kotaeCollection({ slackTeamId, odaiDocId })
       .where('createdBy', '==', userId)
@@ -109,7 +114,11 @@ export class KotaeFirestoreRepositoryImpl implements KotaeRepository {
     odaiDocId,
     kotaeDocId,
   }: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
-    const snapshot = await kotaeVoteCollection({ slackTeamId, odaiDocId, kotaeDocId }).get()
+    const snapshot = await kotaeVoteCollection({
+      slackTeamId,
+      odaiDocId,
+      kotaeDocId,
+    }).get()
     return snapshot.docs.map((doc) => {
       const data = doc.data()
       return {

@@ -4,7 +4,6 @@
 
 - **ベース**: eslint:recommended
 - **TypeScript**: @typescript-eslint/recommended
-- **Prettier**: 統合設定
 
 ## 主要なルール
 
@@ -12,19 +11,6 @@
 - **未使用の import**: エラーとして扱う
 - **未使用の変数**: 警告として扱う（\_で始まる変数は除外）
 - **import 順序**: アルファベット順（builtin → external → internal）
-
-## Prettier 設定
-
-```javascript
-{
-  semi: false,              // セミコロンなし
-  trailingComma: 'es5',     // ES5準拠のカンマ
-  singleQuote: true,        // シングルクォート
-  printWidth: 100,          // 行幅100文字
-  tabWidth: 2,              // タブ幅2
-  useTabs: false            // スペースを使用
-}
-```
 
 ## アーキテクチャパターン
 

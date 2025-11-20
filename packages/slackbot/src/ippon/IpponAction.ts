@@ -40,7 +40,12 @@ export const createWin = ({
   userInfoMap: Parameters<typeof createWinContentBlocks>[0]['userInfoMap']
 }) => {
   const blocks = [
-    ...createWinHeaderBlocks({ odaiTitle, odaiImageUrl, kotaeCounts, voteCounts }),
+    ...createWinHeaderBlocks({
+      odaiTitle,
+      odaiImageUrl,
+      kotaeCounts,
+      voteCounts,
+    }),
     ...createWinContentBlocks({ ipponCountList, userInfoMap }),
     ...createWinFooterBlocks(),
   ]

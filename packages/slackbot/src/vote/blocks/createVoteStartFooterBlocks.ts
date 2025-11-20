@@ -27,7 +27,7 @@ export const createVoteStartFooterBlocks = (): KnownBlock[] => {
         type: 'mrkdwn',
         text: ':warning: 同一回答への複数投票はできません:woman-gesturing-no:',
       },
-    }
+    },
   )
   return blocks
 }

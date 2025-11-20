@@ -27,7 +27,7 @@ export const createVoteResultHeaderBlocks = ({
         type: 'mrkdwn',
         text: `:speech_balloon: *お題: ${odaiTitle}*`,
       },
-    }
+    },
   )
   if (imageUrl) {
     blocks.push({
@@ -53,7 +53,7 @@ export const createVoteResultHeaderBlocks = ({
     },
     {
       type: 'divider',
-    }
+    },
   )
   return blocks
 }
