@@ -4,7 +4,9 @@ export const KOTAE_CREATE_CALLBACK_ID = 'create-kotae'
 export const KOTAE_CREATE_BLOCK_ID = 'create-kotae-block'
 export const KOTAE_CREATE_ACTION_ID = 'input'
 
-export const kotaeCreateView: (triggerId: string) => ViewsOpenArguments = (triggerId: string) => ({
+export const kotaeCreateView: (triggerId: string) => ViewsOpenArguments = (
+  triggerId: string,
+) => ({
   trigger_id: triggerId,
   view: {
     type: 'modal',

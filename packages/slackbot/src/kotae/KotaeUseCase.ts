@@ -29,15 +29,21 @@ export class KotaeUseCase {
       odaiImageUrl: result.odaiImageUrl,
       odaiDueDate: result.odaiDueDate,
       odaiStatus: result.odaiStatus,
-      uniqueUserCount: [...new Set(result.kotaeList.map((k) => k.createdBy))].length,
+      uniqueUserCount: [...new Set(result.kotaeList.map((k) => k.createdBy))]
+        .length,
       kotaeCount: result.kotaeList.length,
     }
   }
 
-  async getPersonalResult(data: KotaePersonalResultParams): Promise<KotaePersonalResultResponse> {
-    const result = await api.get<KotaePersonalResultResponse>('/kotae/personal-result', {
-      params: data,
-    })
+  async getPersonalResult(
+    data: KotaePersonalResultParams,
+  ): Promise<KotaePersonalResultResponse> {
+    const result = await api.get<KotaePersonalResultResponse>(
+      '/kotae/personal-result',
+      {
+        params: data,
+      },
+    )
     return result.data
   }
 }

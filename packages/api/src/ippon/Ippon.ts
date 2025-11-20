@@ -37,7 +37,10 @@ export type IpponCreateResponse =
     }
   | ApiError
 
-export type IpponGetByUserRequest = SlackParams & { odaiId: string; userId: string }
+export type IpponGetByUserRequest = SlackParams & {
+  odaiId: string
+  userId: string
+}
 
 export type IpponGetAllRequest = SlackParams & { odaiId: string }
 export type IpponGetAllResponse = Ippon[]

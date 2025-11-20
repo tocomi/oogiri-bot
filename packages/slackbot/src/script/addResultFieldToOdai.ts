@@ -36,10 +36,14 @@ const getAllOdai = async () => {
       type: snapshot.data().type,
       title: snapshot.data().title,
       imageUrl: snapshot.data().imageUrl,
-      dueDate: (snapshot.data().dueDate as admin.firestore.Timestamp).toDate().getTime(),
+      dueDate: (snapshot.data().dueDate as admin.firestore.Timestamp)
+        .toDate()
+        .getTime(),
     })
   })
-  return odaiList.filter((odai) => odai.type !== 'ippon').sort((a, b) => b.dueDate - a.dueDate)
+  return odaiList
+    .filter((odai) => odai.type !== 'ippon')
+    .sort((a, b) => b.dueDate - a.dueDate)
 }
 
 const getKotaeList = async (odaiId: string): Promise<Kotae[]> => {
@@ -156,7 +160,9 @@ const addResultFieldsToOdaiDoc = async (odaiResult: OdaiResult) => {
 const main = async () => {
   const odaiList = await getAllOdai()
   const odaiResultList = await makeOdaiResultList(odaiList)
-  await Promise.all(odaiResultList.map((odaiResult) => addResultFieldsToOdaiDoc(odaiResult)))
+  await Promise.all(
+    odaiResultList.map((odaiResult) => addResultFieldsToOdaiDoc(odaiResult)),
+  )
 }
 
 main()

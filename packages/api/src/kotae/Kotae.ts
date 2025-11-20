@@ -21,7 +21,9 @@ export type KotaePostRequestParams = Pick<Kotae, 'content' | 'createdBy'> &
 
 export type KotaeOfCurrentOdaiParams = SlackParams
 
-export type KotaePostData = Omit<Kotae, 'createdAt' | 'id'> & { createdAt: Date }
+export type KotaePostData = Omit<Kotae, 'createdAt' | 'id'> & {
+  createdAt: Date
+}
 
 type KotaeGetBase = {
   odaiTitle: string
@@ -29,7 +31,9 @@ type KotaeGetBase = {
   odaiDueDate: number
   odaiStatus: OdaiStatus
 }
-export type KotaeGetAllResponse = (KotaeGetBase & { kotaeList: Kotae[] }) | ApiError
+export type KotaeGetAllResponse =
+  | (KotaeGetBase & { kotaeList: Kotae[] })
+  | ApiError
 
 export type KotaePersonalResultParams = SlackParams & {
   userId: string

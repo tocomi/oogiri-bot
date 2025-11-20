@@ -59,7 +59,9 @@ export class IpponRepositoryImpl implements IpponRepository {
     return snapshot.size
   }
 
-  async getAllIpponOfOdai(params: IpponGetAllRequest): Promise<IpponGetAllResponse> {
+  async getAllIpponOfOdai(
+    params: IpponGetAllRequest,
+  ): Promise<IpponGetAllResponse> {
     const snapshot = await ipponOdaiCollection({
       slackTeamId: params.slackTeamId,
       odaiDocId: params.odaiId,

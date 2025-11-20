@@ -21,7 +21,9 @@ export class VoteUseCase {
     return result.data
   }
 
-  async getVoteResult(data: VoteResultRequestParams): Promise<VoteResultResponse> {
+  async getVoteResult(
+    data: VoteResultRequestParams,
+  ): Promise<VoteResultResponse> {
     const result = await api.get<VoteResultResponse>('/vote/my-fans', {
       params: data,
     })

@@ -8,7 +8,7 @@ export const firestore = admin.firestore
 
 export const createDoc = async <T extends admin.firestore.DocumentData>(
   docRef: admin.firestore.DocumentReference,
-  data: T
+  data: T,
 ): Promise<boolean> => {
   return docRef
     .set(data)
@@ -19,6 +19,8 @@ export const createDoc = async <T extends admin.firestore.DocumentData>(
     })
 }
 
-export const convertTimestamp = (firestoreTimestamp: admin.firestore.Timestamp): number => {
+export const convertTimestamp = (
+  firestoreTimestamp: admin.firestore.Timestamp,
+): number => {
   return firestoreTimestamp.toDate().getTime()
 }

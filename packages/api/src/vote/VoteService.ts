@@ -23,7 +23,9 @@ import { generateId } from '../util/generateId'
 export interface VoteService {
   create(params: VoteCreateRequest): Promise<VoteCreateResponse>
   getVoteCount(params: VoteCountParams): Promise<VoteCountResponse>
-  getTotalVoteCountByUser(params: VoteCountByUserParams): Promise<VoteCountByUserResponse>
+  getTotalVoteCountByUser(
+    params: VoteCountByUserParams,
+  ): Promise<VoteCountByUserResponse>
 }
 
 export class VoteServiceImpl implements VoteService {
@@ -38,7 +40,7 @@ export class VoteServiceImpl implements VoteService {
     newRepository: VoteRepository,
     odaiService: OdaiService,
     kotaeService: KotaeService,
-    ipponService: IpponService
+    ipponService: IpponService,
   ) {
     this.repository = repository
     this.newRepository = newRepository
@@ -57,7 +59,8 @@ export class VoteServiceImpl implements VoteService {
     if (hasError(currentOdai)) return currentOdai
 
     // NOTE: IPPON グランプリモードでは voting のステータスはない
-    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
+    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting')
+      return NoVotingOdaiError
 
     const kotae = await this.kotaeService.getByContent({ slackTeamId, content })
     if (hasError(kotae)) return kotae
@@ -71,7 +74,8 @@ export class VoteServiceImpl implements VoteService {
       kotaeId: kotae.id,
     })
     if (duplicationResult === 'alreadyVoted') return AlreadyVotedError
-    if (duplicationResult === 'alreadySameRankVoted') return AlreadySameRankVotedError
+    if (duplicationResult === 'alreadySameRankVoted')
+      return AlreadySameRankVotedError
 
     const id = generateId()
     const [voteResultA, _voteResultB] = await Promise.all([
@@ -108,7 +112,10 @@ export class VoteServiceImpl implements VoteService {
     if (hasError(voteCounts)) return voteCounts
 
     // NOTE: 投票数が IPPON の基準を満たした場合はその情報を一緒に返す
-    if (currentOdai.type === 'ippon' && currentOdai.ipponVoteCount === kotae.votedCount + 1) {
+    if (
+      currentOdai.type === 'ippon' &&
+      currentOdai.ipponVoteCount === kotae.votedCount + 1
+    ) {
       const ipponResult = await this.ipponService.create({
         slackTeamId,
         userId: kotae.createdBy,
@@ -132,13 +139,19 @@ export class VoteServiceImpl implements VoteService {
   }
 
   async getVoteCount(params: VoteCountParams): Promise<VoteCountResponse> {
-    const currentOdai = await this.odaiService.getCurrent({ slackTeamId: params.slackTeamId })
+    const currentOdai = await this.odaiService.getCurrent({
+      slackTeamId: params.slackTeamId,
+    })
     if (hasError(currentOdai)) return currentOdai
 
     // NOTE: IPPON グランプリモードでは voting のステータスはない
-    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting') return NoVotingOdaiError
+    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting')
+      return NoVotingOdaiError
 
-    const votes = await this.newRepository.getAllOfCurrentOdai(params, currentOdai.id)
+    const votes = await this.newRepository.getAllOfCurrentOdai(
+      params,
+      currentOdai.id,
+    )
     return {
       odaiTitle: currentOdai.title,
       odaiImageUrl: currentOdai.imageUrl,
@@ -148,7 +161,9 @@ export class VoteServiceImpl implements VoteService {
     }
   }
 
-  async getTotalVoteCountByUser(params: VoteCountByUserParams): Promise<VoteCountByUserResponse> {
+  async getTotalVoteCountByUser(
+    params: VoteCountByUserParams,
+  ): Promise<VoteCountByUserResponse> {
     const votes = await this.repository.getAllByUser(params)
     const uniqueVotes = this.removeDuplication(votes)
 
@@ -190,7 +205,9 @@ export class VoteServiceImpl implements VoteService {
           })
           return
         }
-        recent5timesVotes = recent5timesVotes.filter((v) => v.votedBy !== vote.votedBy)
+        recent5timesVotes = recent5timesVotes.filter(
+          (v) => v.votedBy !== vote.votedBy,
+        )
         recent5timesVotes.push({
           votedBy: target.votedBy,
           voteCount: target.voteCount + 1,
@@ -199,7 +216,9 @@ export class VoteServiceImpl implements VoteService {
 
     return {
       allCount: allVotes.sort((a, b) => b.voteCount - a.voteCount),
-      recent5timesCount: recent5timesVotes.sort((a, b) => b.voteCount - a.voteCount),
+      recent5timesCount: recent5timesVotes.sort(
+        (a, b) => b.voteCount - a.voteCount,
+      ),
     }
   }
 
