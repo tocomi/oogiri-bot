@@ -3,7 +3,7 @@ import { openai } from './openai'
 import { Kotae } from '../kotae/Kotae'
 import { CommentatorCommentary } from '../odai/Odai'
 
-const MODEL: ChatModel = 'gpt-4.1'
+const MODEL: ChatModel = 'gpt-5-mini'
 const MAX_TOKENS = 600
 
 export async function generateCommentary({
