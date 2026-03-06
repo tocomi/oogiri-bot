@@ -3,7 +3,7 @@ import { openai } from './openai'
 import { Kotae } from '../kotae/Kotae'
 import { CommentatorCommentary } from '../odai/Odai'
 
-const MODEL: ChatModel = 'chatgpt-4o-latest'
+const MODEL: ChatModel = 'gpt-5.1-mini'
 const MAX_TOKENS = 600
 
 export async function generateCommentary({
@@ -42,7 +42,7 @@ ${kotaeList.map((k) => k.content).join('\n')}
 ${baseData}`,
           },
         ],
-        max_tokens: MAX_TOKENS,
+        max_completion_tokens: MAX_TOKENS,
       }),
 
       // バカリズムスタイル
@@ -63,7 +63,7 @@ ${baseData}`,
 ${baseData}`,
           },
         ],
-        max_tokens: MAX_TOKENS,
+        max_completion_tokens: MAX_TOKENS,
       }),
 
       // 麒麟川島スタイル
@@ -84,7 +84,7 @@ ${baseData}`,
 ${baseData}`,
           },
         ],
-        max_tokens: MAX_TOKENS,
+        max_completion_tokens: MAX_TOKENS,
       }),
     ])
 

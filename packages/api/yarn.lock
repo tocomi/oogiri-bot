@@ -618,7 +618,7 @@ __metadata:
     express: "npm:^4.17.1"
     firebase-admin: "npm:^10.0.2"
     firebase-functions: "npm:^6.0.1"
-    openai: "npm:^5.22.0"
+    openai: "npm:^6.27.0"
     typescript: "npm:*"
     uuid: "npm:^10.0.0"
   languageName: unknown
@@ -2477,12 +2477,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^5.22.0":
-  version: 5.22.0
-  resolution: "openai@npm:5.22.0"
+"openai@npm:^6.27.0":
+  version: 6.27.0
+  resolution: "openai@npm:6.27.0"
   peerDependencies:
     ws: ^8.18.0
-    zod: ^3.23.8
+    zod: ^3.25 || ^4.0
   peerDependenciesMeta:
     ws:
       optional: true
@@ -2490,7 +2490,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10c0/2c0773478d66a990951bdf0b8ee16ece154742f89022681c887e9e204d75904f990cf8fe66d8588a8a6c4957d23b670723f526ba41eface6a80930e841ab0a5f
+  checksum: 10c0/88f9205eb1bd6c86c3d7fdab3e3d171c0d03c1e491903084aef35bfeb34fd33b86cb91b4d0eef9068e5bd5406f9dedb74a9a8b9c7c01e3a348a7edf117cbf78e
   languageName: node
   linkType: hard
 
