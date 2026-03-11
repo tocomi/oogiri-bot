@@ -3,7 +3,7 @@ import { openai } from './openai'
 import { Kotae } from '../kotae/Kotae'
 import { CommentatorCommentary } from '../odai/Odai'
 
-const MODEL: ChatModel = 'gpt-5.1-mini'
+const MODEL: ChatModel = 'gpt-5.4'
 const MAX_TOKENS = 600
 
 export async function generateCommentary({
@@ -36,7 +36,7 @@ ${kotaeList.map((k) => k.content).join('\n')}
           {
             role: 'user',
             content: `大喜利の結果について、松本人志らしい厳しく鋭い講評を100文字程度で作成してください。関西弁で、良いものは褒めて、ダメなものは厳しく指摘してください。
-          
+
 重要：必ず全回答リストの中から具体的にお気に入りの回答を一つ以上挙げて「○○」の形で引用し、その回答について詳しくコメントしてください。
 
 ${baseData}`,
