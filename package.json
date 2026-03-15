@@ -7,16 +7,16 @@
   "license": "MIT",
   "scripts": {
     "release": "npx release-it",
-    "dev:api": "yarn workspace api serve",
-    "dev:bot": "yarn workspace slackbot watch",
-    "lint": "yarn workspace api lint && yarn workspace slackbot lint",
-    "lint:fix": "yarn workspace api lint:fix && yarn workspace slackbot lint:fix",
+    "dev:api": "pnpm --filter api serve",
+    "dev:bot": "pnpm --filter slackbot watch",
+    "lint": "pnpm --filter api lint && pnpm --filter slackbot lint",
+    "lint:fix": "pnpm --filter api lint:fix && pnpm --filter slackbot lint:fix",
     "format": "biome format --write",
     "migrate": "prisma migrate dev --schema ./packages/api/prisma/schema.prisma",
-    "deploy:api": "yarn workspace api deploy",
-    "deploy:bot": "yarn workspace slackbot deploy:heroku",
-    "type-check": "yarn workspace api type-check && yarn workspace slackbot type-check",
-    "test": "yarn workspace api test && yarn workspace slackbot test"
+    "deploy:api": "pnpm --filter api deploy",
+    "deploy:bot": "pnpm --filter slackbot deploy:heroku",
+    "type-check": "pnpm --filter api type-check && pnpm --filter slackbot type-check",
+    "test": "pnpm --filter api test && pnpm --filter slackbot test"
   },
   "dependencies": {
     "@slack/bolt": "3",
@@ -43,13 +43,12 @@
     "typescript": "^5.9.2",
     "vitest": "^4.0.0"
   },
-  "volta": {
-    "node": "22.22.1",
-    "yarn": "4.5.0"
+  "engines": {
+    "node": ">=22.22.1"
   },
-  "packageManager": "yarn@4.5.0",
-  "workspaces": [
-    "packages/*"
-  ],
-  "private": true
+  "packageManager": "pnpm@10.32.1",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": ["@prisma/client", "protobufjs"]
+  }
 }

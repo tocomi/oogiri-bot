@@ -29,7 +29,8 @@ import {
   KOTAE_CREATE_CALLBACK_ID,
 } from './view/KotaeCreateView'
 
-export const CHECK_PERSONAL_COMMENTARY_ACTION_ID = 'oogiri-check-personal-commentary'
+export const CHECK_PERSONAL_COMMENTARY_ACTION_ID =
+  'oogiri-check-personal-commentary'
 
 export const CREATE_KOTAE_ACTION_ID = 'oogiri-create-kotae'
 
@@ -272,7 +273,10 @@ export const checkResult = (app: App) => {
         elements: [
           {
             type: 'button',
-            text: { type: 'plain_text', text: ':microphone: 講評してもらう(他の人には見えません)' },
+            text: {
+              type: 'plain_text',
+              text: ':microphone: 講評してもらう(他の人には見えません)',
+            },
             action_id: CHECK_PERSONAL_COMMENTARY_ACTION_ID,
             style: 'primary',
           },

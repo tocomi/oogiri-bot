@@ -14,25 +14,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22.22.1"
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn install && cd packages/api && yarn install && yarn generate-schema && cd ../slackbot && yarn install
+        run: pnpm install && pnpm --filter api generate-schema
 
       - name: Run lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Check format
-        run: yarn format
+        run: pnpm format
 
       - name: Run type-check
-        run: yarn type-check
+        run: pnpm type-check
 
       - name: Run tests
-        run: yarn test
+        run: pnpm test
