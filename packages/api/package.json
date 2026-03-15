@@ -13,7 +13,9 @@
     "logs": "firebase functions:log",
     "generate-schema": "npx prisma@5.19.1 generate",
     "gcp-build": "yarn generate-schema",
-    "plugin": "echo dummyCommandForAvoidingFirebaseError"
+    "plugin": "echo dummyCommandForAvoidingFirebaseError",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": "20"

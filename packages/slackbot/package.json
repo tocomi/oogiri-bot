@@ -17,8 +17,7 @@
     "deploy:heroku": "yarn tsc && yarn start"
   },
   "devDependencies": {
-    "typescript": "*",
-    "vitest": "^4.0.0"
+    "typescript": "*"
   },
   "volta": {
     "node": "20.19.5",

@@ -16,7 +16,7 @@
     "deploy:api": "yarn workspace api deploy",
     "deploy:bot": "yarn workspace slackbot deploy:heroku",
     "type-check": "yarn workspace api type-check && yarn workspace slackbot type-check",
-    "test": "yarn workspace slackbot test"
+    "test": "yarn workspace api test && yarn workspace slackbot test"
   },
   "dependencies": {
     "@slack/bolt": "3",
@@ -40,7 +40,8 @@
     "eslint-plugin-unused-imports": "^1.1.4",
     "firebase-functions-test": "^0.2.0",
     "tsc-watch": "^4.4.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.0.0"
   },
   "volta": {
     "node": "20.19.5",

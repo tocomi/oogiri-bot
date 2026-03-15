@@ -4705,6 +4705,7 @@ __metadata:
     firebase-functions-test: "npm:^0.2.0"
     tsc-watch: "npm:^4.4.0"
     typescript: "npm:^5.9.2"
+    vitest: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
 
@@ -5520,7 +5521,6 @@ __metadata:
   resolution: "slackbot@workspace:packages/slackbot"
   dependencies:
     typescript: "npm:*"
-    vitest: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
 
