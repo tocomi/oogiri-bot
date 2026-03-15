@@ -16,6 +16,16 @@
     "type-check": "echo '# slackbot type-check' && tsc --noEmit --diagnostics",
     "deploy:heroku": "pnpm tsc && pnpm start"
   },
+  "dependencies": {
+    "@slack/bolt": "3",
+    "@slack/types": "*",
+    "@slack/web-api": "^6.2.4",
+    "axios": "^1.0.0",
+    "dayjs": "^1.10.6",
+    "dotenv": "^10.0.0",
+    "emoji-regex": "^10.1.0",
+    "firebase-admin": "^10.0.2"
+  },
   "devDependencies": {
     "@types/node": "*",
     "typescript": "*"

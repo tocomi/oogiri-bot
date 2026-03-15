@@ -7,25 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@slack/bolt':
-        specifier: '3'
-        version: 3.22.0
-      '@slack/web-api':
-        specifier: ^6.2.4
-        version: 6.13.0
-      dayjs:
-        specifier: ^1.10.6
-        version: 1.11.20
-      dotenv:
-        specifier: ^10.0.0
-        version: 10.0.0
-      emoji-regex:
-        specifier: ^10.1.0
-        version: 10.6.0
-      firebase-admin:
-        specifier: ^10.0.2
-        version: 10.3.0(@firebase/app-types@0.8.1)
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.6
@@ -120,6 +101,31 @@ importers:
         version: 5.9.3
 
   packages/slackbot:
+    dependencies:
+      '@slack/bolt':
+        specifier: '3'
+        version: 3.22.0
+      '@slack/types':
+        specifier: '*'
+        version: 2.20.1
+      '@slack/web-api':
+        specifier: ^6.2.4
+        version: 6.13.0
+      axios:
+        specifier: ^1.0.0
+        version: 1.13.6
+      dayjs:
+        specifier: ^1.10.6
+        version: 1.11.20
+      dotenv:
+        specifier: ^10.0.0
+        version: 10.0.0
+      emoji-regex:
+        specifier: ^10.1.0
+        version: 10.6.0
+      firebase-admin:
+        specifier: ^10.0.2
+        version: 10.3.0(@firebase/app-types@0.8.1)
     devDependencies:
       '@types/node':
         specifier: '*'

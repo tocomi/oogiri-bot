@@ -18,15 +18,7 @@
     "type-check": "pnpm --filter api type-check && pnpm --filter slackbot type-check",
     "test": "pnpm --filter api test && pnpm --filter slackbot test"
   },
-  "dependencies": {
-    "@slack/bolt": "3",
-    "@slack/web-api": "^6.2.4",
-    "dayjs": "^1.10.6",
-    "dotenv": "^10.0.0",
-    "emoji-regex": "^10.1.0",
-    "firebase-admin": "^10.0.2"
-  },
-  "devDependencies": {
+"devDependencies": {
     "@biomejs/biome": "^2.3.6",
     "dotenv-cli": "^11.0.0",
     "@types/dotenv": "^8.2.0",
