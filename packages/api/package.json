@@ -11,7 +11,8 @@
     "start": "pnpm shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "generate-schema": "npx prisma@5.19.1 generate",
+    "generate-schema": "prisma generate",
+    "migrate": "prisma migrate dev",
     "gcp-build": "pnpm generate-schema",
     "plugin": "echo dummyCommandForAvoidingFirebaseError",
     "test": "vitest run",
@@ -34,6 +35,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "prisma": "5.19.1",
     "typescript": "*"
   }
 }
