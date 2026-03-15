@@ -2,11 +2,14 @@ import {
   KotaeCount,
   KotaeListRequestParams,
   KotaeListResponse,
+  KotaePersonalCommentaryParams,
+  KotaePersonalCommentaryResponse,
   KotaePersonalResultParams,
   KotaePersonalResultResponse,
   KotaePostRequestParams,
   KotaePostResponse,
 } from './Kotae'
+
 import { api } from '../api/axios'
 
 export class KotaeUseCase {
@@ -43,6 +46,16 @@ export class KotaeUseCase {
       {
         params: data,
       },
+    )
+    return result.data
+  }
+
+  async getPersonalCommentary(
+    data: KotaePersonalCommentaryParams,
+  ): Promise<KotaePersonalCommentaryResponse> {
+    const result = await api.get<KotaePersonalCommentaryResponse>(
+      '/kotae/personal-commentary',
+      { params: data },
     )
     return result.data
   }

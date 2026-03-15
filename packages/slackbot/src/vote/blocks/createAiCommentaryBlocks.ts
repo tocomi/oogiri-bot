@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+import { buildCommentatorSectionBlocks } from '../../commentary/buildCommentatorSectionBlocks'
 import { CommentatorCommentary } from '../../odai/Odai'
 
 export const createAiCommentaryBlocks = (
@@ -6,7 +7,7 @@ export const createAiCommentaryBlocks = (
 ): KnownBlock[] => {
   if (!commentary) return []
 
-  const blocks: KnownBlock[] = [
+  return [
     {
       type: 'section',
       text: {
@@ -14,31 +15,9 @@ export const createAiCommentaryBlocks = (
         text: ':microphone: *有識者による講評*',
       },
     },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `:fire: *松本人志*\n${commentary.matsumoto}`,
-      },
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `:brain: *バカリズム*\n${commentary.bakarism}`,
-      },
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `:giraffe_face: *麒麟川島*\n${commentary.kawashima}`,
-      },
-    },
+    ...buildCommentatorSectionBlocks(commentary),
     {
       type: 'divider',
     },
   ]
-
-  return blocks
 }

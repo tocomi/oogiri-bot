@@ -19,6 +19,7 @@ import { getSlackUserList } from '../util/getSlackUserList'
 import { medalEmoji } from '../vote/util'
 import { countKotae } from './action/countKotae'
 import { kotaeCreatedBlocks } from './blocks'
+import { createPersonalCommentaryBlocks } from './blocks/createPersonalCommentaryBlocks'
 import { kotaeIpponCreatedBlocks } from './blocks/kotaeIpponCreatedBlocks'
 import { makePointRanking } from './rank/makePointRanking'
 import {
@@ -27,6 +28,8 @@ import {
   KOTAE_CREATE_BLOCK_ID,
   KOTAE_CREATE_CALLBACK_ID,
 } from './view/KotaeCreateView'
+
+export const CHECK_PERSONAL_COMMENTARY_ACTION_ID = 'oogiri-check-personal-commentary'
 
 export const CREATE_KOTAE_ACTION_ID = 'oogiri-create-kotae'
 
@@ -264,8 +267,79 @@ export const checkResult = (app: App) => {
           return blocks
         })
         .flat()
-      const blocks = [...headerBlocks, ...resultBlocks]
+      const commentaryButtonBlock: KnownBlock = {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: ':microphone: 講評してもらう(他の人には見えません)' },
+            action_id: CHECK_PERSONAL_COMMENTARY_ACTION_ID,
+            style: 'primary',
+          },
+        ],
+      }
+      const blocks = [...headerBlocks, ...resultBlocks, commentaryButtonBlock]
       await postEphemeral({ client, user: body.user_id, blocks })
+    },
+  )
+}
+
+export const checkPersonalCommentary = (app: App) => {
+  app.action(
+    CHECK_PERSONAL_COMMENTARY_ACTION_ID,
+    async ({ ack, body, client, logger }) => {
+      await ack()
+      const blockAction = body as BlockAction
+      const slackTeamId = blockAction.team?.id
+      const userId = blockAction.user.id
+      if (!slackTeamId) {
+        await postInternalErrorMessage({ client, user: userId })
+        return
+      }
+
+      await postEphemeral({
+        client,
+        user: userId,
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '講評しています、少々お待ちください⌛',
+            },
+          },
+        ],
+      })
+
+      const kotaeUseCase = new KotaeUseCase()
+      const result = await kotaeUseCase
+        .getPersonalCommentary({ slackTeamId, userId })
+        .catch((error) => {
+          if (error.response?.data?.message === 'No Target Kotae') {
+            logger.warn(error.response.data.message)
+            const blocks: KnownBlock[] = [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: ':warning: 直近のお題への回答がありません :warning:',
+                },
+              },
+            ]
+            postEphemeral({ client, user: userId, blocks })
+          } else {
+            logger.error(error.response?.config ?? error)
+            postInternalErrorMessage({ client, user: userId })
+          }
+          return undefined
+        })
+      if (!result) return
+
+      const blocks = createPersonalCommentaryBlocks(
+        result.odaiTitle,
+        result.commentary,
+      )
+      await postEphemeral({ client, user: userId, blocks })
     },
   )
 }

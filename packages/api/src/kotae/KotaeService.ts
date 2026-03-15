@@ -6,12 +6,15 @@ import {
   KotaeGetAllResponse,
   KotaeIncrementVoteCountParams,
   KotaeOfCurrentOdaiParams as KotaeOfCurrentOdaiParams,
+  KotaePersonalCommentaryParams,
+  KotaePersonalCommentaryResponse,
   KotaePersonalResultParams,
   KotaePersonalResultResponse,
   KotaePostRequestParams,
   KotaeResultResponse,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
+import { generatePersonalCommentary } from '../ai/generateCommentary'
 import { ApiPostStatus, SlackParams } from '../api/Api'
 import {
   ApiError,
@@ -46,6 +49,11 @@ export interface KotaeService {
 
   /** 現在アクティブなお題の回答数と回答参加者数を取得 */
   getCurrentCounts(params: KotaeCountsRequest): Promise<KotaeCountsResponse>
+
+  /** 直近終了したお題の個人回答に対してAI講評を生成 */
+  getPersonalCommentary(
+    params: KotaePersonalCommentaryParams,
+  ): Promise<KotaePersonalCommentaryResponse>
 }
 
 export class KotaeServiceImpl implements KotaeService {
@@ -191,6 +199,36 @@ export class KotaeServiceImpl implements KotaeService {
     })
 
     return result ? 'ok' : InternalServerError
+  }
+
+  async getPersonalCommentary({
+    slackTeamId,
+    userId,
+  }: KotaePersonalCommentaryParams): Promise<
+    KotaePersonalCommentaryResponse | ApiError
+  > {
+    const recentFinishedOdai = await this.odaiService.getRecentFinished({
+      slackTeamId,
+    })
+    if (hasError(recentFinishedOdai)) return recentFinishedOdai
+
+    const kotaeList = await this.repository.getPersonalResult(
+      { slackTeamId, userId },
+      recentFinishedOdai.id,
+    )
+    if (!kotaeList.length) return NoTargetKotaeError
+
+    let commentary
+    try {
+      commentary = await generatePersonalCommentary({
+        odaiTitle: recentFinishedOdai.title,
+        kotaeList,
+      })
+    } catch {
+      return InternalServerError
+    }
+
+    return { odaiTitle: recentFinishedOdai.title, commentary }
   }
 
   async getCurrentCounts(params: SlackParams): Promise<KotaeCountsResponse> {

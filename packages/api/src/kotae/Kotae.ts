@@ -1,6 +1,6 @@
 import { SlackParams } from '../api/Api'
 import { ApiError } from '../api/Error'
-import { OdaiStatus } from '../odai/Odai'
+import { CommentatorCommentary, OdaiStatus } from '../odai/Odai'
 import { Vote } from '../vote/Vote'
 
 export type Kotae = {
@@ -79,3 +79,11 @@ export type PointedKotae = Kotae & {
 export type RankedKotae = PointedKotae & {
   rank: 1 | 2 | 3
 }
+
+export type KotaePersonalCommentaryParams = SlackParams & {
+  userId: string
+}
+
+export type KotaePersonalCommentaryResponse =
+  | { odaiTitle: string; commentary: CommentatorCommentary }
+  | ApiError
