@@ -121,6 +121,9 @@ importers:
 
   packages/slackbot:
     devDependencies:
+      '@types/node':
+        specifier: '*'
+        version: 25.5.0
       typescript:
         specifier: '*'
         version: 5.9.3

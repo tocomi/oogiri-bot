@@ -17,6 +17,7 @@
     "deploy:heroku": "pnpm tsc && pnpm start"
   },
   "devDependencies": {
+    "@types/node": "*",
     "typescript": "*"
   },
   "engines": {
