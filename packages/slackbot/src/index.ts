@@ -1,6 +1,11 @@
 import { App } from '@slack/bolt'
 import { config } from './config'
-import { checkResult, countKotaeAction, createKotae } from './kotae/KotaeAction'
+import {
+  checkPersonalCommentary,
+  checkResult,
+  countKotaeAction,
+  createKotae,
+} from './kotae/KotaeAction'
 import { createOdai, finishOdai, startVoting } from './odai/OdaiAction'
 import {
   checkVoteResult,
@@ -23,6 +28,7 @@ finishOdai(app)
 createKotae(app)
 countKotaeAction(app)
 checkResult(app)
+checkPersonalCommentary(app)
 
 countVoteAction(app)
 checkVoteResult(app)

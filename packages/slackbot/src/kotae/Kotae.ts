@@ -1,5 +1,5 @@
 import { PostResponse, SlackParams } from '../api/Api'
-import { OdaiStatus } from '../odai/Odai'
+import { CommentatorCommentary, OdaiStatus } from '../odai/Odai'
 
 type VotedBy = {
   votedBy: string
@@ -56,3 +56,12 @@ export type KotaePersonalResultParams = SlackParams & {
 }
 
 export type KotaePersonalResultResponse = KotaeListResponse
+
+export type KotaePersonalCommentaryParams = SlackParams & {
+  userId: string
+}
+
+export type KotaePersonalCommentaryResponse = {
+  odaiTitle: string
+  commentary: CommentatorCommentary
+}

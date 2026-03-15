@@ -6,6 +6,7 @@ import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
 import { IpponService, IpponServiceImpl } from './ippon/IpponService'
 import {
   KotaeOfCurrentOdaiParams,
+  KotaePersonalCommentaryParams,
   KotaePersonalResultParams,
   KotaePostRequestParams,
 } from './kotae/Kotae'
@@ -205,6 +206,20 @@ app.get('/kotae/personal-result', async (req: express.Request, res) => {
     odaiTitle: result.odaiTitle,
     kotaeList: result.kotaeList,
   })
+})
+
+app.get('/kotae/personal-commentary', async (req: express.Request, res) => {
+  const params = req.query as KotaePersonalCommentaryParams
+  if (!params.slackTeamId || !params.userId) {
+    return errorResponse(res, IllegalArgumentError)
+  }
+
+  const result = await kotaeService.getPersonalCommentary(params)
+  if (hasError(result)) {
+    return errorResponse(res, result)
+  }
+
+  return sendResponse(res, result)
 })
 
 app.post('/kotae/vote', async (req: express.Request, res) => {
