@@ -10,7 +10,8 @@
     "watch": "tsc-watch --onSuccess 'yarn start'",
     "lint": "eslint --ext .js,.ts ./src",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
-    "test": "jest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "tsc": "tsc",
     "type-check": "echo '# slackbot type-check' && tsc --noEmit --diagnostics",
     "deploy:heroku": "yarn tsc && yarn start"

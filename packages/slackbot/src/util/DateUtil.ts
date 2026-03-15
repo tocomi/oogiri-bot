@@ -6,13 +6,14 @@ export const milliSecondsToYYYYMMDD = (milliSeconds: number | string) => {
 
 /**
  * 期限の日付と現在日付の日数差分を計算する
- * 現在は時間は設定できないので、endOfメソッドを使って設定された日付の一番遅い時間と比較している
+ * 時刻の影響を除くため startOf('day') で日付を揃えてから差分を計算している
  * @param milliSeconds
  * @returns number
  */
 export const calculateDateDiff = (milliSeconds: number): number => {
-  const dueDate = dayjs(milliSeconds).endOf('day')
-  return dueDate.diff(dayjs(), 'day')
+  const dueDate = dayjs(milliSeconds).startOf('day')
+  const today = dayjs().startOf('day')
+  return dueDate.diff(today, 'day')
 }
 
 /**
