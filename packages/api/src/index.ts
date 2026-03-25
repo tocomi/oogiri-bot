@@ -47,6 +47,9 @@ const receiver = new ExpressReceiver({
 const boltApp = new App({
   token: config.slack.botToken,
   receiver,
+  // NOTE: Firebase Functions のコールドスタート対策
+  // ack() を呼び出した時点で即座に Slack へレスポンスを返し、その後処理を継続する
+  processBeforeResponse: false,
 })
 
 const app = receiver.app
