@@ -1397,7 +1397,9 @@ __metadata:
     "@slack/bolt": "npm:3"
     "@slack/web-api": "npm:^6.2.4"
     cors: "npm:^2.8.5"
+    dayjs: "npm:^1.11.0"
     dotenv: "npm:^10.0.0"
+    emoji-regex: "npm:^9.0.0"
     express: "npm:^4.17.1"
     firebase-admin: "npm:^10.0.2"
     firebase-functions: "npm:^6.0.1"
@@ -1942,6 +1944,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dayjs@npm:^1.11.0":
+  version: 1.11.20
+  resolution: "dayjs@npm:1.11.20"
+  checksum: 10c0/8af525e2aa100c8db9923d706c42b2b2d30579faf89456619413a5c10916efc92c2b166e193c27c02eb3174b30aa440ee1e7b72b0a2876b3da651d204db848a0
+  languageName: node
+  linkType: hard
+
 "debug@npm:2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
@@ -2135,7 +2144,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"emoji-regex@npm:^9.2.2":
+"emoji-regex@npm:^9.0.0, emoji-regex@npm:^9.2.2":
   version: 9.2.2
   resolution: "emoji-regex@npm:9.2.2"
   checksum: 10c0/af014e759a72064cf66e6e694a7fc6b0ed3d8db680427b021a89727689671cefe9d04151b2cad51dbaf85d5ba790d061cd167f1cf32eb7b281f6368b3c181639
@@ -5515,14 +5524,6 @@ __metadata:
   checksum: 10c0/41602dce540e46d599edba9d9860193398d135f7ff72cab629db5171516cfae628d21e7bfccde1bbfdf11c48726bc2a6d1a8fb8701125852fbfda7cf19c6aa83
   languageName: node
   linkType: hard
-
-"slackbot@workspace:packages/slackbot":
-  version: 0.0.0-use.local
-  resolution: "slackbot@workspace:packages/slackbot"
-  dependencies:
-    typescript: "npm:*"
-  languageName: unknown
-  linkType: soft
 
 "slash@npm:^3.0.0":
   version: 3.0.0

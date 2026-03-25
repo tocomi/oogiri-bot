@@ -1,6 +1,7 @@
 import cors from 'cors'
 import express from 'express'
 import * as functions from 'firebase-functions'
+import { App, ExpressReceiver } from '@slack/bolt'
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
 import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
 import { IpponService, IpponServiceImpl } from './ippon/IpponService'
@@ -33,8 +34,24 @@ import { VoteFirestoreRepositoryImpl } from './vote/VoteFirestoreRepositoryImpl'
 import { VotePostgresRepositoryImpl } from './vote/VotePostgresRepositoryImpl'
 import { VoteRepository } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
+import { onSchedule } from 'firebase-functions/v2/scheduler'
+import { config } from './config'
+import { registerHandlers } from './slack/handlers/registerHandlers'
+import { notifyCount } from './scheduler/notifyCount'
+import { inspireNewOdai } from './scheduler/inspireNewOdai'
 
-const app = express()
+// NOTE: Bolt の ExpressReceiver を作成し既存の Express app と統合する
+const receiver = new ExpressReceiver({
+  signingSecret: config.slack.signingSecret,
+  endpoints: '/slack/events',
+})
+
+const boltApp = new App({
+  token: config.slack.botToken,
+  receiver,
+})
+
+const app = receiver.app
 app.use(cors({ origin: true }))
 
 app.use((req, _res, next) => {
@@ -298,6 +315,30 @@ app.get('/stats/:odaiId', async (req: express.Request, res) => {
   return sendResponse(res, { ...result })
 })
 
+// NOTE: Slack イベントハンドラーを登録
+registerHandlers({
+  app: boltApp,
+  odaiService,
+  kotaeService,
+  voteService,
+})
+
 functions.setGlobalOptions({ region: 'asia-northeast1' })
 
 exports.api = functions.https.onRequest(app)
+
+// NOTE: 毎日 9 時にカウント通知
+exports.scheduledNotifyCount = onSchedule(
+  { schedule: '0 9 * * *', timeZone: 'Asia/Tokyo' },
+  async () => {
+    await notifyCount({ kotaeService, voteService })
+  },
+)
+
+// NOTE: 毎週月曜 9 時に新お題の呼びかけ
+exports.scheduledInspireNewOdai = onSchedule(
+  { schedule: '0 9 * * 1', timeZone: 'Asia/Tokyo' },
+  async () => {
+    await inspireNewOdai({ odaiService })
+  },
+)
