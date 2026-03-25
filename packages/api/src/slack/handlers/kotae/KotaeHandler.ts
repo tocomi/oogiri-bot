@@ -8,7 +8,6 @@ import {
   KOTAE_CREATE_CALLBACK_ID,
 } from './view/KotaeCreateView'
 import { hasError } from '../../../api/Error'
-import { KotaeResultResponse } from '../../../kotae/Kotae'
 import { KotaeService } from '../../../kotae/KotaeService'
 import { createPersonalCommentaryBlocks } from '../../../kotae/blocks/createPersonalCommentaryBlocks'
 import { kotaeCreatedBlocks } from '../../../kotae/blocks/kotaeCreatedBlocks'
@@ -210,30 +209,23 @@ export const registerKotaeHandlers = ({
         .flat()
         .map((votedBy) => votedBy.votedBy)
       const userInfoMap = await getSlackUserList({ client, userIdList })
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       const resultBlocks: KnownBlock[] = makePointRanking({
         kotaeList: result.kotaeList,
         removeNoVoteKotae: false,
         filterTopKotae: false,
       })
         .map((kotae) => {
-          // NOTE: KotaeResultResponse を渡しているため votedByList が実際には存在する
-          const kotaeWithVotes = kotae as unknown as KotaeResultResponse & {
-            point: number
-            rank: 1 | 2 | 3
-          }
           const blocks: KnownBlock[] = [
             {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `:dart: *${kotaeWithVotes.point}ポイント* - :first_place_medal:${kotaeWithVotes.votedFirstCount}票 :second_place_medal:${kotaeWithVotes.votedSecondCount}票 :third_place_medal:${kotaeWithVotes.votedThirdCount}票 - ${kotaeWithVotes.content}`,
+                text: `:dart: *${kotae.point}ポイント* - :first_place_medal:${kotae.votedFirstCount}票 :second_place_medal:${kotae.votedSecondCount}票 :third_place_medal:${kotae.votedThirdCount}票 - ${kotae.content}`,
               },
             },
           ]
-          if (kotaeWithVotes.votedByList.length > 0) {
-            kotaeWithVotes.votedByList
+          if (kotae.votedByList.length > 0) {
+            kotae.votedByList
               .sort((a, b) => a.rank - b.rank)
               .forEach((votedBy) => {
                 const user = userInfoMap[votedBy.votedBy]

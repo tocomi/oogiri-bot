@@ -3,15 +3,15 @@
 import { Kotae, RankedKotae } from '../Kotae'
 import { makePointedList } from './makePointedList'
 
-export const makePointRanking = ({
+export const makePointRanking = <T extends Kotae>({
   kotaeList,
   removeNoVoteKotae = true,
   filterTopKotae = true,
 }: {
-  kotaeList: Kotae[]
+  kotaeList: T[]
   removeNoVoteKotae?: boolean
   filterTopKotae?: boolean
-}): RankedKotae[] => {
+}): (T & { point: number; rank: 1 | 2 | 3 })[] => {
   const filteredList = kotaeList.filter((kotae) => {
     if (!removeNoVoteKotae) return true
     return kotae.votedCount > 0
