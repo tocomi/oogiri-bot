@@ -326,6 +326,14 @@ exports.scheduledNotifyCount = onSchedule(
   },
 )
 
+// NOTE: 毎日 19:30 にカウント通知
+exports.scheduledNotifyCountEvening = onSchedule(
+  { schedule: '30 19 * * *', timeZone: 'Asia/Tokyo' },
+  async () => {
+    await notifyCount({ kotaeService, voteService })
+  },
+)
+
 // NOTE: 毎週月曜 9 時に新お題の呼びかけ
 exports.scheduledInspireNewOdai = onSchedule(
   { schedule: '0 9 * * 1', timeZone: 'Asia/Tokyo' },
