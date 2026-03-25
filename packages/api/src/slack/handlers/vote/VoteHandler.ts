@@ -11,10 +11,9 @@ import {
   createVoteCompleteBlocks,
 } from '../../../vote/blocks'
 import { convertVoteRank } from '../../../vote/convertVoteValue'
+import { VOTING_ACTION_ID } from '../../actionIds'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
 import { createIppon, createWin } from '../ippon/IpponAction'
-
-const VOTING_ACTION_ID = 'vote-kotae'
 
 export const registerVoteHandlers = ({
   app,

@@ -44,13 +44,18 @@ import {
 } from '../../../vote/blocks'
 import { createAiCommentaryBlocks } from '../../../vote/blocks/createAiCommentaryBlocks'
 import {
+  CREATE_ODAI_ACTION_ID,
+  CREATE_ODAI_IPPON_ACTION_ID,
+  FINISH_ODAI_ACTION_ID,
+  START_VOTING_ACTION_ID,
+} from '../../actionIds'
+import {
   postEphemeral,
   postInternalErrorMessage,
   postMessage,
 } from '../../postMessage'
 
-export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
-export const FINISH_ODAI_ACTION_ID = 'oogiri-finish'
+export { START_VOTING_ACTION_ID, FINISH_ODAI_ACTION_ID }
 
 export const registerOdaiHandlers = ({
   app,
@@ -64,23 +69,23 @@ export const registerOdaiHandlers = ({
   voteService: VoteService
 }) => {
   // NOTE: ショートカット/ボタンからのお題作成モーダルオープン
-  app.shortcut('oogiri-create-odai', async ({ ack, body, client, logger }) => {
+  app.shortcut(CREATE_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
     await create({ body, client, logger })
   })
   app.shortcut(
-    'oogiri-create-odai-ippon',
+    CREATE_ODAI_IPPON_ACTION_ID,
     async ({ ack, body, client, logger }) => {
       await ack()
       await createIpponModal({ body, client, logger })
     },
   )
-  app.action('oogiri-create-odai', async ({ ack, body, client, logger }) => {
+  app.action(CREATE_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
     if ('trigger_id' in body) await create({ body, client, logger })
   })
   app.action(
-    'oogiri-create-odai-ippon',
+    CREATE_ODAI_IPPON_ACTION_ID,
     async ({ ack, body, client, logger }) => {
       await ack()
       if ('trigger_id' in body) await createIpponModal({ body, client, logger })

@@ -2,6 +2,7 @@ import { KnownBlock, WebClient } from '@slack/web-api'
 import { hasError } from '../../../../api/Error'
 import { getCharacterMessage } from '../../../../message'
 import { OdaiService } from '../../../../odai/OdaiService'
+import { CREATE_ODAI_ACTION_ID } from '../../../actionIds'
 import { postMessage } from '../../../postMessage'
 
 export const inspireNewOdai = async ({
@@ -57,7 +58,7 @@ export const inspireNewOdai = async ({
             text: 'お題を設定する！',
           },
           style: 'primary',
-          action_id: 'oogiri-create-odai',
+          action_id: CREATE_ODAI_ACTION_ID,
         },
       ],
     },

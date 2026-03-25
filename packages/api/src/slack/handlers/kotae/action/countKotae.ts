@@ -9,15 +9,14 @@ import {
   calculateDateDiff,
 } from '../../../../util/DateUtil'
 import {
+  CREATE_KOTAE_ACTION_ID,
+  START_VOTING_ACTION_ID,
+} from '../../../actionIds'
+import {
   postEphemeral,
   postInternalErrorMessage,
   postMessage,
 } from '../../../postMessage'
-
-// NOTE: OdaiHandlerのSTART_VOTING_ACTION_IDに対応
-const START_VOTING_ACTION_ID = 'oogiri-start-voting'
-// NOTE: KotaeHandlerのCREATE_KOTAE_ACTION_IDに対応
-const CREATE_KOTAE_ACTION_ID = 'oogiri-create-kotae'
 
 export const countKotae = async ({
   slackTeamId,

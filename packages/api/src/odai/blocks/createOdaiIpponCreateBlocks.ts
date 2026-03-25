@@ -1,8 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { getCharacterMessage } from '../../message'
-
-// NOTE: KotaeHandlerのCREATE_KOTAE_ACTION_IDに対応
-const CREATE_KOTAE_ACTION_ID = 'oogiri-create-kotae'
+import { CREATE_KOTAE_ACTION_ID } from '../../slack/actionIds'
 
 export const createOdaiIpponCreateBlocks = ({
   title,

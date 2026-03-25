@@ -3,14 +3,12 @@ import { WebClient } from '@slack/web-api'
 import { hasError } from '../../../../api/Error'
 import { getCharacterMessage } from '../../../../message'
 import { VoteService } from '../../../../vote/VoteService'
+import { FINISH_ODAI_ACTION_ID } from '../../../actionIds'
 import {
   postEphemeral,
   postInternalErrorMessage,
   postMessage,
 } from '../../../postMessage'
-
-// NOTE: OdaiHandlerのFINISH_ODAI_ACTION_IDに対応
-const FINISH_ODAI_ACTION_ID = 'oogiri-finish'
 
 export const countVote = async ({
   slackTeamId,

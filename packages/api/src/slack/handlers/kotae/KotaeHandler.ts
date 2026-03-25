@@ -18,13 +18,14 @@ import { OdaiService } from '../../../odai/OdaiService'
 import { getSlackUserList } from '../../../util/getSlackUserList'
 import { medalEmoji } from '../../../vote/util'
 import {
+  CHECK_PERSONAL_COMMENTARY_ACTION_ID,
+  CREATE_KOTAE_ACTION_ID,
+} from '../../actionIds'
+import {
   postEphemeral,
   postInternalErrorMessage,
   postMessage,
 } from '../../postMessage'
-
-const CREATE_KOTAE_ACTION_ID = 'oogiri-create-kotae'
-const CHECK_PERSONAL_COMMENTARY_ACTION_ID = 'oogiri-check-personal-commentary'
 
 export const registerKotaeHandlers = ({
   app,
