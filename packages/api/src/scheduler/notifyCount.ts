@@ -1,8 +1,8 @@
-import { getSlackClient } from '../slack/client'
 import { config } from '../config'
+import { KotaeService } from '../kotae/KotaeService'
+import { getSlackClient } from '../slack/client'
 import { countKotae } from '../slack/handlers/kotae/action/countKotae'
 import { countVote } from '../slack/handlers/vote/action/countVote'
-import { KotaeService } from '../kotae/KotaeService'
 import { VoteService } from '../vote/VoteService'
 
 export const notifyCount = async ({

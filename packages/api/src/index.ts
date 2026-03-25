@@ -1,8 +1,10 @@
+import { App, ExpressReceiver } from '@slack/bolt'
 import cors from 'cors'
 import express from 'express'
 import * as functions from 'firebase-functions'
-import { App, ExpressReceiver } from '@slack/bolt'
+import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
+import { config } from './config'
 import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
 import { IpponService, IpponServiceImpl } from './ippon/IpponService'
 import {
@@ -25,6 +27,9 @@ import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
 import { OdaiPostgresRepositoryImpl } from './odai/OdaiPostgresRepositoryImpl'
 import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
+import { inspireNewOdai } from './scheduler/inspireNewOdai'
+import { notifyCount } from './scheduler/notifyCount'
+import { registerHandlers } from './slack/handlers/registerHandlers'
 import {
   VoteCountByUserParams,
   VoteCountParams,
@@ -34,11 +39,6 @@ import { VoteFirestoreRepositoryImpl } from './vote/VoteFirestoreRepositoryImpl'
 import { VotePostgresRepositoryImpl } from './vote/VotePostgresRepositoryImpl'
 import { VoteRepository } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
-import { onSchedule } from 'firebase-functions/v2/scheduler'
-import { config } from './config'
-import { registerHandlers } from './slack/handlers/registerHandlers'
-import { notifyCount } from './scheduler/notifyCount'
-import { inspireNewOdai } from './scheduler/inspireNewOdai'
 
 // NOTE: Bolt の ExpressReceiver を作成し既存の Express app と統合する
 const receiver = new ExpressReceiver({

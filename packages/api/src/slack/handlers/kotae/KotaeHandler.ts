@@ -1,27 +1,27 @@
 import { App, BlockAction, KnownBlock } from '@slack/bolt'
 import emojiRegex from 'emoji-regex'
-import { hasError } from '../../../api/Error'
-import { KotaeResultResponse } from '../../../kotae/Kotae'
-import {
-  postEphemeral,
-  postInternalErrorMessage,
-  postMessage,
-} from '../../postMessage'
-import { getSlackUserList } from '../../../util/getSlackUserList'
-import { KotaeService } from '../../../kotae/KotaeService'
-import { OdaiService } from '../../../odai/OdaiService'
-import { medalEmoji } from '../../../vote/util'
 import { countKotae } from './action/countKotae'
-import { kotaeCreatedBlocks } from '../../../kotae/blocks/kotaeCreatedBlocks'
-import { kotaeIpponCreatedBlocks } from '../../../kotae/blocks/kotaeIpponCreatedBlocks'
-import { createPersonalCommentaryBlocks } from '../../../kotae/blocks/createPersonalCommentaryBlocks'
 import {
   kotaeCreateView,
   KOTAE_CREATE_BLOCK_ID,
   KOTAE_CREATE_ACTION_ID,
   KOTAE_CREATE_CALLBACK_ID,
 } from './view/KotaeCreateView'
+import { hasError } from '../../../api/Error'
+import { KotaeResultResponse } from '../../../kotae/Kotae'
+import { KotaeService } from '../../../kotae/KotaeService'
+import { createPersonalCommentaryBlocks } from '../../../kotae/blocks/createPersonalCommentaryBlocks'
+import { kotaeCreatedBlocks } from '../../../kotae/blocks/kotaeCreatedBlocks'
+import { kotaeIpponCreatedBlocks } from '../../../kotae/blocks/kotaeIpponCreatedBlocks'
 import { makePointRanking } from '../../../kotae/rank/makePointRanking'
+import { OdaiService } from '../../../odai/OdaiService'
+import { getSlackUserList } from '../../../util/getSlackUserList'
+import { medalEmoji } from '../../../vote/util'
+import {
+  postEphemeral,
+  postInternalErrorMessage,
+  postMessage,
+} from '../../postMessage'
 
 const CREATE_KOTAE_ACTION_ID = 'oogiri-create-kotae'
 const CHECK_PERSONAL_COMMENTARY_ACTION_ID = 'oogiri-check-personal-commentary'

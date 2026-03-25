@@ -1,8 +1,8 @@
 import { KnownBlock, WebClient } from '@slack/web-api'
-import { getCharacterMessage } from '../../../../message'
-import { postMessage } from '../../../postMessage'
-import { OdaiService } from '../../../../odai/OdaiService'
 import { hasError } from '../../../../api/Error'
+import { getCharacterMessage } from '../../../../message'
+import { OdaiService } from '../../../../odai/OdaiService'
+import { postMessage } from '../../../postMessage'
 
 export const inspireNewOdai = async ({
   slackTeamId,

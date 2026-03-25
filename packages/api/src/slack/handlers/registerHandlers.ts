@@ -1,10 +1,10 @@
 import { App } from '@slack/bolt'
-import { OdaiService } from '../../odai/OdaiService'
-import { KotaeService } from '../../kotae/KotaeService'
-import { VoteService } from '../../vote/VoteService'
-import { registerOdaiHandlers } from './odai/OdaiHandler'
 import { registerKotaeHandlers } from './kotae/KotaeHandler'
+import { registerOdaiHandlers } from './odai/OdaiHandler'
 import { registerVoteHandlers } from './vote/VoteHandler'
+import { KotaeService } from '../../kotae/KotaeService'
+import { OdaiService } from '../../odai/OdaiService'
+import { VoteService } from '../../vote/VoteService'
 
 export const registerHandlers = ({
   app,

@@ -1,15 +1,4 @@
 import { App } from '@slack/bolt'
-import { hasError } from '../../../api/Error'
-import {
-  postEphemeral,
-  postInternalErrorMessage,
-  postMessage,
-} from '../../postMessage'
-import { isImageUrl } from '../../../util/isImageUrl'
-import { getSlackUserList } from '../../../util/getSlackUserList'
-import { OdaiService } from '../../../odai/OdaiService'
-import { KotaeService } from '../../../kotae/KotaeService'
-import { VoteService } from '../../../vote/VoteService'
 import {
   create,
   CREATE_ODAI_CALLBACK_ID,
@@ -28,15 +17,23 @@ import {
   WIN_IPPON_COUNT_ACTION_ID,
   WIN_IPPON_COUNT_BLOCK_ID,
 } from './action/createOdaiIppon'
-import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
 import { finish, FINISH_ODAI_CALLBACK_ID } from './action/finishOdai'
 import { inspireNewOdai } from './action/inspireNewOdai'
+import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
+import { hasError } from '../../../api/Error'
+import { KotaeService } from '../../../kotae/KotaeService'
+import { makePointRanking } from '../../../kotae/rank/makePointRanking'
+import { makeVotedCountRanking } from '../../../kotae/rank/makeVotedCountRanking'
+import { OdaiService } from '../../../odai/OdaiService'
 import {
   createOdaiCreateBlocks,
   createOdaiDuplicationBlocks,
   createOdaiNothingBlocks,
 } from '../../../odai/blocks'
 import { createOdaiIpponCreateBlocks } from '../../../odai/blocks/createOdaiIpponCreateBlocks'
+import { getSlackUserList } from '../../../util/getSlackUserList'
+import { isImageUrl } from '../../../util/isImageUrl'
+import { VoteService } from '../../../vote/VoteService'
 import {
   createVoteStartHeaderBlocks,
   createVoteSectionBlocks,
@@ -46,8 +43,11 @@ import {
   createVoteResultFooterBlocks,
 } from '../../../vote/blocks'
 import { createAiCommentaryBlocks } from '../../../vote/blocks/createAiCommentaryBlocks'
-import { makePointRanking } from '../../../kotae/rank/makePointRanking'
-import { makeVotedCountRanking } from '../../../kotae/rank/makeVotedCountRanking'
+import {
+  postEphemeral,
+  postInternalErrorMessage,
+  postMessage,
+} from '../../postMessage'
 
 export const START_VOTING_ACTION_ID = 'oogiri-start-voting'
 export const FINISH_ODAI_ACTION_ID = 'oogiri-finish'

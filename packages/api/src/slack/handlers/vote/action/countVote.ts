@@ -1,13 +1,13 @@
 import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
+import { hasError } from '../../../../api/Error'
 import { getCharacterMessage } from '../../../../message'
+import { VoteService } from '../../../../vote/VoteService'
 import {
   postEphemeral,
   postInternalErrorMessage,
   postMessage,
 } from '../../../postMessage'
-import { VoteService } from '../../../../vote/VoteService'
-import { hasError } from '../../../../api/Error'
 
 // NOTE: OdaiHandlerのFINISH_ODAI_ACTION_IDに対応
 const FINISH_ODAI_ACTION_ID = 'oogiri-finish'

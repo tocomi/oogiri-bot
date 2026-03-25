@@ -1,7 +1,7 @@
-import { getSlackClient } from '../slack/client'
 import { config } from '../config'
-import { inspireNewOdai as inspireNewOdaiAction } from '../slack/handlers/odai/action/inspireNewOdai'
 import { OdaiService } from '../odai/OdaiService'
+import { getSlackClient } from '../slack/client'
+import { inspireNewOdai as inspireNewOdaiAction } from '../slack/handlers/odai/action/inspireNewOdai'
 
 export const inspireNewOdai = async ({
   odaiService,

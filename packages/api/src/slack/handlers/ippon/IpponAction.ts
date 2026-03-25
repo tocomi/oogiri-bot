@@ -1,9 +1,9 @@
 import { WebClient } from '@slack/web-api'
-import { postMessage } from '../../postMessage'
 import { createIpponBlocks } from '../../../ippon/blocks/createIpponBlocks'
 import { createWinContentBlocks } from '../../../ippon/blocks/createWinContentBlocks'
 import { createWinFooterBlocks } from '../../../ippon/blocks/createWinFooterBlocks'
 import { createWinHeaderBlocks } from '../../../ippon/blocks/createWinHeaderBlocks'
+import { postMessage } from '../../postMessage'
 
 export const createIppon = ({
   client,
