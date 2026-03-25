@@ -8,7 +8,7 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 
 ## アーキテクチャ
 
-このプロジェクトは yarn workspaces を使ったモノレポ構成で、以下の 2 つのメインパッケージから構成されています：
+このプロジェクトは pnpm workspaces を使ったモノレポ構成で、以下の 2 つのメインパッケージから構成されています：
 
 ### packages/api
 
@@ -39,19 +39,19 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 
 ```bash
 # API サーバーの開発起動（Firebase Emulator）
-yarn dev:api
+pnpm dev:api
 
 # Slack Bot の開発起動
-yarn dev:bot
+pnpm dev:bot
 
 # リント実行
-yarn lint
+pnpm lint
 
 # リント修正
-yarn lint:fix
+pnpm lint:fix
 
 # データベースマイグレーション
-yarn migrate
+pnpm migrate
 ```
 
 ### テスト
@@ -59,20 +59,20 @@ yarn migrate
 ```bash
 # Bot パッケージのテスト実行
 cd packages/slackbot
-yarn test
+pnpm test
 ```
 
 ### デプロイ
 
 ```bash
 # API のデプロイ（Firebase Functions）
-yarn deploy:api
+pnpm deploy:api
 
 # Bot のデプロイ（Heroku - GitHub連携で自動）
-yarn deploy:bot
+pnpm deploy:bot
 
 # リリース
-yarn release
+pnpm release
 ```
 
 ### 各パッケージでの作業
@@ -83,16 +83,16 @@ yarn release
 cd packages/api
 
 # Firebase Emulator 起動
-yarn serve
+pnpm serve
 
 # Prisma スキーマ生成
-yarn generate-schema
+pnpm generate-schema
 
 # ビルド
-yarn build
+pnpm build
 
 # デプロイ
-yarn deploy
+pnpm deploy
 ```
 
 #### Bot パッケージ (packages/slackbot)
@@ -101,13 +101,13 @@ yarn deploy
 cd packages/slackbot
 
 # 開発モード（変更監視）
-yarn watch
+pnpm watch
 
 # TypeScript コンパイル
-yarn tsc
+pnpm tsc
 
 # テスト実行
-yarn test
+pnpm test
 ```
 
 ## データベース移行について
@@ -132,5 +132,5 @@ yarn test
 
 - API は Firebase Functions で動作するため、`firebase emulators:start` が必要
 - Bot は Socket Mode で動作するため、インターネット接続が必要
-- データベースマイグレーションは `yarn migrate` で実行
-- Node.js バージョンは 20.19.5 を使用（Volta で管理）
+- データベースマイグレーションは `pnpm migrate` で実行
+- Node.js バージョンは 22.22.1 を使用（engines フィールドで管理）

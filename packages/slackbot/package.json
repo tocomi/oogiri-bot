@@ -7,21 +7,30 @@
   "license": "MIT",
   "scripts": {
     "start": "node ./dist/index.js",
-    "watch": "tsc-watch --onSuccess 'yarn start'",
+    "watch": "tsc-watch --onSuccess 'pnpm start'",
     "lint": "eslint --ext .js,.ts ./src",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "tsc": "tsc",
     "type-check": "echo '# slackbot type-check' && tsc --noEmit --diagnostics",
-    "deploy:heroku": "yarn tsc && yarn start"
+    "deploy:heroku": "pnpm tsc && pnpm start"
+  },
+  "dependencies": {
+    "@slack/bolt": "3",
+    "@slack/types": "*",
+    "@slack/web-api": "^6.2.4",
+    "axios": "^1.0.0",
+    "dayjs": "^1.10.6",
+    "dotenv": "^10.0.0",
+    "emoji-regex": "^10.1.0",
+    "firebase-admin": "^10.0.2"
   },
   "devDependencies": {
+    "@types/node": "*",
     "typescript": "*"
   },
-  "volta": {
-    "node": "22.22.1",
-    "yarn": "4.0.2"
-  },
-  "packageManager": "yarn@4.0.2"
+  "engines": {
+    "node": ">=22.22.1"
+  }
 }
