@@ -1,9 +1,10 @@
+import { App, ExpressReceiver } from '@slack/bolt'
 import cors from 'cors'
 import express from 'express'
 import * as functions from 'firebase-functions'
+import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
-import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
-import { IpponService, IpponServiceImpl } from './ippon/IpponService'
+import { config } from './config'
 import {
   KotaeOfCurrentOdaiParams,
   KotaePersonalCommentaryParams,
@@ -24,6 +25,9 @@ import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
 import { OdaiPostgresRepositoryImpl } from './odai/OdaiPostgresRepositoryImpl'
 import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
+import { inspireNewOdai } from './scheduler/inspireNewOdai'
+import { notifyCount } from './scheduler/notifyCount'
+import { registerHandlers } from './slack/handlers/registerHandlers'
 import {
   VoteCountByUserParams,
   VoteCountParams,
@@ -34,7 +38,21 @@ import { VotePostgresRepositoryImpl } from './vote/VotePostgresRepositoryImpl'
 import { VoteRepository } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
 
-const app = express()
+// NOTE: Bolt の ExpressReceiver を作成し既存の Express app と統合する
+const receiver = new ExpressReceiver({
+  signingSecret: config.slack.signingSecret,
+  endpoints: '/slack/events',
+})
+
+const boltApp = new App({
+  token: config.slack.botToken,
+  receiver,
+  // NOTE: Firebase Functions のコールドスタート対策
+  // ack() を呼び出した時点で即座に Slack へレスポンスを返し、その後処理を継続する
+  processBeforeResponse: false,
+})
+
+const app = receiver.app
 app.use(cors({ origin: true }))
 
 app.use((req, _res, next) => {
@@ -56,12 +74,6 @@ const kotaeService: KotaeService = new KotaeServiceImpl(
   kotaeNewRepository,
   odaiService,
 )
-const ipponRepository: IpponRepository = new IpponRepositoryImpl()
-const ipponService: IpponService = new IpponServiceImpl(
-  ipponRepository,
-  kotaeService,
-  odaiService,
-)
 const voteRepository: VoteRepository = new VoteFirestoreRepositoryImpl()
 const voteNewRepository: VoteRepository = new VotePostgresRepositoryImpl()
 const voteService: VoteService = new VoteServiceImpl(
@@ -69,7 +81,6 @@ const voteService: VoteService = new VoteServiceImpl(
   voteNewRepository,
   odaiService,
   kotaeService,
-  ipponService,
 )
 
 const errorResponse = (res: express.Response, error: ApiError) => {
@@ -298,6 +309,38 @@ app.get('/stats/:odaiId', async (req: express.Request, res) => {
   return sendResponse(res, { ...result })
 })
 
+// NOTE: Slack イベントハンドラーを登録
+registerHandlers({
+  app: boltApp,
+  odaiService,
+  kotaeService,
+  voteService,
+})
+
 functions.setGlobalOptions({ region: 'asia-northeast1' })
 
 exports.api = functions.https.onRequest(app)
+
+// NOTE: 毎日 9 時にカウント通知
+exports.scheduledNotifyCount = onSchedule(
+  { schedule: '0 9 * * *', timeZone: 'Asia/Tokyo' },
+  async () => {
+    await notifyCount({ kotaeService, voteService })
+  },
+)
+
+// NOTE: 毎日 19:30 にカウント通知
+exports.scheduledNotifyCountEvening = onSchedule(
+  { schedule: '30 19 * * *', timeZone: 'Asia/Tokyo' },
+  async () => {
+    await notifyCount({ kotaeService, voteService })
+  },
+)
+
+// NOTE: 毎週月曜 9 時に新お題の呼びかけ
+exports.scheduledInspireNewOdai = onSchedule(
+  { schedule: '0 9 * * 1', timeZone: 'Asia/Tokyo' },
+  async () => {
+    await inspireNewOdai({ odaiService })
+  },
+)

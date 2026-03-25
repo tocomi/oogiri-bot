@@ -15,7 +15,6 @@ import {
   hasError,
   NoVotingOdaiError,
 } from '../api/Error'
-import { IpponService } from '../ippon/IpponService'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
 import { generateId } from '../util/generateId'
@@ -33,20 +32,17 @@ export class VoteServiceImpl implements VoteService {
   newRepository: VoteRepository
   odaiService: OdaiService
   kotaeService: KotaeService
-  ipponService: IpponService
 
   constructor(
     repository: VoteRepository,
     newRepository: VoteRepository,
     odaiService: OdaiService,
     kotaeService: KotaeService,
-    ipponService: IpponService,
   ) {
     this.repository = repository
     this.newRepository = newRepository
     this.odaiService = odaiService
     this.kotaeService = kotaeService
-    this.ipponService = ipponService
   }
 
   async create({
@@ -57,10 +53,7 @@ export class VoteServiceImpl implements VoteService {
   }: VoteCreateRequest): Promise<VoteCreateResponse> {
     const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
     if (hasError(currentOdai)) return currentOdai
-
-    // NOTE: IPPON グランプリモードでは voting のステータスはない
-    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting')
-      return NoVotingOdaiError
+    if (currentOdai.status !== 'voting') return NoVotingOdaiError
 
     const kotae = await this.kotaeService.getByContent({ slackTeamId, content })
     if (hasError(kotae)) return kotae
@@ -107,34 +100,6 @@ export class VoteServiceImpl implements VoteService {
       rank,
     })
 
-    // NOTE: 依存方向の関係で投票情報はここで取得して ipponService に渡す
-    const voteCounts = await this.getVoteCount({ slackTeamId })
-    if (hasError(voteCounts)) return voteCounts
-
-    // NOTE: 投票数が IPPON の基準を満たした場合はその情報を一緒に返す
-    if (
-      currentOdai.type === 'ippon' &&
-      currentOdai.ipponVoteCount === kotae.votedCount + 1
-    ) {
-      const ipponResult = await this.ipponService.create({
-        slackTeamId,
-        userId: kotae.createdBy,
-        kotaeId: kotae.id,
-        kotaeContent: kotae.content,
-        odaiId: currentOdai.id,
-        odaiTitle: currentOdai.title,
-        odaiImageUrl: currentOdai.imageUrl,
-        winIpponCount: currentOdai.winIpponCount,
-        voteCounts,
-      })
-      if (hasError(ipponResult)) return ipponResult
-      return {
-        vote: voteResultA,
-        ippon: ipponResult.ippon,
-        winResult: ipponResult.winResult,
-      }
-    }
-
     return { vote: voteResultA }
   }
 
@@ -144,9 +109,7 @@ export class VoteServiceImpl implements VoteService {
     })
     if (hasError(currentOdai)) return currentOdai
 
-    // NOTE: IPPON グランプリモードでは voting のステータスはない
-    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting')
-      return NoVotingOdaiError
+    if (currentOdai.status !== 'voting') return NoVotingOdaiError
 
     const votes = await this.newRepository.getAllOfCurrentOdai(
       params,

@@ -8,15 +8,13 @@
   "scripts": {
     "release": "npx release-it",
     "dev:api": "yarn workspace api serve",
-    "dev:bot": "yarn workspace slackbot watch",
-    "lint": "yarn workspace api lint && yarn workspace slackbot lint",
-    "lint:fix": "yarn workspace api lint:fix && yarn workspace slackbot lint:fix",
+    "lint": "yarn workspace api lint",
+    "lint:fix": "yarn workspace api lint:fix",
     "format": "biome format --write",
     "migrate": "prisma migrate dev --schema ./packages/api/prisma/schema.prisma",
     "deploy:api": "yarn workspace api deploy",
-    "deploy:bot": "yarn workspace slackbot deploy:heroku",
-    "type-check": "yarn workspace api type-check && yarn workspace slackbot type-check",
-    "test": "yarn workspace api test && yarn workspace slackbot test"
+    "type-check": "yarn workspace api type-check",
+    "test": "yarn workspace api test"
   },
   "dependencies": {
     "@slack/bolt": "3",

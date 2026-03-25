@@ -9,8 +9,6 @@ import {
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
   OdaiResponseBase,
-  OdaiIpponPostRequest,
-  OdaiIpponPostData,
   OdaiAddResultParams,
   OdaiGetResultParams,
   OdaiWithResult,
@@ -45,29 +43,6 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
     }
     const docRef = odaiCollection(slackTeamId).doc(id)
     const result = await createDoc<OdaiNormalPostData>(docRef, data)
-    return result
-  }
-
-  async createIppon({
-    title,
-    createdBy,
-    imageUrl,
-    ipponVoteCount,
-    winIpponCount,
-    slackTeamId,
-  }: OdaiIpponPostRequest): Promise<boolean> {
-    const data: OdaiIpponPostData = {
-      type: 'ippon',
-      title,
-      createdBy,
-      imageUrl: imageUrl || '',
-      ipponVoteCount,
-      winIpponCount,
-      status: 'posting',
-      createdAt: new Date(),
-    }
-    const docRef = odaiCollection(slackTeamId).doc()
-    const result = await createDoc<OdaiIpponPostData>(docRef, data)
     return result
   }
 
@@ -223,14 +198,6 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
       createdBy: data.createdBy,
       status: data.status,
       createdAt: convertTimestamp(data.createdAt),
-    }
-    if (data.type === 'ippon') {
-      return {
-        type: 'ippon',
-        ipponVoteCount: data.ipponVoteCount,
-        winIpponCount: data.winIpponCount,
-        ...responseBase,
-      }
     }
     return {
       type: 'normal',
