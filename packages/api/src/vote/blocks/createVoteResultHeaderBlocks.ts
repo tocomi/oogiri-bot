@@ -1,7 +1,6 @@
 import { KnownBlock } from '@slack/types'
+import { KEKKA_IMAGE_URL } from '../../const'
 import { VoteCount } from '../Vote'
-
-const KEKKA_IMAGE_URL = 'https://i.imgur.com/6qUQaQA.jpeg'
 
 type KotaeCountSummary = {
   uniqueUserCount: number

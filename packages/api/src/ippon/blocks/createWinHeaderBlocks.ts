@@ -1,6 +1,5 @@
 import { KnownBlock } from '@slack/web-api'
-
-const KEKKA_IMAGE_URL = 'https://i.imgur.com/6qUQaQA.jpeg'
+import { KEKKA_IMAGE_URL } from '../../const'
 
 export const createWinHeaderBlocks = ({
   odaiTitle,

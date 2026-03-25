@@ -1,6 +1,5 @@
 import { KnownBlock, UsersInfoResponse } from '@slack/web-api'
-
-const UNKNOWN_USER_IMAGE_URL = 'https://i.imgur.com/TtQ1faz.jpg'
+import { UNKNOWN_USER_IMAGE_URL } from '../../const'
 
 export const createWinContentBlocks = ({
   ipponCountList,

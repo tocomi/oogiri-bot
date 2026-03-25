@@ -1,9 +1,8 @@
 import { KnownBlock } from '@slack/types'
 import { UsersInfoResponse } from '@slack/web-api'
+import { UNKNOWN_USER_IMAGE_URL } from '../../const'
 import { RankedKotae } from '../../kotae/Kotae'
 import { medalEmoji } from '../util'
-
-const UNKNOWN_USER_IMAGE_URL = 'https://i.imgur.com/TtQ1faz.jpg'
 
 type ResultType = 'point' | 'voted1stCount' | 'votedCount'
 
