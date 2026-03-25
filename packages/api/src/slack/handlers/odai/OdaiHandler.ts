@@ -9,14 +9,6 @@ import {
   TITLE_ACTION_ID,
   TITLE_BLOCK_ID,
 } from './action/createOdai'
-import {
-  createIppon as createIpponModal,
-  CREATE_ODAI_IPPON_CALLBACK_ID,
-  IPPON_VOTE_COUNT_ACTION_ID,
-  IPPON_VOTE_COUNT_BLOCK_ID,
-  WIN_IPPON_COUNT_ACTION_ID,
-  WIN_IPPON_COUNT_BLOCK_ID,
-} from './action/createOdaiIppon'
 import { finish, FINISH_ODAI_CALLBACK_ID } from './action/finishOdai'
 import { inspireNewOdai } from './action/inspireNewOdai'
 import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
@@ -30,7 +22,6 @@ import {
   createOdaiDuplicationBlocks,
   createOdaiNothingBlocks,
 } from '../../../odai/blocks'
-import { createOdaiIpponCreateBlocks } from '../../../odai/blocks/createOdaiIpponCreateBlocks'
 import { getSlackUserList } from '../../../util/getSlackUserList'
 import { isImageUrl } from '../../../util/isImageUrl'
 import { VoteService } from '../../../vote/VoteService'
@@ -45,7 +36,6 @@ import {
 import { createAiCommentaryBlocks } from '../../../vote/blocks/createAiCommentaryBlocks'
 import {
   CREATE_ODAI_ACTION_ID,
-  CREATE_ODAI_IPPON_ACTION_ID,
   FINISH_ODAI_ACTION_ID,
   START_VOTING_ACTION_ID,
 } from '../../actionIds'
@@ -73,24 +63,10 @@ export const registerOdaiHandlers = ({
     await ack()
     await create({ body, client, logger })
   })
-  app.shortcut(
-    CREATE_ODAI_IPPON_ACTION_ID,
-    async ({ ack, body, client, logger }) => {
-      await ack()
-      await createIpponModal({ body, client, logger })
-    },
-  )
   app.action(CREATE_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
     await ack()
     if ('trigger_id' in body) await create({ body, client, logger })
   })
-  app.action(
-    CREATE_ODAI_IPPON_ACTION_ID,
-    async ({ ack, body, client, logger }) => {
-      await ack()
-      if ('trigger_id' in body) await createIpponModal({ body, client, logger })
-    },
-  )
 
   // NOTE: 通常のお題の作成
   app.view(
@@ -141,71 +117,6 @@ export const registerOdaiHandlers = ({
       }
 
       const blocks = createOdaiCreateBlocks({ title, dueDate, imageUrl })
-      await postMessage({ client, blocks })
-    },
-  )
-
-  // NOTE: IPPON グランプリモードでのお題の作成
-  app.view(
-    CREATE_ODAI_IPPON_CALLBACK_ID,
-    async ({ ack, view, client, body, logger }) => {
-      await ack()
-      const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
-      const _ipponVoteCount =
-        view.state.values[IPPON_VOTE_COUNT_BLOCK_ID][IPPON_VOTE_COUNT_ACTION_ID]
-          .value
-      const _winIpponCount =
-        view.state.values[WIN_IPPON_COUNT_BLOCK_ID][WIN_IPPON_COUNT_ACTION_ID]
-          .value
-      const imageUrl =
-        view.state.values[IMAGE_URL_BLOCK_ID][IMAGE_URL_ACTION_ID].value || ''
-
-      if (!title || !_ipponVoteCount || !_winIpponCount) {
-        logger.error(view.state.values)
-        postInternalErrorMessage({ client, user: body.user.id })
-        return
-      }
-
-      if (imageUrl && !isImageUrl(imageUrl)) {
-        logger.error(view.state.values)
-        postInternalErrorMessage({
-          client,
-          user: body.user.id,
-          overrideMessage:
-            ':warning: URLは画像の拡張子(.jpg等)で終わるもののみが有効です :warning:',
-        })
-        return
-      }
-
-      const ipponVoteCount = Number(_ipponVoteCount)
-      const winIpponCount = Number(_winIpponCount)
-      const result = await odaiService.create({
-        type: 'ippon',
-        slackTeamId: view.team_id,
-        title,
-        ipponVoteCount,
-        winIpponCount,
-        imageUrl,
-        createdBy: body.user.id,
-      })
-      if (hasError(result)) {
-        if (result.message === 'Odai Duplication') {
-          logger.warn(result.message)
-          const blocks = createOdaiDuplicationBlocks()
-          postEphemeral({ client, user: body.user.id, blocks })
-        } else {
-          logger.error(result.message)
-          postInternalErrorMessage({ client, user: body.user.id })
-        }
-        return
-      }
-
-      const blocks = createOdaiIpponCreateBlocks({
-        title,
-        ipponVoteCount,
-        winIpponCount,
-        imageUrl,
-      })
       await postMessage({ client, blocks })
     },
   )

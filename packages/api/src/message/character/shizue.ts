@@ -22,7 +22,4 @@ export const shizue: CharacterMessages = {
   'vote-result-003': [
     '個人の結果は `/oogiri-check-my-result` で確認できます！ (他の人には見えません:ok_woman:)',
   ],
-  'ippon-odai-start': [
-    'みなさーん、IPPONグランプリが始まりました！ ドシドシ回答してください！',
-  ],
 }

@@ -1,7 +1,6 @@
 import { App, KnownBlock } from '@slack/bolt'
 import { countVote } from './action/countVote'
 import { hasError } from '../../../api/Error'
-import { VOTE_KOTAE_IPPON_ACTION_ID } from '../../../kotae/blocks/kotaeIpponCreatedBlocks'
 import { decodeHtmlEntities } from '../../../util/decodeHtmlEntities'
 import { getSlackUserList } from '../../../util/getSlackUserList'
 import { VoteService } from '../../../vote/VoteService'
@@ -13,7 +12,6 @@ import {
 import { convertVoteRank } from '../../../vote/convertVoteValue'
 import { VOTING_ACTION_ID } from '../../actionIds'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
-import { createIppon, createWin } from '../ippon/IpponAction'
 
 export const registerVoteHandlers = ({
   app,
@@ -69,85 +67,6 @@ export const registerVoteHandlers = ({
       }
       const blocks = createVoteCompleteBlocks({ content, voteRank })
       await postEphemeral({ client, user, blocks })
-    },
-  )
-
-  // NOTE: IPPON グランプリモードの投票
-  app.action(
-    VOTE_KOTAE_IPPON_ACTION_ID,
-    async ({ ack, body, client, logger }) => {
-      await ack()
-      // NOTE: 投票ボタンが押された回答のテキストを抽出
-      // 何故か型が無いので仕方なくts-ignoreを使用
-      // text -> ':speaking_head_in_silhouette: *kotae*'
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const text: string = body.message.blocks[0].text.text
-      const content = decodeHtmlEntities(
-        text.replace(/.*\n/, '').replace(/\*/g, ''),
-      )
-
-      // TODO: ランクはないが暫定的に3を入れておく
-      const voteRank = 3 as const
-
-      const slackTeamId = body.team?.id || ''
-      const user = body.user.id
-      const result = await voteService.create({
-        id: '',
-        slackTeamId,
-        content,
-        rank: voteRank,
-        votedBy: user,
-      })
-      if (hasError(result)) {
-        if (result.message === 'Already Voted') {
-          logger.warn(result.message)
-          const blocks = createVoteAlreadyBlocks({ content })
-          postEphemeral({ client, user, blocks })
-        } else {
-          logger.error(result.message)
-          postInternalErrorMessage({ client, user })
-        }
-        return
-      }
-      const blocks = createVoteCompleteBlocks({ content, voteRank })
-      await postEphemeral({ client, user, blocks })
-
-      // NOTE: IPPON の場合の通知
-      if (result.ippon) {
-        createIppon({
-          client,
-          userId: result.ippon.userId,
-          kotaeContent: content,
-        })
-      }
-
-      // NOTE: 勝負が決まってない場合は継続
-      if (!result.winResult) return
-
-      // NOTE: 勝負が決まった場合は結果を通知
-      const {
-        odaiTitle,
-        odaiImageUrl,
-        kotaeCount,
-        kotaeUserCount,
-        voteCount,
-        voteUserCount,
-        ipponResult: ipponCountList,
-      } = result.winResult
-      const userInfoMap = await getSlackUserList({
-        client,
-        userIdList: ipponCountList.map((ippon) => ippon.userId),
-      })
-      createWin({
-        client,
-        odaiTitle,
-        odaiImageUrl,
-        kotaeCounts: { kotaeCount, uniqueUserCount: kotaeUserCount },
-        voteCounts: { voteCount, uniqueUserCount: voteUserCount },
-        ipponCountList,
-        userInfoMap,
-      })
     },
   )
 

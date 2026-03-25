@@ -5,8 +5,6 @@ import * as functions from 'firebase-functions'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
 import { config } from './config'
-import { IpponRepository, IpponRepositoryImpl } from './ippon/IpponRepository'
-import { IpponService, IpponServiceImpl } from './ippon/IpponService'
 import {
   KotaeOfCurrentOdaiParams,
   KotaePersonalCommentaryParams,
@@ -73,12 +71,6 @@ const kotaeService: KotaeService = new KotaeServiceImpl(
   kotaeNewRepository,
   odaiService,
 )
-const ipponRepository: IpponRepository = new IpponRepositoryImpl()
-const ipponService: IpponService = new IpponServiceImpl(
-  ipponRepository,
-  kotaeService,
-  odaiService,
-)
 const voteRepository: VoteRepository = new VoteFirestoreRepositoryImpl()
 const voteNewRepository: VoteRepository = new VotePostgresRepositoryImpl()
 const voteService: VoteService = new VoteServiceImpl(
@@ -86,7 +78,6 @@ const voteService: VoteService = new VoteServiceImpl(
   voteNewRepository,
   odaiService,
   kotaeService,
-  ipponService,
 )
 
 const errorResponse = (res: express.Response, error: ApiError) => {

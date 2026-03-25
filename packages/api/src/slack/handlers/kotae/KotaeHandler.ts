@@ -11,7 +11,6 @@ import { hasError } from '../../../api/Error'
 import { KotaeService } from '../../../kotae/KotaeService'
 import { createPersonalCommentaryBlocks } from '../../../kotae/blocks/createPersonalCommentaryBlocks'
 import { kotaeCreatedBlocks } from '../../../kotae/blocks/kotaeCreatedBlocks'
-import { kotaeIpponCreatedBlocks } from '../../../kotae/blocks/kotaeIpponCreatedBlocks'
 import { makePointRanking } from '../../../kotae/rank/makePointRanking'
 import { OdaiService } from '../../../odai/OdaiService'
 import { getSlackUserList } from '../../../util/getSlackUserList'
@@ -20,11 +19,7 @@ import {
   CHECK_PERSONAL_COMMENTARY_ACTION_ID,
   CREATE_KOTAE_ACTION_ID,
 } from '../../actionIds'
-import {
-  postEphemeral,
-  postInternalErrorMessage,
-  postMessage,
-} from '../../postMessage'
+import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
 
 export const registerKotaeHandlers = ({
   app,
@@ -123,11 +118,6 @@ export const registerKotaeHandlers = ({
         return
       }
 
-      if (odaiResult.type === 'ippon') {
-        const blocks: KnownBlock[] = kotaeIpponCreatedBlocks(kotae)
-        await postMessage({ client, blocks })
-        return
-      }
       const blocks: KnownBlock[] = kotaeCreatedBlocks(kotae)
       await postEphemeral({ client, user: body.user.id, blocks })
     },

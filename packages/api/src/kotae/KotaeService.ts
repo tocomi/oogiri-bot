@@ -107,9 +107,6 @@ export class KotaeServiceImpl implements KotaeService {
     })
     if (hasError(currentOdai)) return currentOdai
 
-    // TODO: 一旦ノーマルモードのみ対応
-    if (currentOdai.type === 'ippon') throw InternalServerError
-
     const kotaeList = await this.newRepository.getAllOfCurrentOdai(
       params,
       currentOdai.id,
@@ -156,9 +153,7 @@ export class KotaeServiceImpl implements KotaeService {
 
     return {
       odaiTitle: recentFinishedOdai.title,
-      // NOTE: ippon の場合は dueDate は使わないのでダミーの値
-      odaiDueDate:
-        recentFinishedOdai.type === 'normal' ? recentFinishedOdai.dueDate : 0,
+      odaiDueDate: recentFinishedOdai.dueDate,
       odaiStatus: recentFinishedOdai.status,
       kotaeList: kotaeWithVoteList,
     }

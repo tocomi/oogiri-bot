@@ -37,7 +37,4 @@ export const tanukichi: CharacterMessages = {
   'vote-result-003': [
     '個人の結果は `/oogiri-check-my-result` で確認できるだなも！ (他の人には見えないだなも:ok_man:)',
   ],
-  'ippon-odai-start': [
-    'IPPON グランプリスタートだなも！ たくさん回答するだなも！',
-  ],
 }

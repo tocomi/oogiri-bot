@@ -13,7 +13,6 @@ export type CHARACTER_MESSAGE_KEYS =
   | 'vote-result-001'
   | 'vote-result-002'
   | 'vote-result-003'
-  | 'ippon-odai-start'
 
 export type CharacterMessages = {
   // NOTE: 空配列を許容しないようにしている

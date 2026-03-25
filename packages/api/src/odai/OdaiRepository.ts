@@ -7,7 +7,6 @@ import {
   OdaiRecentFinishedParams,
   OdaiRecentFinishedResponse,
   OdaiResponseBase,
-  OdaiIpponPostRequest,
   OdaiAddResultParams,
   OdaiGetAllResultsParams,
   OdaiGetResultParams,
@@ -16,7 +15,6 @@ import {
 
 export interface OdaiRepository {
   createNormal(params: OdaiNormalPostRequest): Promise<boolean>
-  createIppon(params: OdaiIpponPostRequest): Promise<boolean>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
   getRecentFinished(
     params: OdaiRecentFinishedParams,
