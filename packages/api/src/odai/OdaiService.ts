@@ -91,10 +91,10 @@ export class OdaiServiceImpl implements OdaiService {
   async getRecentFinished(
     params: OdaiRecentFinishedParams,
   ): Promise<OdaiRecentFinishedResponse> {
-    const finishedOdaiList = await this.repository.getAllFinished(params)
-    if (!finishedOdaiList.length) return NoFinishedOdaiError
+    const finishedOdai = await this.repository.getRecentFinished(params)
+    if (!finishedOdai) return NoFinishedOdaiError
 
-    return finishedOdaiList[0]
+    return finishedOdai
   }
 
   async getRecent5timesFinished(
