@@ -52,6 +52,11 @@ const boltApp = new App({
   processBeforeResponse: false,
 })
 
+boltApp.use(async ({ body, next }) => {
+  console.log(`[slack/events] body: ${JSON.stringify(body)}`)
+  await next()
+})
+
 const app = receiver.app
 app.use(cors({ origin: true }))
 
