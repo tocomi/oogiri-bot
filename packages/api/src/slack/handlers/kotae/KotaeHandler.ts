@@ -101,10 +101,10 @@ export const registerKotaeHandlers = ({
               },
             },
           ]
-          postEphemeral({ client, user: body.user.id, blocks })
+          await postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(result.message)
-          postInternalErrorMessage({ client, user: body.user.id })
+          await postInternalErrorMessage({ client, user: body.user.id })
         }
         return
       }
@@ -155,10 +155,10 @@ export const registerKotaeHandlers = ({
               },
             },
           ]
-          postEphemeral({ client, user: body.user_id, blocks })
+          await postEphemeral({ client, user: body.user_id, blocks })
         } else {
           logger.error(result.message)
-          postInternalErrorMessage({ client, user: body.user_id })
+          await postInternalErrorMessage({ client, user: body.user_id })
         }
         return
       }
@@ -173,7 +173,7 @@ export const registerKotaeHandlers = ({
             },
           },
         ]
-        postEphemeral({ client, user: body.user_id, blocks })
+        await postEphemeral({ client, user: body.user_id, blocks })
         return
       }
 
@@ -307,10 +307,10 @@ export const registerKotaeHandlers = ({
               },
             },
           ]
-          postEphemeral({ client, user: userId, blocks })
+          await postEphemeral({ client, user: userId, blocks })
         } else {
           logger.error(result.message)
-          postInternalErrorMessage({ client, user: userId })
+          await postInternalErrorMessage({ client, user: userId })
         }
         return
       }

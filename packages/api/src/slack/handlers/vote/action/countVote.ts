@@ -36,7 +36,7 @@ export const countVote = async ({
           },
         },
       ]
-      if (userId) postEphemeral({ client, user: userId, blocks })
+      if (userId) await postEphemeral({ client, user: userId, blocks })
     } else if (
       result.message === 'No Voting Odai' ||
       result.message === 'No Target Kotae'
@@ -51,10 +51,10 @@ export const countVote = async ({
           },
         },
       ]
-      if (userId) postEphemeral({ client, user: userId, blocks })
+      if (userId) await postEphemeral({ client, user: userId, blocks })
     } else {
       console.error(result.message)
-      if (userId) postInternalErrorMessage({ client, user: userId })
+      if (userId) await postInternalErrorMessage({ client, user: userId })
     }
     return
   }

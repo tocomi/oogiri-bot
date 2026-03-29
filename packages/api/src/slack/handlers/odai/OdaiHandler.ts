@@ -108,10 +108,10 @@ export const registerOdaiHandlers = ({
         if (result.message === 'Odai Duplication') {
           logger.warn(result.message)
           const blocks = createOdaiDuplicationBlocks()
-          postEphemeral({ client, user: body.user.id, blocks })
+          await postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(result.message)
-          postInternalErrorMessage({ client, user: body.user.id })
+          await postInternalErrorMessage({ client, user: body.user.id })
         }
         return
       }
@@ -151,10 +151,10 @@ export const registerOdaiHandlers = ({
         ) {
           logger.warn(kotaeResult.message)
           const blocks = createOdaiDuplicationBlocks()
-          postEphemeral({ client, user: body.user.id, blocks })
+          await postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(kotaeResult.message)
-          postInternalErrorMessage({ client, user: body.user.id })
+          await postInternalErrorMessage({ client, user: body.user.id })
         }
         return
       }
@@ -167,10 +167,10 @@ export const registerOdaiHandlers = ({
         ) {
           logger.warn(putResult.message)
           const blocks = createOdaiDuplicationBlocks()
-          postEphemeral({ client, user: body.user.id, blocks })
+          await postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(putResult.message)
-          postInternalErrorMessage({ client, user: body.user.id })
+          await postInternalErrorMessage({ client, user: body.user.id })
         }
         return
       }
@@ -224,10 +224,10 @@ export const registerOdaiHandlers = ({
         ) {
           logger.warn(kotaeResult.message)
           const blocks = createOdaiNothingBlocks()
-          postEphemeral({ client, user: body.user.id, blocks })
+          await postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(kotaeResult.message)
-          postInternalErrorMessage({ client, user: body.user.id })
+          await postInternalErrorMessage({ client, user: body.user.id })
         }
         return
       }
@@ -240,10 +240,10 @@ export const registerOdaiHandlers = ({
         ) {
           logger.warn(voteCountResult.message)
           const blocks = createOdaiNothingBlocks()
-          postEphemeral({ client, user: body.user.id, blocks })
+          await postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(voteCountResult.message)
-          postInternalErrorMessage({ client, user: body.user.id })
+          await postInternalErrorMessage({ client, user: body.user.id })
         }
         return
       }
@@ -259,10 +259,10 @@ export const registerOdaiHandlers = ({
         ) {
           logger.warn(finishResult.message)
           const blocks = createOdaiNothingBlocks()
-          postEphemeral({ client, user: body.user.id, blocks })
+          await postEphemeral({ client, user: body.user.id, blocks })
         } else {
           logger.error(finishResult.message)
-          postInternalErrorMessage({ client, user: body.user.id })
+          await postInternalErrorMessage({ client, user: body.user.id })
         }
         return
       }

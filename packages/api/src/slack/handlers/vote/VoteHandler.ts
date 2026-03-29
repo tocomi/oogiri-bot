@@ -54,14 +54,14 @@ export const registerVoteHandlers = ({
         if (result.message === 'Already Voted') {
           logger.warn(result.message)
           const blocks = createVoteAlreadyBlocks({ content })
-          postEphemeral({ client, user, blocks })
+          await postEphemeral({ client, user, blocks })
         } else if (result.message === 'Already Same Rank Voted') {
           logger.warn(result.message)
           const blocks = createVoteAlreadySameRankBlocks({ voteRank })
-          postEphemeral({ client, user, blocks })
+          await postEphemeral({ client, user, blocks })
         } else {
           logger.error(result.message)
-          postInternalErrorMessage({ client, user })
+          await postInternalErrorMessage({ client, user })
         }
         return
       }

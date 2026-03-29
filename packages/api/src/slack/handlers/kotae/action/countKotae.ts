@@ -44,10 +44,10 @@ export const countKotae = async ({
           },
         },
       ]
-      if (userId) postEphemeral({ client, user: userId, blocks })
+      if (userId) await postEphemeral({ client, user: userId, blocks })
     } else {
       console.error(response.message)
-      if (userId) postInternalErrorMessage({ client, user: userId })
+      if (userId) await postInternalErrorMessage({ client, user: userId })
     }
     return
   }
