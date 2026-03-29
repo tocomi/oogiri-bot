@@ -53,12 +53,6 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         return false
       })
   }
-  createIppon(): Promise<boolean> {
-    // TODO: 廃止するかどうか決める
-    return new Promise((resolve) => {
-      resolve(true)
-    })
-  }
   async getCurrent({
     slackTeamId,
   }: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {

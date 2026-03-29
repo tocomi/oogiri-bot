@@ -72,20 +72,12 @@ export class OdaiServiceImpl implements OdaiService {
     const currentOdai = await this.repository.getCurrent(params)
     if (currentOdai) return OdaiDuplicationError
 
-    if (params.type === 'normal') {
-      const id = generateId()
-      const [resultA, resultB] = await Promise.all([
-        this.repository.createNormal({ ...params, id }),
-        this.newRepository.createNormal({ ...params, id }),
-      ])
-      if (!resultA || !resultB) return InternalServerError
-    } else {
-      const [resultA, resultB] = await Promise.all([
-        this.repository.createIppon(params),
-        this.newRepository.createIppon(params),
-      ])
-      if (!resultA || !resultB) return InternalServerError
-    }
+    const id = generateId()
+    const [resultA, resultB] = await Promise.all([
+      this.repository.createNormal({ ...params, id }),
+      this.newRepository.createNormal({ ...params, id }),
+    ])
+    if (!resultA || !resultB) return InternalServerError
     return 'ok'
   }
 
@@ -99,10 +91,10 @@ export class OdaiServiceImpl implements OdaiService {
   async getRecentFinished(
     params: OdaiRecentFinishedParams,
   ): Promise<OdaiRecentFinishedResponse> {
-    const finishedOdaiList = await this.repository.getAllFinished(params)
-    if (!finishedOdaiList.length) return NoFinishedOdaiError
+    const finishedOdai = await this.repository.getRecentFinished(params)
+    if (!finishedOdai) return NoFinishedOdaiError
 
-    return finishedOdaiList[0]
+    return finishedOdai
   }
 
   async getRecent5timesFinished(
@@ -140,8 +132,7 @@ export class OdaiServiceImpl implements OdaiService {
   }: OdaiFinishParams): Promise<OdaiFinishResponse> {
     const currentOdai = await this.getCurrent({ slackTeamId })
     if (hasError(currentOdai)) return currentOdai
-    if (currentOdai.type === 'normal' && currentOdai.status !== 'voting')
-      return NoVotingOdaiError
+    if (currentOdai.status !== 'voting') return NoVotingOdaiError
 
     // NOTE: お題の結果を result フィールドに格納する
     // TODO: トランザクション管理できてない

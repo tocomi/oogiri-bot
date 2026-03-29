@@ -1,1 +1,1 @@
-worker: NODE_OPTIONS=--max_old_space_size=1024 yarn && yarn deploy:bot
+# Heroku is no longer used. Slack bot is now handled by Firebase Functions (HTTP Mode).

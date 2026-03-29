@@ -1,17 +1,17 @@
 // TODO: クライアント側とファイルが重複している
 
-import { Kotae, PointedKotae } from '../Kotae'
+import { Kotae } from '../Kotae'
 
 const FIRST_RANK_POINT = 5
 const SECOND_RANK_POINT = 3
 const THIRD_RANK_POINT = 1
 
-export const makePointedList = ({
+export const makePointedList = <T extends Kotae>({
   kotaeList,
 }: {
-  kotaeList: Kotae[]
+  kotaeList: T[]
   removeNoVoteKotae?: boolean
-}): PointedKotae[] => {
+}): (T & { point: number })[] => {
   return kotaeList.map((kotae) => {
     const point =
       FIRST_RANK_POINT * kotae.votedFirstCount +
