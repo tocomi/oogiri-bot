@@ -139,6 +139,16 @@ export const registerKotaeHandlers = ({
     '/oogiri-check-my-result',
     async ({ ack, body, client, logger }) => {
       await ack()
+      await postEphemeral({
+        client,
+        user: body.user_id,
+        blocks: [
+          {
+            type: 'section',
+            text: { type: 'mrkdwn', text: '集計しています、少々お待ちください⌛\n数分かかる場合があります。' },
+          },
+        ],
+      })
       const result = await kotaeService.getPersonalResult({
         slackTeamId: body.team_id,
         userId: body.user_id,
@@ -285,7 +295,7 @@ export const registerKotaeHandlers = ({
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: '講評しています、少々お待ちください⌛',
+              text: '講評しています、少々お待ちください⌛\n講評の生成も含めて、数分かかる場合があります。',
             },
           },
         ],
