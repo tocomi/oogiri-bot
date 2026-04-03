@@ -2,32 +2,46 @@
   "name": "oogiri-bot",
   "version": "2.3.0",
   "description": "slack bot for oogiri",
-  "main": "index.js",
   "author": "tocomi",
   "license": "MIT",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "release": "npx release-it",
-    "dev:api": "yarn workspace api serve",
-    "lint": "yarn workspace api lint",
-    "lint:fix": "yarn workspace api lint:fix",
+    "serve": "tsc-watch --onFirstSuccess 'firebase emulators:start --only functions'",
+    "build": "tsc",
+    "type-check": "echo '# type-check' && tsc --noEmit --diagnostics",
+    "lint": "eslint --ext .js,.ts .",
+    "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "format": "biome format --write",
-    "migrate": "prisma migrate dev --schema ./packages/api/prisma/schema.prisma",
-    "deploy:api": "yarn workspace api deploy",
-    "type-check": "yarn workspace api type-check",
-    "test": "yarn workspace api test"
+    "migrate": "prisma migrate dev --schema ./prisma/schema.prisma",
+    "generate-schema": "npx prisma@5.19.1 generate",
+    "gcp-build": "yarn generate-schema",
+    "plugin": "echo dummyCommandForAvoidingFirebaseError",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@prisma/client": "5.19.1",
     "@slack/bolt": "3",
     "@slack/web-api": "^6.2.4",
-    "dayjs": "^1.10.6",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.0",
     "dotenv": "^10.0.0",
-    "emoji-regex": "^10.1.0",
-    "firebase-admin": "^10.0.2"
+    "emoji-regex": "^9.0.0",
+    "express": "^4.17.1",
+    "firebase-admin": "^10.0.2",
+    "firebase-functions": "^6.0.1",
+    "openai": "^6.27.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.6",
     "@types/cors": "^2.8.10",
-    "@types/dotenv": "^8.2.0",
     "@types/node-fetch": "2.6.7",
     "@types/uuid": "^10",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
@@ -36,13 +50,9 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-unused-imports": "^1.1.4",
-    "firebase-functions-test": "^0.2.0",
     "tsc-watch": "^4.4.0",
     "typescript": "^5.9.2",
     "vitest": "^4.0.0"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "private": true
 }

@@ -8,22 +8,15 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 
 ## アーキテクチャ
 
-このプロジェクトは yarn workspaces を使ったモノレポ構成で、以下の 2 つのメインパッケージから構成されています：
+Firebase Functions ベースの単一アプリで、以下の構成です：
 
-### packages/api
-
-- Firebase Functions ベースの API サーバー
-- Express.js を使用した REST API
-- Firestore（従来）と PostgreSQL（新）の両方をサポートするデュアルデータベース構成
-- OpenAI API を使用した AI 講評機能
-- リポジトリパターンとサービス層を採用したアーキテクチャ
-
-### packages/slackbot
-
-- Slack Bolt Framework を使用した Slack Bot
-- Socket Mode で動作
-- Slack のインタラクション（ボタン、モーダル等）を処理
-- API パッケージの REST エンドポイントを呼び出してデータ操作
+- **src/**: アプリケーションソースコード
+  - Express.js を使用した REST API
+  - Firebase Functions エントリポイント
+  - OpenAI API を使用した AI 講評機能
+  - リポジトリパターンとサービス層を採用したアーキテクチャ
+- **prisma/**: Prisma スキーマとマイグレーション
+- **lib/**: TypeScript コンパイル出力（管理対象外）
 
 ### データモデル
 
@@ -38,8 +31,8 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 ### 開発
 
 ```bash
-# API サーバーの開発起動（Firebase Emulator）
-yarn dev:api
+# Firebase Emulator で開発起動
+yarn serve
 
 # リント実行
 yarn lint
@@ -49,6 +42,9 @@ yarn lint:fix
 
 # データベースマイグレーション
 yarn migrate
+
+# Prisma スキーマ生成
+yarn generate-schema
 ```
 
 ### テスト
@@ -60,44 +56,30 @@ yarn test
 ### デプロイ
 
 ```bash
-# API のデプロイ（Firebase Functions）
-yarn deploy:api
+# Firebase Functions へデプロイ
+yarn deploy
 
 # リリース
 yarn release
 ```
 
-### 各パッケージでの作業
-
-#### API パッケージ (packages/api)
+### その他
 
 ```bash
-cd packages/api
-
-# Firebase Emulator 起動
-yarn serve
-
-# Prisma スキーマ生成
-yarn generate-schema
-
 # ビルド
 yarn build
 
 # 型チェック
 yarn type-check
-
-# デプロイ
-yarn deploy
 ```
 
-## データベース移行について
+## データベースについて
 
-このプロジェクトは Firestore から PostgreSQL への移行中で、両方のデータベースをサポートしています：
+PostgreSQL + Prisma ORM を使用しています：
 
-- **Firestore**: 従来のデータストア（FirestoreRepositoryImpl）
-- **PostgreSQL**: 新しいデータストア（PostgresRepositoryImpl）+ Prisma ORM
-
-各エンティティ（Odai, Kotae, Vote）には両方のリポジトリ実装があり、サービス層で適切に切り替えて使用しています。
+- スキーマ: `./prisma/schema.prisma`
+- マイグレーション: `yarn migrate`
+- クライアント生成: `yarn generate-schema`
 
 ## 環境設定
 
@@ -110,7 +92,5 @@ yarn deploy
 
 ### 開発時の注意点
 
-- API は Firebase Functions で動作するため、`firebase emulators:start` が必要
-- Bot は Socket Mode で動作するため、インターネット接続が必要
-- データベースマイグレーションは `yarn migrate` で実行
+- API は Firebase Functions で動作するため、`yarn serve` で Firebase Emulator を起動する
 - Node.js バージョンは 22.22.1 を使用（mise で管理）

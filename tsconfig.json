@@ -1,5 +1,4 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "es2019",
     "module": "commonjs",
@@ -10,6 +9,8 @@
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["vitest/globals"]
   },
   "include": ["./src"]

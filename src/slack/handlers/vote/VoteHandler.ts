@@ -92,7 +92,10 @@ export const registerVoteHandlers = ({
         blocks: [
           {
             type: 'section',
-            text: { type: 'mrkdwn', text: '集計しています、少々お待ちください⌛\n数分かかる場合があります。' },
+            text: {
+              type: 'mrkdwn',
+              text: '集計しています、少々お待ちください⌛\n数分かかる場合があります。',
+            },
           },
         ],
       })
