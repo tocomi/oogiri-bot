@@ -14,6 +14,7 @@ import { kotaeCreatedBlocks } from '../../../kotae/blocks/kotaeCreatedBlocks'
 import { makePointRanking } from '../../../kotae/rank/makePointRanking'
 import { OdaiService } from '../../../odai/OdaiService'
 import { getSlackUserList } from '../../../util/getSlackUserList'
+import { logResult } from '../../../util/logResult'
 import { medalEmoji } from '../../../vote/util'
 import {
   CHECK_PERSONAL_COMMENTARY_ACTION_ID,
@@ -83,12 +84,15 @@ export const registerKotaeHandlers = ({
 
       await ack()
 
-      const result = await kotaeService.create({
-        id: '',
-        slackTeamId: view.team_id,
-        content: kotae,
-        createdBy: body.user.id,
-      })
+      const result = logResult(
+        'kotaeService.create',
+        await kotaeService.create({
+          id: '',
+          slackTeamId: view.team_id,
+          content: kotae,
+          createdBy: body.user.id,
+        }),
+      )
       if (hasError(result)) {
         if (result.message === 'No Active Odai') {
           logger.warn(result.message)
@@ -109,9 +113,10 @@ export const registerKotaeHandlers = ({
         return
       }
 
-      const odaiResult = await odaiService.getCurrent({
-        slackTeamId: view.team_id,
-      })
+      const odaiResult = logResult(
+        'odaiService.getCurrent',
+        await odaiService.getCurrent({ slackTeamId: view.team_id }),
+      )
       if (hasError(odaiResult)) {
         logger.error(odaiResult.message)
         postInternalErrorMessage({ client, user: body.user.id })
@@ -152,10 +157,13 @@ export const registerKotaeHandlers = ({
           },
         ],
       })
-      const result = await kotaeService.getPersonalResult({
-        slackTeamId: body.team_id,
-        userId: body.user_id,
-      })
+      const result = logResult(
+        'kotaeService.getPersonalResult',
+        await kotaeService.getPersonalResult({
+          slackTeamId: body.team_id,
+          userId: body.user_id,
+        }),
+      )
       if (hasError(result)) {
         if (result.message === 'No Finished Odai') {
           logger.warn(result.message)
@@ -304,10 +312,10 @@ export const registerKotaeHandlers = ({
         ],
       })
 
-      const result = await kotaeService.getPersonalCommentary({
-        slackTeamId,
-        userId,
-      })
+      const result = logResult(
+        'kotaeService.getPersonalCommentary',
+        await kotaeService.getPersonalCommentary({ slackTeamId, userId }),
+      )
       if (hasError(result)) {
         if (result.message === 'No Target Kotae') {
           logger.warn(result.message)

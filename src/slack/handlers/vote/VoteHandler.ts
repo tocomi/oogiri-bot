@@ -11,6 +11,7 @@ import {
 } from '../../../vote/blocks'
 import { convertVoteRank } from '../../../vote/convertVoteValue'
 import { VOTING_ACTION_ID } from '../../actionIds'
+import { logResult } from '../../../util/logResult'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
 
 export const registerVoteHandlers = ({
@@ -43,13 +44,16 @@ export const registerVoteHandlers = ({
 
       const slackTeamId = body.team?.id || ''
       const user = body.user.id
-      const result = await voteService.create({
-        id: '',
-        slackTeamId,
-        content,
-        rank: voteRank,
-        votedBy: user,
-      })
+      const result = logResult(
+        'voteService.create',
+        await voteService.create({
+          id: '',
+          slackTeamId,
+          content,
+          rank: voteRank,
+          votedBy: user,
+        }),
+      )
       if (hasError(result)) {
         if (result.message === 'Already Voted') {
           logger.warn(result.message)
@@ -99,10 +103,13 @@ export const registerVoteHandlers = ({
           },
         ],
       })
-      const result = await voteService.getTotalVoteCountByUser({
-        slackTeamId: body.team_id,
-        userId: body.user_id,
-      })
+      const result = logResult(
+        'voteService.getTotalVoteCountByUser',
+        await voteService.getTotalVoteCountByUser({
+          slackTeamId: body.team_id,
+          userId: body.user_id,
+        }),
+      )
       if (hasError(result)) {
         logger.error(result.message)
         postInternalErrorMessage({ client, user: body.user_id })
