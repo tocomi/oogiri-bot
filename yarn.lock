@@ -863,15 +863,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/dotenv@npm:^8.2.0":
-  version: 8.2.0
-  resolution: "@types/dotenv@npm:8.2.0"
-  dependencies:
-    dotenv: "npm:*"
-  checksum: 10c0/cd010440ea750acf2359fb9ed0a1681b00ce29d9c40b602fe33e51642bd44ce30ced54b23fadc05385daa415fe9f671273911bcf95381a5aaf09690b3db96938
-  languageName: node
-  linkType: hard
-
 "@types/estree@npm:^1.0.0":
   version: 1.0.8
   resolution: "@types/estree@npm:1.0.8"
@@ -950,13 +941,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/4374b0f1b5641d1dd8847fa6f50bd34ec215f3244ea045556d2caa74ed559b2571502db73526bb8fbff038a60ff7e6bf56ffa79679c0b03539b55fda32617a23
-  languageName: node
-  linkType: hard
-
-"@types/lodash@npm:^4.14.104":
-  version: 4.17.7
-  resolution: "@types/lodash@npm:4.17.7"
-  checksum: 10c0/40c965b5ffdcf7ff5c9105307ee08b782da228c01b5c0529122c554c64f6b7168fc8f11dc79aa7bae4e67e17efafaba685dc3a47e294dbf52a65ed2b67100561
   languageName: node
   linkType: hard
 
@@ -1388,26 +1372,6 @@ __metadata:
   checksum: 10c0/5d1ec38c123984bcedd996eac680d548f31828bd679a66db2bdf11844634dde55fec3efa9c6bb1d89056a5e79c1ac540c4c784d592ea1d25028a92227d2f2d5c
   languageName: node
   linkType: hard
-
-"api@workspace:packages/api":
-  version: 0.0.0-use.local
-  resolution: "api@workspace:packages/api"
-  dependencies:
-    "@prisma/client": "npm:5.19.1"
-    "@slack/bolt": "npm:3"
-    "@slack/web-api": "npm:^6.2.4"
-    cors: "npm:^2.8.5"
-    dayjs: "npm:^1.11.0"
-    dotenv: "npm:^10.0.0"
-    emoji-regex: "npm:^9.0.0"
-    express: "npm:^4.17.1"
-    firebase-admin: "npm:^10.0.2"
-    firebase-functions: "npm:^6.0.1"
-    openai: "npm:^6.27.0"
-    typescript: "npm:*"
-    uuid: "npm:^10.0.0"
-  languageName: unknown
-  linkType: soft
 
 "argparse@npm:^1.0.7":
   version: 1.0.10
@@ -1937,13 +1901,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.10.6":
-  version: 1.11.13
-  resolution: "dayjs@npm:1.11.13"
-  checksum: 10c0/a3caf6ac8363c7dade9d1ee797848ddcf25c1ace68d9fe8678ecf8ba0675825430de5d793672ec87b24a69bf04a1544b176547b2539982275d5542a7955f35b7
-  languageName: node
-  linkType: hard
-
 "dayjs@npm:^1.11.0":
   version: 1.11.20
   resolution: "dayjs@npm:1.11.20"
@@ -2074,13 +2031,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:*":
-  version: 16.4.5
-  resolution: "dotenv@npm:16.4.5"
-  checksum: 10c0/48d92870076832af0418b13acd6e5a5a3e83bb00df690d9812e94b24aff62b88ade955ac99a05501305b8dc8f1b0ee7638b18493deb6fe93d680e5220936292f
-  languageName: node
-  linkType: hard
-
 "dotenv@npm:^10.0.0":
   version: 10.0.0
   resolution: "dotenv@npm:10.0.0"
@@ -2127,13 +2077,6 @@ __metadata:
   version: 1.1.1
   resolution: "ee-first@npm:1.1.1"
   checksum: 10c0/b5bb125ee93161bc16bfe6e56c6b04de5ad2aa44234d8f644813cc95d861a6910903132b05093706de2b706599367c4130eb6d170f6b46895686b95f87d017b7
-  languageName: node
-  linkType: hard
-
-"emoji-regex@npm:^10.1.0":
-  version: 10.4.0
-  resolution: "emoji-regex@npm:10.4.0"
-  checksum: 10c0/a3fcedfc58bfcce21a05a5f36a529d81e88d602100145fcca3dc6f795e3c8acc4fc18fe773fbf9b6d6e9371205edb3afa2668ec3473fa2aa7fd47d2a9d46482d
   languageName: node
   linkType: hard
 
@@ -2878,19 +2821,6 @@ __metadata:
     "@google-cloud/storage":
       optional: true
   checksum: 10c0/42030309cea08fe63200139f6a26fe46238590303ed368b5287e8886f0fa414507b38172d70a2981cb51509e4fd34dfdc7680714560634d8a2c3b6d1676b288a
-  languageName: node
-  linkType: hard
-
-"firebase-functions-test@npm:^0.2.0":
-  version: 0.2.3
-  resolution: "firebase-functions-test@npm:0.2.3"
-  dependencies:
-    "@types/lodash": "npm:^4.14.104"
-    lodash: "npm:^4.17.5"
-  peerDependencies:
-    firebase-admin: ">=6.0.0"
-    firebase-functions: ">=2.0.0"
-  checksum: 10c0/e21010124c5274277ebf6f964b325016f257be2309d30092b158a49a9eff98daaae6a454165e1634b56786d231dfd930febe11c6f9bc6e7951fefff56c7e7364
   languageName: node
   linkType: hard
 
@@ -4206,13 +4136,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.5":
-  version: 4.17.21
-  resolution: "lodash@npm:4.17.21"
-  checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
-  languageName: node
-  linkType: hard
-
 "long@npm:^4.0.0":
   version: 4.0.0
   resolution: "long@npm:4.0.0"
@@ -4695,25 +4618,29 @@ __metadata:
   resolution: "oogiri-bot@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^2.3.6"
+    "@prisma/client": "npm:5.19.1"
     "@slack/bolt": "npm:3"
     "@slack/web-api": "npm:^6.2.4"
     "@types/cors": "npm:^2.8.10"
-    "@types/dotenv": "npm:^8.2.0"
     "@types/node-fetch": "npm:2.6.7"
     "@types/uuid": "npm:^10"
     "@typescript-eslint/eslint-plugin": "npm:^4.28.0"
     "@typescript-eslint/parser": "npm:^4.28.0"
-    dayjs: "npm:^1.10.6"
+    cors: "npm:^2.8.5"
+    dayjs: "npm:^1.11.0"
     dotenv: "npm:^10.0.0"
-    emoji-regex: "npm:^10.1.0"
+    emoji-regex: "npm:^9.0.0"
     eslint: "npm:^7.29.0"
     eslint-config-google: "npm:^0.14.0"
     eslint-plugin-import: "npm:^2.24.2"
     eslint-plugin-unused-imports: "npm:^1.1.4"
+    express: "npm:^4.17.1"
     firebase-admin: "npm:^10.0.2"
-    firebase-functions-test: "npm:^0.2.0"
+    firebase-functions: "npm:^6.0.1"
+    openai: "npm:^6.27.0"
     tsc-watch: "npm:^4.4.0"
     typescript: "npm:^5.9.2"
+    uuid: "npm:^10.0.0"
     vitest: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
@@ -6071,7 +5998,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:*, typescript@npm:^5.9.2":
+"typescript@npm:^5.9.2":
   version: 5.9.2
   resolution: "typescript@npm:5.9.2"
   bin:
@@ -6081,7 +6008,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A*#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.9.2#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^5.9.2#optional!builtin<compat/typescript>":
   version: 5.9.2
   resolution: "typescript@patch:typescript@npm%3A5.9.2#optional!builtin<compat/typescript>::version=5.9.2&hash=8c6c40"
   bin:
