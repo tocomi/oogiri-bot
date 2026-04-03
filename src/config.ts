@@ -1,10 +1,3 @@
-import path from 'path'
-import * as dotenv from 'dotenv'
-
-dotenv.config({
-  path: path.join(__dirname, '../../..', '.env'),
-})
-
 export const config = {
   slack: {
     botToken: process.env.SLACK_BOT_TOKEN || '',
