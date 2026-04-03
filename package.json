@@ -16,9 +16,8 @@
     "lint": "eslint --ext .js,.ts .",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "format": "biome format --write",
-    "migrate": "prisma migrate dev --schema ./prisma/schema.prisma",
-    "generate-schema": "npx prisma@5.19.1 generate",
-    "gcp-build": "yarn generate-schema",
+    "generate-types": "supabase gen types typescript --linked > src/generated/supabase.ts",
+    "gcp-build": "echo 'no build step required'",
     "plugin": "echo dummyCommandForAvoidingFirebaseError",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
@@ -26,9 +25,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@prisma/client": "5.19.1",
     "@slack/bolt": "3",
     "@slack/web-api": "^6.2.4",
+    "@supabase/supabase-js": "^2.101.1",
     "cors": "^2.8.5",
     "dayjs": "^1.11.0",
     "dotenv": "^10.0.0",

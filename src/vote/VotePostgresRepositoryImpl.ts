@@ -7,7 +7,7 @@ import {
   VoteOfCurrentOdaiResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
-import { prismaClient } from '../prisma/client'
+import { getSupabaseClient } from '../supabase/client'
 
 export class VotePostgresRepositoryImpl implements VoteRepository {
   checkDuplication(
@@ -15,6 +15,7 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
   ): Promise<'ok' | 'alreadyVoted' | 'alreadySameRankVoted'> {
     throw new Error('Method not implemented.')
   }
+
   async create({
     id,
     content,
@@ -29,17 +30,18 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     kotaeCreatedBy: string
   }): Promise<Vote> {
     const createdAt = new Date()
-    // TODO: エラーハンドリング
-    await prismaClient.vote.create({
-      data: {
-        id,
-        odaiId,
-        createdBy: votedBy,
-        rank,
-        createdAt,
-        kotaeId,
-      },
+    const { error } = await getSupabaseClient().from('Vote').insert({
+      id,
+      odaiId,
+      kotaeId,
+      rank,
+      createdBy: votedBy,
+      createdAt: createdAt.toISOString(),
     })
+    if (error) {
+      console.error(error)
+      throw error
+    }
     return {
       votedBy,
       rank,
@@ -49,24 +51,30 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
       kotaeContent: content,
     }
   }
+
   async getAllOfCurrentOdai(
     _params: VoteOfCurrentOdaiParams,
     odaiId: string,
   ): Promise<VoteOfCurrentOdaiResponse> {
-    const votes = await prismaClient.vote.findMany({
-      where: {
-        odaiId,
-      },
-    })
+    const { data, error } = await getSupabaseClient()
+      .from('Vote')
+      .select('*')
+      .eq('odaiId', odaiId)
 
-    return votes.map((vote) => ({
+    if (error) {
+      console.error(error)
+      return []
+    }
+
+    return data.map((vote) => ({
       votedBy: vote.createdBy,
       rank: vote.rank as Vote['rank'],
       kotaeId: vote.kotaeId,
       kotaeCreatedBy: vote.createdBy,
-      createdAt: vote.createdAt,
+      createdAt: new Date(vote.createdAt),
     }))
   }
+
   getAllByUser(_params: VoteCountByUserParams): Promise<Vote[]> {
     throw new Error('Method not implemented.')
   }
