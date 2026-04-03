@@ -131,7 +131,7 @@ export class KotaeServiceImpl implements KotaeService {
     })
     if (hasError(recentFinishedOdai)) return recentFinishedOdai
 
-    const kotaeList = await this.repository.getPersonalResult(
+    const kotaeList = await this.newRepository.getPersonalResult(
       { slackTeamId, userId },
       recentFinishedOdai.id,
     )
@@ -139,7 +139,7 @@ export class KotaeServiceImpl implements KotaeService {
     // NOTE: 回答ごとに投票の情報を取得する
     const kotaeWithVoteList: KotaeResultResponse[] = []
     for (const kotae of kotaeList) {
-      const votes = await this.repository.getVotedBy({
+      const votes = await this.newRepository.getVotedBy({
         slackTeamId,
         odaiDocId: recentFinishedOdai.id,
         kotaeDocId: kotae.id,

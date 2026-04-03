@@ -11,10 +11,12 @@ export const getSlackUserList = async ({
   userIdList: string[]
 }) => {
   const userIdSet = [...new Set(userIdList)]
+  const results = await Promise.all(
+    userIdSet.map((userId) => client.users.info({ user: userId })),
+  )
   const userInfoMap: { [userId: string]: UsersInfoResponse['user'] } = {}
-  for (const userId of userIdSet) {
-    const userInfo = await client.users.info({ user: userId })
-    userInfoMap[userId] = userInfo.user
-  }
+  results.forEach((userInfo, i) => {
+    userInfoMap[userIdSet[i]] = userInfo.user
+  })
   return userInfoMap
 }

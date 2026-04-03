@@ -41,9 +41,6 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 # API サーバーの開発起動（Firebase Emulator）
 yarn dev:api
 
-# Slack Bot の開発起動
-yarn dev:bot
-
 # リント実行
 yarn lint
 
@@ -57,8 +54,6 @@ yarn migrate
 ### テスト
 
 ```bash
-# Bot パッケージのテスト実行
-cd packages/slackbot
 yarn test
 ```
 
@@ -67,9 +62,6 @@ yarn test
 ```bash
 # API のデプロイ（Firebase Functions）
 yarn deploy:api
-
-# Bot のデプロイ（Heroku - GitHub連携で自動）
-yarn deploy:bot
 
 # リリース
 yarn release
@@ -91,23 +83,11 @@ yarn generate-schema
 # ビルド
 yarn build
 
+# 型チェック
+yarn type-check
+
 # デプロイ
 yarn deploy
-```
-
-#### Bot パッケージ (packages/slackbot)
-
-```bash
-cd packages/slackbot
-
-# 開発モード（変更監視）
-yarn watch
-
-# TypeScript コンパイル
-yarn tsc
-
-# テスト実行
-yarn test
 ```
 
 ## データベース移行について
@@ -133,4 +113,4 @@ yarn test
 - API は Firebase Functions で動作するため、`firebase emulators:start` が必要
 - Bot は Socket Mode で動作するため、インターネット接続が必要
 - データベースマイグレーションは `yarn migrate` で実行
-- Node.js バージョンは 20.19.5 を使用（Volta で管理）
+- Node.js バージョンは 22.22.1 を使用（mise で管理）

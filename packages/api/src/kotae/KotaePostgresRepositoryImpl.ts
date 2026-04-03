@@ -61,14 +61,43 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
 
     return formattedKotaes
   }
-  getPersonalResult(
-    _params: KotaePersonalResultParams,
-    _odaiDocId: string,
+  async getPersonalResult(
+    { userId }: KotaePersonalResultParams,
+    odaiId: string,
   ): Promise<Kotae[]> {
-    throw new Error('Method not implemented.')
+    const kotaes = await prismaClient.kotae.findMany({
+      include: {
+        votes: true,
+      },
+      where: {
+        odaiId,
+        createdBy: userId,
+      },
+    })
+    return kotaes.map((kotae) => ({
+      id: kotae.id,
+      content: kotae.content,
+      createdBy: kotae.createdBy,
+      votedCount: kotae.votes.length,
+      votedFirstCount: kotae.votes.filter((v) => v.rank === 1).length,
+      votedSecondCount: kotae.votes.filter((v) => v.rank === 2).length,
+      votedThirdCount: kotae.votes.filter((v) => v.rank === 3).length,
+      createdAt: kotae.createdAt.getTime(),
+    }))
   }
-  getVotedBy(_params: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
-    throw new Error('Method not implemented.')
+  async getVotedBy({
+    kotaeDocId,
+  }: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
+    const votes = await prismaClient.vote.findMany({
+      where: {
+        kotaeId: kotaeDocId,
+      },
+    })
+    return votes.map((vote) => ({
+      votedBy: vote.createdBy,
+      rank: vote.rank as KotaeVotedBy['rank'],
+      createdAt: vote.createdAt.getTime(),
+    }))
   }
   getByContent(
     _params: KotaeByContentParams & { odaiDocId: string },

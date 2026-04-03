@@ -86,6 +86,16 @@ export const registerVoteHandlers = ({
     '/oogiri-check-my-fans',
     async ({ ack, body, client, logger }) => {
       await ack()
+      await postEphemeral({
+        client,
+        user: body.user_id,
+        blocks: [
+          {
+            type: 'section',
+            text: { type: 'mrkdwn', text: '集計しています、少々お待ちください⌛\n数分かかる場合があります。' },
+          },
+        ],
+      })
       const result = await voteService.getTotalVoteCountByUser({
         slackTeamId: body.team_id,
         userId: body.user_id,
