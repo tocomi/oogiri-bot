@@ -30,7 +30,7 @@ jobs:
         run: yarn lint
 
       - name: Check format
-        run: yarn biome format --check .
+        run: yarn biome format
 
       - name: Run type-check
         run: yarn type-check
