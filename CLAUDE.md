@@ -15,7 +15,7 @@ Firebase Functions ベースの単一アプリで、以下の構成です：
   - Firebase Functions エントリポイント
   - OpenAI API を使用した AI 講評機能
   - リポジトリパターンとサービス層を採用したアーキテクチャ
-- **prisma/**: Prisma スキーマとマイグレーション
+- **src/generated/supabase.ts**: Supabase 型定義（`yarn generate-types` で再生成）
 - **lib/**: TypeScript コンパイル出力（管理対象外）
 
 ### データモデル
@@ -40,11 +40,8 @@ yarn lint
 # リント修正
 yarn lint:fix
 
-# データベースマイグレーション
-yarn migrate
-
-# Prisma スキーマ生成
-yarn generate-schema
+# Supabase 型定義を再生成（supabase CLI が必要）
+yarn generate-types
 ```
 
 ### テスト
@@ -75,11 +72,11 @@ yarn type-check
 
 ## データベースについて
 
-PostgreSQL + Prisma ORM を使用しています：
+PostgreSQL + Supabase（supabase-js）を直接利用しています：
 
-- スキーマ: `./prisma/schema.prisma`
-- マイグレーション: `yarn migrate`
-- クライアント生成: `yarn generate-schema`
+- テーブル型定義: `src/generated/supabase.ts`
+- 型の再生成: `yarn generate-types`（supabase CLI が必要）
+- マイグレーションは Supabase ダッシュボードまたは supabase CLI で管理
 
 ## 環境設定
 
@@ -87,7 +84,7 @@ PostgreSQL + Prisma ORM を使用しています：
 
 - Firebase プロジェクト設定
 - Slack App の設定（Bot Token, App Token）
-- PostgreSQL データベース接続情報（DATABASE_URL, DIRECT_URL）
+- Supabase 接続情報（SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY）
 - OpenAI API キー
 
 ### 開発時の注意点
