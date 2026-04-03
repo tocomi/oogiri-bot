@@ -3,6 +3,7 @@ import { countVote } from './action/countVote'
 import { hasError } from '../../../api/Error'
 import { decodeHtmlEntities } from '../../../util/decodeHtmlEntities'
 import { getSlackUserList } from '../../../util/getSlackUserList'
+import { logResult } from '../../../util/logResult'
 import { VoteService } from '../../../vote/VoteService'
 import {
   createVoteAlreadyBlocks,
@@ -11,7 +12,6 @@ import {
 } from '../../../vote/blocks'
 import { convertVoteRank } from '../../../vote/convertVoteValue'
 import { VOTING_ACTION_ID } from '../../actionIds'
-import { logResult } from '../../../util/logResult'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
 
 export const registerVoteHandlers = ({

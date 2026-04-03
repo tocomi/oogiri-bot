@@ -54,7 +54,9 @@ const boltApp = new App({
 })
 
 boltApp.use(async ({ body, next }) => {
-  console.log(`[slack] triggered: ${getActionLabel(body as Record<string, unknown>)}`)
+  console.log(
+    `[slack] triggered: ${getActionLabel(body as Record<string, unknown>)}`,
+  )
   await next()
 })
 
