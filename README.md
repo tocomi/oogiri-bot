@@ -4,24 +4,11 @@ Slack 上で大喜利を遊べる Bot です 🎍
 
 ## ローカル起動
 
-### API
-
-firebase と .env の設定が必要
+`.env.local` の設定が必要（`.env.sample` 参照）
 
 ```shell
-# firebase functions の emulator を起動
-cd functions
 yarn
 yarn serve
-```
-
-### Bot
-
-.env の設定が必要
-
-```shell
-yarn
-yarn start
 ```
 
 ## リリース
@@ -32,13 +19,8 @@ yarn release
 
 ## デプロイ
 
-### API
+`.env` の設定が必要（`.env.sample` 参照）
 
 ```shell
-cd functions
 yarn deploy
 ```
-
-### Bot
-
-GitHub と Heroku を連携しているので、main ブランチに push すると自動でデプロイされます。
