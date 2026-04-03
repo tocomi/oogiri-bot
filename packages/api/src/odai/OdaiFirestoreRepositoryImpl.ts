@@ -66,6 +66,7 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
     const snapshot = await odaiCollection(slackTeamId)
       .where('status', '==', 'finished')
       .orderBy('createdAt', 'desc')
+      .limit(1)
       .get()
     if (snapshot.empty) {
       console.log('No finished odai.')

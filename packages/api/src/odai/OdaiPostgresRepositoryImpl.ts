@@ -79,10 +79,30 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
       createdAt: odai.createdAt.getTime(),
     }
   }
-  getRecentFinished(
-    _params: OdaiRecentFinishedParams,
-  ): Promise<OdaiRecentFinishedResponse | null> {
-    throw new Error('Method not implemented.')
+  async getRecentFinished({
+    slackTeamId,
+  }: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null> {
+    const odai = await prismaClient.odai.findFirst({
+      where: {
+        teamId: slackTeamId,
+        status: 'finished',
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+    if (!odai) {
+      console.log('No finished odai.')
+      return null
+    }
+    return {
+      ...odai,
+      imageUrl: odai.imageUrl || undefined,
+      type: odai.type as 'normal',
+      dueDate: odai.dueDate.getTime(),
+      status: odai.status as OdaiStatus,
+      createdAt: odai.createdAt.getTime(),
+    }
   }
   getAllFinished(_params: OdaiFinishedListParams): Promise<OdaiResponseBase[]> {
     throw new Error('Method not implemented.')
