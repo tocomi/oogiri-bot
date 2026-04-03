@@ -27,17 +27,19 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     slackTeamId,
     id,
   }: OdaiNormalPostRequest): Promise<boolean> {
-    const { error } = await getSupabaseClient().from('Odai').insert({
-      id,
-      teamId: slackTeamId,
-      title,
-      type: 'normal',
-      status: 'posting',
-      dueDate: new Date(dueDate).toISOString(),
-      imageUrl: imageUrl || null,
-      createdBy,
-      createdAt: new Date().toISOString(),
-    })
+    const { error } = await getSupabaseClient()
+      .from('Odai')
+      .insert({
+        id,
+        teamId: slackTeamId,
+        title,
+        type: 'normal',
+        status: 'posting',
+        dueDate: new Date(dueDate).toISOString(),
+        imageUrl: imageUrl || null,
+        createdBy,
+        createdAt: new Date().toISOString(),
+      })
     if (error) {
       console.error(error)
       return false
@@ -155,7 +157,9 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
       createdAt: r.createdAt.toISOString(),
     }))
 
-    const { error } = await getSupabaseClient().from('Result').insert(insertData)
+    const { error } = await getSupabaseClient()
+      .from('Result')
+      .insert(insertData)
 
     if (error) {
       console.error(error)
