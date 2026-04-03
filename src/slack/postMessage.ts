@@ -4,6 +4,35 @@ import { config } from '../config'
 
 const CHANNEL_ID = config.slack.channelId
 
+const collectFallbackTexts = (blocks: KnownBlock[]): string[] => {
+  return blocks.flatMap((block) => {
+    switch (block.type) {
+      case 'section':
+      case 'header':
+        return 'text' in block && block.text ? [block.text.text] : []
+      case 'context':
+        return block.elements.flatMap((element) =>
+          element.type === 'plain_text' || element.type === 'mrkdwn'
+            ? [element.text]
+            : [],
+        )
+      case 'image':
+        return block.alt_text ? [block.alt_text] : []
+      default:
+        return []
+    }
+  })
+}
+
+const createFallbackText = (blocks: KnownBlock[]): string => {
+  const text = collectFallbackTexts(blocks)
+    .map((value) => value.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join(' / ')
+
+  return text || 'Slack message'
+}
+
 export const postMessage = async ({
   client,
   blocks,
@@ -16,6 +45,7 @@ export const postMessage = async ({
   await client.chat.postMessage({
     ...options,
     channel: CHANNEL_ID,
+    text: options.text ?? createFallbackText(blocks),
     blocks,
   })
 }
@@ -32,6 +62,7 @@ export const postEphemeral = async ({
   await client.chat.postEphemeral({
     channel: CHANNEL_ID,
     user,
+    text: createFallbackText(blocks),
     blocks,
   })
 }
