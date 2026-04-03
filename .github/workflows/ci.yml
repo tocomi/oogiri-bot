@@ -23,7 +23,7 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: yarn install && cd packages/api && yarn install && yarn generate-schema
+        run: yarn install && yarn generate-schema
 
       - name: Run lint
         run: yarn lint
