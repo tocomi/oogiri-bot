@@ -27,6 +27,7 @@ import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import { inspireNewOdai } from './scheduler/inspireNewOdai'
 import { notifyCount } from './scheduler/notifyCount'
+import { getActionLabel } from './slack/getActionLabel'
 import { registerHandlers } from './slack/handlers/registerHandlers'
 import {
   VoteCountByUserParams,
@@ -53,7 +54,9 @@ const boltApp = new App({
 })
 
 boltApp.use(async ({ body, next }) => {
-  console.log(`[slack/events] body: ${JSON.stringify(body)}`)
+  console.log(
+    `[slack] triggered: ${getActionLabel(body as Record<string, unknown>)}`,
+  )
   await next()
 })
 

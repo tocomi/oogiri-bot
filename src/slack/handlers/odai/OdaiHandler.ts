@@ -24,6 +24,7 @@ import {
 } from '../../../odai/blocks'
 import { getSlackUserList } from '../../../util/getSlackUserList'
 import { isImageUrl } from '../../../util/isImageUrl'
+import { logResult } from '../../../util/logResult'
 import { VoteService } from '../../../vote/VoteService'
 import {
   createVoteStartHeaderBlocks,
@@ -96,14 +97,17 @@ export const registerOdaiHandlers = ({
         return
       }
 
-      const result = await odaiService.create({
-        type: 'normal',
-        slackTeamId: view.team_id,
-        title,
-        imageUrl,
-        dueDate: new Date(dueDate).getTime(),
-        createdBy: body.user.id,
-      })
+      const result = logResult(
+        'odaiService.create',
+        await odaiService.create({
+          type: 'normal',
+          slackTeamId: view.team_id,
+          title,
+          imageUrl,
+          dueDate: new Date(dueDate).getTime(),
+          createdBy: body.user.id,
+        }),
+      )
       if (hasError(result)) {
         if (result.message === 'Odai Duplication') {
           logger.warn(result.message)
@@ -141,9 +145,10 @@ export const registerOdaiHandlers = ({
       await ack()
       const slackTeamId = view.team_id
 
-      const kotaeResult = await kotaeService.getAllOfCurrentOdai({
-        slackTeamId,
-      })
+      const kotaeResult = logResult(
+        'kotaeService.getAllOfCurrentOdai',
+        await kotaeService.getAllOfCurrentOdai({ slackTeamId }),
+      )
       if (hasError(kotaeResult)) {
         if (
           kotaeResult.message === 'No Active Odai' ||
@@ -159,7 +164,10 @@ export const registerOdaiHandlers = ({
         return
       }
 
-      const putResult = await odaiService.startVoting({ slackTeamId })
+      const putResult = logResult(
+        'odaiService.startVoting',
+        await odaiService.startVoting({ slackTeamId }),
+      )
       if (hasError(putResult)) {
         if (
           putResult.message === 'No Active Odai' ||
@@ -214,9 +222,10 @@ export const registerOdaiHandlers = ({
       await ack()
       const slackTeamId = view.team_id
 
-      const kotaeResult = await kotaeService.getAllOfCurrentOdai({
-        slackTeamId,
-      })
+      const kotaeResult = logResult(
+        'kotaeService.getAllOfCurrentOdai',
+        await kotaeService.getAllOfCurrentOdai({ slackTeamId }),
+      )
       if (hasError(kotaeResult)) {
         if (
           kotaeResult.message === 'No Active Odai' ||
@@ -232,7 +241,10 @@ export const registerOdaiHandlers = ({
         return
       }
 
-      const voteCountResult = await voteService.getVoteCount({ slackTeamId })
+      const voteCountResult = logResult(
+        'voteService.getVoteCount',
+        await voteService.getVoteCount({ slackTeamId }),
+      )
       if (hasError(voteCountResult)) {
         if (
           voteCountResult.message === 'No Active Odai' ||
@@ -248,10 +260,13 @@ export const registerOdaiHandlers = ({
         return
       }
 
-      const finishResult = await odaiService.finish({
-        slackTeamId,
-        kotaeList: kotaeResult.kotaeList,
-      })
+      const finishResult = logResult(
+        'odaiService.finish',
+        await odaiService.finish({
+          slackTeamId,
+          kotaeList: kotaeResult.kotaeList,
+        }),
+      )
       if (hasError(finishResult)) {
         if (
           finishResult.message === 'No Active Odai' ||
