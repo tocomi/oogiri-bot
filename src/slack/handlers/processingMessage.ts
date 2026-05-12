@@ -36,6 +36,12 @@ const createTextBlocks = (text: string): KnownBlock[] => [
   },
 ]
 
+const quoteText = (text: string) =>
+  text
+    .split('\n')
+    .map((line) => `> ${line}`)
+    .join('\n')
+
 export const postRequestAcceptedMessage = async (
   params: ProcessingMessageParams,
 ) => {
@@ -72,7 +78,7 @@ export const postKotaeAcceptedMessage = async ({
   await postProcessingMessage({
     ...params,
     blocks: createTextBlocks(
-      `${getCharacterMessage('kotae-accepted')}\n\n> ${content}`,
+      `${getCharacterMessage('kotae-accepted')}\n\n${quoteText(content)}`,
     ),
   })
 }
@@ -90,7 +96,7 @@ export const postVoteAcceptedMessage = async ({
     blocks: createTextBlocks(
       `${getCharacterMessage(
         'vote-accepted',
-      )}\n\n> ${content}\n投票: ${convertVoteRankText(voteRank)}`,
+      )}\n\n${quoteText(content)}\n投票: ${convertVoteRankText(voteRank)}`,
     ),
   })
 }
