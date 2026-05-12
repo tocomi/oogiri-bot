@@ -16,6 +16,7 @@ dist/
 
 # agent
 .mcp.json
+.codex/*
 
 # tsc
 lib/
