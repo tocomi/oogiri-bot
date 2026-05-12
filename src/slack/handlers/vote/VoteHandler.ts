@@ -13,6 +13,10 @@ import {
 import { convertVoteRank } from '../../../vote/convertVoteValue'
 import { VOTING_ACTION_ID } from '../../actionIds'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
+import {
+  postAggregationProcessingMessage,
+  postVoteAcceptedMessage,
+} from '../processingMessage'
 
 export const registerVoteHandlers = ({
   app,
@@ -44,6 +48,8 @@ export const registerVoteHandlers = ({
 
       const slackTeamId = body.team?.id || ''
       const user = body.user.id
+      await postVoteAcceptedMessage({ client, user, logger, content, voteRank })
+
       const result = logResult(
         'voteService.create',
         await voteService.create({
@@ -75,8 +81,13 @@ export const registerVoteHandlers = ({
   )
 
   // NOTE: 投票数の確認コマンド
-  app.command('/oogiri-count-kusa', async ({ ack, body, client }) => {
+  app.command('/oogiri-count-kusa', async ({ ack, body, client, logger }) => {
     await ack()
+    await postAggregationProcessingMessage({
+      client,
+      user: body.user_id,
+      logger,
+    })
     await countVote({
       slackTeamId: body.team_id,
       userId: body.user_id,
@@ -90,18 +101,10 @@ export const registerVoteHandlers = ({
     '/oogiri-check-my-fans',
     async ({ ack, body, client, logger }) => {
       await ack()
-      await postEphemeral({
+      await postAggregationProcessingMessage({
         client,
         user: body.user_id,
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: '集計しています、少々お待ちください⌛\n数分かかる場合があります。',
-            },
-          },
-        ],
+        logger,
       })
       const result = logResult(
         'voteService.getTotalVoteCountByUser',
