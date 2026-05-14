@@ -336,10 +336,17 @@ export const registerOdaiHandlers = ({
         ...headerBlocks,
         ...pointRankingBlocks,
         ...votedCountRankingBlocks,
-        ...aiCommentaryBlocks,
         ...footerBlocks,
       ]
-      await postMessage({ client, blocks })
+      const { ts } = await postMessage({ client, blocks })
+
+      if (aiCommentaryBlocks.length > 0 && ts) {
+        await postMessage({
+          client,
+          blocks: aiCommentaryBlocks,
+          options: { thread_ts: ts },
+        })
+      }
     },
   )
 

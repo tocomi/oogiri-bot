@@ -41,13 +41,15 @@ export const postMessage = async ({
   client: WebClient
   blocks: KnownBlock[]
   options?: Partial<NonNullable<Parameters<typeof client.chat.postMessage>[0]>>
-}) => {
-  await client.chat.postMessage({
+}): Promise<{ ts: string | undefined }> => {
+  const result = await client.chat.postMessage({
     ...options,
     channel: CHANNEL_ID,
     text: options.text ?? createFallbackText(blocks),
     blocks,
   })
+
+  return { ts: result.ts }
 }
 
 export const postEphemeral = async ({
