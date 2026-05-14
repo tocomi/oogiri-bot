@@ -45,6 +45,7 @@ import {
   postInternalErrorMessage,
   postMessage,
 } from '../../postMessage'
+import { postRequestAcceptedMessage } from '../processingMessage'
 
 export { START_VOTING_ACTION_ID, FINISH_ODAI_ACTION_ID }
 
@@ -97,6 +98,8 @@ export const registerOdaiHandlers = ({
         return
       }
 
+      await postRequestAcceptedMessage({ client, user: body.user.id, logger })
+
       const result = logResult(
         'odaiService.create',
         await odaiService.create({
@@ -143,6 +146,8 @@ export const registerOdaiHandlers = ({
     START_VOTING_CALLBACK_ID,
     async ({ ack, view, client, body, logger }) => {
       await ack()
+      await postRequestAcceptedMessage({ client, user: body.user.id, logger })
+
       const slackTeamId = view.team_id
 
       const kotaeResult = logResult(
@@ -220,6 +225,8 @@ export const registerOdaiHandlers = ({
     FINISH_ODAI_CALLBACK_ID,
     async ({ ack, view, client, body, logger }) => {
       await ack()
+      await postRequestAcceptedMessage({ client, user: body.user.id, logger })
+
       const slackTeamId = view.team_id
 
       const kotaeResult = logResult(
@@ -344,8 +351,12 @@ export const registerOdaiHandlers = ({
   )
 
   // NOTE: コマンドから新しいお題への呼びかけ
-  app.command('/oogiri-inspire-new-odai', async ({ ack, body, client }) => {
-    await ack()
-    await inspireNewOdai({ slackTeamId: body.team_id, client, odaiService })
-  })
+  app.command(
+    '/oogiri-inspire-new-odai',
+    async ({ ack, body, client, logger }) => {
+      await ack()
+      await postRequestAcceptedMessage({ client, user: body.user_id, logger })
+      await inspireNewOdai({ slackTeamId: body.team_id, client, odaiService })
+    },
+  )
 }
