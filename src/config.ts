@@ -8,8 +8,7 @@ export const config = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',
   },
-  supabase: {
-    url: process.env.SUPABASE_URL || '',
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  database: {
+    url: process.env.DATABASE_URL || '',
   },
 }

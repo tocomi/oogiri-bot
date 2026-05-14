@@ -1,3 +1,4 @@
+import { and, eq, inArray } from 'drizzle-orm'
 import {
   KotaePostRequestParams,
   KotaeOfCurrentOdaiParams,
@@ -10,62 +11,52 @@ import {
   Kotae,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
-import { getSupabaseClient } from '../supabase/client'
+import { db } from '../db/client'
+import { kotae, vote } from '../db/schema'
 
 export class KotaePostgresRepositoryImpl implements KotaeRepository {
   async create(
     { content, createdBy, id }: KotaePostRequestParams,
     odaiId: string,
   ): Promise<boolean> {
-    const { error } = await getSupabaseClient().from('Kotae').insert({
-      id,
-      odaiId,
-      content,
-      createdBy,
-      createdAt: new Date().toISOString(),
-    })
-    if (error) {
+    try {
+      await db.insert(kotae).values({
+        id,
+        odaiId,
+        content,
+        createdBy,
+        createdAt: new Date().toISOString(),
+      })
+      return true
+    } catch (error) {
       console.error(error)
       return false
     }
-    return true
   }
 
   async getAllOfCurrentOdai(
     _params: KotaeOfCurrentOdaiParams,
     odaiId: string,
   ): Promise<Kotae[]> {
-    const { data: kotaes, error: kotaeError } = await getSupabaseClient()
-      .from('Kotae')
-      .select('*')
-      .eq('odaiId', odaiId)
+    const [kotaes, votes] = await Promise.all([
+      db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
+      db
+        .select({ kotaeId: vote.kotaeId, rank: vote.rank })
+        .from(vote)
+        .where(eq(vote.odaiId, odaiId)),
+    ])
 
-    if (kotaeError) {
-      console.error(kotaeError)
-      return []
-    }
-
-    const { data: votes, error: voteError } = await getSupabaseClient()
-      .from('Vote')
-      .select('kotaeId, rank')
-      .eq('odaiId', odaiId)
-
-    if (voteError) {
-      console.error(voteError)
-      return []
-    }
-
-    return kotaes.map((kotae) => {
-      const kotaeVotes = votes.filter((v) => v.kotaeId === kotae.id)
+    return kotaes.map((k) => {
+      const kotaeVotes = votes.filter((v) => v.kotaeId === k.id)
       return {
-        id: kotae.id,
-        content: kotae.content,
-        createdBy: kotae.createdBy,
+        id: k.id,
+        content: k.content,
+        createdBy: k.createdBy,
         votedCount: kotaeVotes.length,
         votedFirstCount: kotaeVotes.filter((v) => v.rank === 1).length,
         votedSecondCount: kotaeVotes.filter((v) => v.rank === 2).length,
         votedThirdCount: kotaeVotes.filter((v) => v.rank === 3).length,
-        createdAt: new Date(kotae.createdAt).getTime(),
+        createdAt: new Date(k.createdAt).getTime(),
       }
     })
   }
@@ -74,41 +65,30 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     { userId }: KotaePersonalResultParams,
     odaiId: string,
   ): Promise<Kotae[]> {
-    const { data: kotaes, error: kotaeError } = await getSupabaseClient()
-      .from('Kotae')
-      .select('*')
-      .eq('odaiId', odaiId)
-      .eq('createdBy', userId)
-
-    if (kotaeError) {
-      console.error(kotaeError)
-      return []
-    }
+    const kotaes = await db
+      .select()
+      .from(kotae)
+      .where(and(eq(kotae.odaiId, odaiId), eq(kotae.createdBy, userId)))
 
     const kotaeIds = kotaes.map((k) => k.id)
     if (kotaeIds.length === 0) return []
 
-    const { data: votes, error: voteError } = await getSupabaseClient()
-      .from('Vote')
-      .select('kotaeId, rank')
-      .in('kotaeId', kotaeIds)
+    const votes = await db
+      .select({ kotaeId: vote.kotaeId, rank: vote.rank })
+      .from(vote)
+      .where(inArray(vote.kotaeId, kotaeIds))
 
-    if (voteError) {
-      console.error(voteError)
-      return []
-    }
-
-    return kotaes.map((kotae) => {
-      const kotaeVotes = votes.filter((v) => v.kotaeId === kotae.id)
+    return kotaes.map((k) => {
+      const kotaeVotes = votes.filter((v) => v.kotaeId === k.id)
       return {
-        id: kotae.id,
-        content: kotae.content,
-        createdBy: kotae.createdBy,
+        id: k.id,
+        content: k.content,
+        createdBy: k.createdBy,
         votedCount: kotaeVotes.length,
         votedFirstCount: kotaeVotes.filter((v) => v.rank === 1).length,
         votedSecondCount: kotaeVotes.filter((v) => v.rank === 2).length,
         votedThirdCount: kotaeVotes.filter((v) => v.rank === 3).length,
-        createdAt: new Date(kotae.createdAt).getTime(),
+        createdAt: new Date(k.createdAt).getTime(),
       }
     })
   }
@@ -116,21 +96,25 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
   async getVotedBy({
     kotaeDocId,
   }: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
-    const { data, error } = await getSupabaseClient()
-      .from('Vote')
-      .select('createdBy, rank, createdAt')
-      .eq('kotaeId', kotaeDocId)
+    try {
+      const rows = await db
+        .select({
+          createdBy: vote.createdBy,
+          rank: vote.rank,
+          createdAt: vote.createdAt,
+        })
+        .from(vote)
+        .where(eq(vote.kotaeId, kotaeDocId))
 
-    if (error) {
+      return rows.map((v) => ({
+        votedBy: v.createdBy,
+        rank: v.rank as KotaeVotedBy['rank'],
+        createdAt: new Date(v.createdAt).getTime(),
+      }))
+    } catch (error) {
       console.error(error)
       return []
     }
-
-    return data.map((vote) => ({
-      votedBy: vote.createdBy,
-      rank: vote.rank as KotaeVotedBy['rank'],
-      createdAt: new Date(vote.createdAt).getTime(),
-    }))
   }
 
   getByContent(

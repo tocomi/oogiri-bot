@@ -1,3 +1,4 @@
+import { and, desc, eq, ne } from 'drizzle-orm'
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
@@ -15,7 +16,8 @@ import {
   OdaiStatus,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
-import { getSupabaseClient } from '../supabase/client'
+import { db } from '../db/client'
+import { odai, result } from '../db/schema'
 import { generateId } from '../util/generateId'
 
 export class OdaiPostgresRepositoryImpl implements OdaiRepository {
@@ -27,9 +29,8 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     slackTeamId,
     id,
   }: OdaiNormalPostRequest): Promise<boolean> {
-    const { error } = await getSupabaseClient()
-      .from('Odai')
-      .insert({
+    try {
+      await db.insert(odai).values({
         id,
         teamId: slackTeamId,
         title,
@@ -40,72 +41,71 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         createdBy,
         createdAt: new Date().toISOString(),
       })
-    if (error) {
+      return true
+    } catch (error) {
       console.error(error)
       return false
     }
-    return true
   }
 
   async getCurrent({
     slackTeamId,
   }: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
-    const { data, error } = await getSupabaseClient()
-      .from('Odai')
-      .select('*')
-      .eq('teamId', slackTeamId)
-      .neq('status', 'finished')
-      .limit(1)
-      .single()
+    try {
+      const rows = await db
+        .select()
+        .from(odai)
+        .where(and(eq(odai.teamId, slackTeamId), ne(odai.status, 'finished')))
+        .limit(1)
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // No rows found
+      const data = rows[0]
+      if (!data) {
         console.log('No active odai.')
         return null
       }
+
+      return {
+        ...data,
+        imageUrl: data.imageUrl || undefined,
+        type: data.type as 'normal',
+        dueDate: new Date(data.dueDate).getTime(),
+        status: data.status as OdaiStatus,
+        createdAt: new Date(data.createdAt).getTime(),
+      }
+    } catch (error) {
       console.error(error)
       return null
-    }
-
-    return {
-      ...data,
-      imageUrl: data.imageUrl || undefined,
-      type: data.type as 'normal',
-      dueDate: new Date(data.dueDate).getTime(),
-      status: data.status as OdaiStatus,
-      createdAt: new Date(data.createdAt).getTime(),
     }
   }
 
   async getRecentFinished({
     slackTeamId,
   }: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null> {
-    const { data, error } = await getSupabaseClient()
-      .from('Odai')
-      .select('*')
-      .eq('teamId', slackTeamId)
-      .eq('status', 'finished')
-      .order('createdAt', { ascending: false })
-      .limit(1)
-      .single()
+    try {
+      const rows = await db
+        .select()
+        .from(odai)
+        .where(and(eq(odai.teamId, slackTeamId), eq(odai.status, 'finished')))
+        .orderBy(desc(odai.createdAt))
+        .limit(1)
 
-    if (error) {
-      if (error.code === 'PGRST116') {
+      const data = rows[0]
+      if (!data) {
         console.log('No finished odai.')
         return null
       }
+
+      return {
+        ...data,
+        imageUrl: data.imageUrl || undefined,
+        type: data.type as 'normal',
+        dueDate: new Date(data.dueDate).getTime(),
+        status: data.status as OdaiStatus,
+        createdAt: new Date(data.createdAt).getTime(),
+      }
+    } catch (error) {
       console.error(error)
       return null
-    }
-
-    return {
-      ...data,
-      imageUrl: data.imageUrl || undefined,
-      type: data.type as 'normal',
-      dueDate: new Date(data.dueDate).getTime(),
-      status: data.status as OdaiStatus,
-      createdAt: new Date(data.createdAt).getTime(),
     }
   }
 
@@ -117,55 +117,52 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     params: OdaiPutStatusData,
     odaiId: string,
   ): Promise<boolean> {
-    const { error } = await getSupabaseClient()
-      .from('Odai')
-      .update({ status: params.status })
-      .eq('id', odaiId)
-
-    if (error) {
+    try {
+      await db
+        .update(odai)
+        .set({ status: params.status })
+        .where(eq(odai.id, odaiId))
+      return true
+    } catch (error) {
       console.error(error)
       return false
     }
-    return true
   }
 
   async createResult({ odaiResult }: OdaiAddResultParams): Promise<boolean> {
     const createdAt = new Date().toISOString()
     const data: Result[] = [
-      ...odaiResult.pointStats.map((result) => ({
+      ...odaiResult.pointStats.map((r) => ({
         id: generateId(),
         odaiId: odaiResult.id,
-        kotaeId: result.kotaeId,
+        kotaeId: r.kotaeId,
         type: 'point' as const,
-        point: result.point,
-        rank: result.rank,
+        point: r.point,
+        rank: r.rank,
         createdAt: new Date(createdAt),
       })),
-      ...odaiResult.countStats.map((result) => ({
+      ...odaiResult.countStats.map((r) => ({
         id: generateId(),
         odaiId: odaiResult.id,
-        kotaeId: result.kotaeId,
+        kotaeId: r.kotaeId,
         type: 'count' as const,
-        point: result.votedCount,
-        rank: result.rank,
+        point: r.votedCount,
+        rank: r.rank,
         createdAt: new Date(createdAt),
       })),
     ]
 
-    const insertData = data.map((r) => ({
-      ...r,
-      createdAt: r.createdAt.toISOString(),
-    }))
-
-    const { error } = await getSupabaseClient()
-      .from('Result')
-      .insert(insertData)
-
-    if (error) {
+    try {
+      await db
+        .insert(result)
+        .values(
+          data.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })),
+        )
+      return true
+    } catch (error) {
       console.error(error)
       return false
     }
-    return true
   }
 
   getAllResults(_params: OdaiGetAllResultsParams): Promise<OdaiWithResult[]> {
