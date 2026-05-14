@@ -37,4 +37,13 @@ export const tanukichi: CharacterMessages = {
   'vote-result-003': [
     '個人の結果は `/oogiri-check-my-result` で確認できるだなも！ (他の人には見えないだなも:ok_man:)',
   ],
+  'request-accepted': ['受け付けました！いま処理してるだなも！'],
+  'aggregation-processing': [
+    '集計しているだなも、少々お待ちください⌛\n数分かかる場合があるだなも。',
+  ],
+  'commentary-processing': [
+    '講評しているだなも、少々お待ちください⌛\n講評の生成も含めて、数分かかる場合があるだなも。',
+  ],
+  'kotae-accepted': ['回答を受け付けました！いま反映してるだなも！'],
+  'vote-accepted': ['投票を受け付けました！いま反映してるだなも！'],
 }

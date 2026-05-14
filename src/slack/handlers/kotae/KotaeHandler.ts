@@ -21,6 +21,11 @@ import {
   CREATE_KOTAE_ACTION_ID,
 } from '../../actionIds'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
+import {
+  postAggregationProcessingMessage,
+  postCommentaryProcessingMessage,
+  postKotaeAcceptedMessage,
+} from '../processingMessage'
 
 export const registerKotaeHandlers = ({
   app,
@@ -83,6 +88,12 @@ export const registerKotaeHandlers = ({
       }
 
       await ack()
+      await postKotaeAcceptedMessage({
+        client,
+        user: body.user.id,
+        logger,
+        content: kotae,
+      })
 
       const result = logResult(
         'kotaeService.create',
@@ -129,8 +140,13 @@ export const registerKotaeHandlers = ({
   )
 
   // NOTE: 回答数の確認コマンド
-  app.command('/oogiri-count-kotae', async ({ ack, body, client }) => {
+  app.command('/oogiri-count-kotae', async ({ ack, body, client, logger }) => {
     await ack()
+    await postAggregationProcessingMessage({
+      client,
+      user: body.user_id,
+      logger,
+    })
     await countKotae({
       slackTeamId: body.team_id,
       userId: body.user_id,
@@ -144,18 +160,10 @@ export const registerKotaeHandlers = ({
     '/oogiri-check-my-result',
     async ({ ack, body, client, logger }) => {
       await ack()
-      await postEphemeral({
+      await postAggregationProcessingMessage({
         client,
         user: body.user_id,
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: '集計しています、少々お待ちください⌛\n数分かかる場合があります。',
-            },
-          },
-        ],
+        logger,
       })
       const result = logResult(
         'kotaeService.getPersonalResult',
@@ -298,18 +306,10 @@ export const registerKotaeHandlers = ({
         return
       }
 
-      await postEphemeral({
+      await postCommentaryProcessingMessage({
         client,
         user: userId,
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: '講評しています、少々お待ちください⌛\n講評の生成も含めて、数分かかる場合があります。',
-            },
-          },
-        ],
+        logger,
       })
 
       const result = logResult(
