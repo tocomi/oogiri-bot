@@ -20,3 +20,6 @@ dist/
 
 # tsc
 lib/
+
+# firebase
+firebase-debug.log

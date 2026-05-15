@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm'
 import {
   VoteCreateRequest,
   Vote,
@@ -7,7 +8,8 @@ import {
   VoteOfCurrentOdaiResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
-import { getSupabaseClient } from '../supabase/client'
+import { db } from '../db/client'
+import { vote } from '../db/schema'
 
 export class VotePostgresRepositoryImpl implements VoteRepository {
   checkDuplication(
@@ -30,15 +32,16 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     kotaeCreatedBy: string
   }): Promise<Vote> {
     const createdAt = new Date()
-    const { error } = await getSupabaseClient().from('Vote').insert({
-      id,
-      odaiId,
-      kotaeId,
-      rank,
-      createdBy: votedBy,
-      createdAt: createdAt.toISOString(),
-    })
-    if (error) {
+    try {
+      await db.insert(vote).values({
+        id,
+        odaiId,
+        kotaeId,
+        rank,
+        createdBy: votedBy,
+        createdAt: createdAt.toISOString(),
+      })
+    } catch (error) {
       console.error(error)
       throw error
     }
@@ -56,23 +59,20 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     _params: VoteOfCurrentOdaiParams,
     odaiId: string,
   ): Promise<VoteOfCurrentOdaiResponse> {
-    const { data, error } = await getSupabaseClient()
-      .from('Vote')
-      .select('*')
-      .eq('odaiId', odaiId)
+    try {
+      const rows = await db.select().from(vote).where(eq(vote.odaiId, odaiId))
 
-    if (error) {
+      return rows.map((v) => ({
+        votedBy: v.createdBy,
+        rank: v.rank as Vote['rank'],
+        kotaeId: v.kotaeId,
+        kotaeCreatedBy: v.createdBy,
+        createdAt: new Date(v.createdAt),
+      }))
+    } catch (error) {
       console.error(error)
       return []
     }
-
-    return data.map((vote) => ({
-      votedBy: vote.createdBy,
-      rank: vote.rank as Vote['rank'],
-      kotaeId: vote.kotaeId,
-      kotaeCreatedBy: vote.createdBy,
-      createdAt: new Date(vote.createdAt),
-    }))
   }
 
   getAllByUser(_params: VoteCountByUserParams): Promise<Vote[]> {
