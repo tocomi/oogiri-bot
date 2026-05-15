@@ -16,7 +16,8 @@
     "lint": "eslint --ext .js,.ts .",
     "lint:fix": "eslint --ext .js,.ts ./src --fix",
     "format": "biome format --write",
-    "generate-schema": "drizzle-kit introspect",
+    "migrate": "drizzle-kit migrate",
+    "migrate:generate": "drizzle-kit generate",
     "gcp-build": "echo 'no build step required'",
     "plugin": "echo dummyCommandForAvoidingFirebaseError",
     "deploy": "firebase deploy --only functions",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.6",
+    "@testcontainers/postgresql": "^11.14.0",
     "@types/cors": "^2.8.10",
     "@types/node-fetch": "2.6.7",
     "@types/pg": "^8.20.0",
@@ -52,6 +54,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-unused-imports": "^1.1.4",
+    "testcontainers": "^11.14.0",
     "tsc-watch": "^4.4.0",
     "typescript": "^5.9.2",
     "vitest": "^4.0.0"
