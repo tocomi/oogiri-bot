@@ -26,6 +26,24 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Cache postgres Docker image
+        id: cache-postgres
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-images/postgres-16.tar
+          key: docker-postgres-16
+
+      - name: Pull and save postgres image
+        if: steps.cache-postgres.outputs.cache-hit != 'true'
+        run: |
+          docker pull postgres:16
+          mkdir -p /tmp/docker-images
+          docker save postgres:16 -o /tmp/docker-images/postgres-16.tar
+
+      - name: Load cached postgres image
+        if: steps.cache-postgres.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/docker-images/postgres-16.tar
+
       - name: Run lint
         run: yarn lint
 

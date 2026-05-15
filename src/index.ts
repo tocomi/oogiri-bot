@@ -11,7 +11,6 @@ import {
   KotaePersonalResultParams,
   KotaePostRequestParams,
 } from './kotae/Kotae'
-import { KotaeFirestoreRepositoryImpl } from './kotae/KotaeFirestoreRepositoryImpl'
 import { KotaePostgresRepositoryImpl } from './kotae/KotaePostgresRepositoryImpl'
 import { KotaeRepository } from './kotae/KotaeRepository'
 import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
@@ -21,7 +20,6 @@ import {
   OdaiPostRequestParams,
   OdaiPutStatusParams,
 } from './odai/Odai'
-import { OdaiFirestoreRepositoryImpl } from './odai/OdaiFirestoreRepositoryImpl'
 import { OdaiPostgresRepositoryImpl } from './odai/OdaiPostgresRepositoryImpl'
 import { OdaiRepository } from './odai/OdaiRepository'
 import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
@@ -34,7 +32,6 @@ import {
   VoteCountParams,
   VoteCreateRequest,
 } from './vote/Vote'
-import { VoteFirestoreRepositoryImpl } from './vote/VoteFirestoreRepositoryImpl'
 import { VotePostgresRepositoryImpl } from './vote/VotePostgresRepositoryImpl'
 import { VoteRepository } from './vote/VoteRepository'
 import { VoteService, VoteServiceImpl } from './vote/VoteService'
@@ -69,24 +66,18 @@ app.use((req, _res, next) => {
   next()
 })
 
-const odaiRepository: OdaiRepository = new OdaiFirestoreRepositoryImpl()
-const odaiNewRepository: OdaiRepository = new OdaiPostgresRepositoryImpl()
-const odaiService: OdaiService = new OdaiServiceImpl(
-  odaiRepository,
-  odaiNewRepository,
-)
-const kotaeRepository: KotaeRepository = new KotaeFirestoreRepositoryImpl()
-const kotaeNewRepository: KotaeRepository = new KotaePostgresRepositoryImpl()
+const odaiRepository: OdaiRepository = new OdaiPostgresRepositoryImpl()
+const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
+
+const kotaeRepository: KotaeRepository = new KotaePostgresRepositoryImpl()
 const kotaeService: KotaeService = new KotaeServiceImpl(
   kotaeRepository,
-  kotaeNewRepository,
   odaiService,
 )
-const voteRepository: VoteRepository = new VoteFirestoreRepositoryImpl()
-const voteNewRepository: VoteRepository = new VotePostgresRepositoryImpl()
+
+const voteRepository: VoteRepository = new VotePostgresRepositoryImpl()
 const voteService: VoteService = new VoteServiceImpl(
   voteRepository,
-  voteNewRepository,
   odaiService,
   kotaeService,
 )

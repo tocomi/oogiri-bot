@@ -72,11 +72,23 @@ yarn type-check
 
 ## データベースについて
 
-PostgreSQL + Supabase（supabase-js）を直接利用しています：
+PostgreSQL + Supabase を Drizzle ORM 経由で利用しています：
 
-- テーブル型定義: `src/generated/supabase.ts`
-- 型の再生成: `yarn generate-types`（supabase CLI が必要）
-- マイグレーションは Supabase ダッシュボードまたは supabase CLI で管理
+- スキーマ定義: `src/db/schema.ts`
+- マイグレーションファイル: `drizzle/`（リポジトリ管理対象）
+- **スキーマを変更したときは必ず以下の手順で管理する**
+
+```bash
+# 1. src/db/schema.ts を編集
+
+# 2. マイグレーションファイルを生成
+yarn migrate:generate
+
+# 3. 本番 DB に適用
+yarn migrate
+```
+
+- Supabase ダッシュボードや supabase CLI でスキーマを直接変更しない（Drizzle と競合する）
 
 ## 環境設定
 

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import {
   VoteCreateRequest,
   Vote,
@@ -8,14 +8,57 @@ import {
   VoteOfCurrentOdaiResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
-import { db } from '../db/client'
-import { vote } from '../db/schema'
+import { db as defaultDb } from '../db/client'
+import { kotae, vote } from '../db/schema'
+
+type Db = typeof defaultDb
 
 export class VotePostgresRepositoryImpl implements VoteRepository {
-  checkDuplication(
-    _params: VoteCheckDuplicationParams,
-  ): Promise<'ok' | 'alreadyVoted' | 'alreadySameRankVoted'> {
-    throw new Error('Method not implemented.')
+  private db: Db
+
+  constructor(db: Db = defaultDb) {
+    this.db = db
+  }
+
+  async checkDuplication({
+    votedBy,
+    rank,
+    odaiId,
+    kotaeId,
+  }: VoteCheckDuplicationParams): Promise<
+    'ok' | 'alreadyVoted' | 'alreadySameRankVoted'
+  > {
+    const alreadyVoted = await this.db
+      .select()
+      .from(vote)
+      .where(and(eq(vote.kotaeId, kotaeId), eq(vote.createdBy, votedBy)))
+      .limit(1)
+
+    if (alreadyVoted.length) {
+      console.log('Already voted.')
+      return 'alreadyVoted'
+    }
+
+    if (rank === 1 || rank === 2) {
+      const sameRankVote = await this.db
+        .select()
+        .from(vote)
+        .where(
+          and(
+            eq(vote.odaiId, odaiId),
+            eq(vote.createdBy, votedBy),
+            eq(vote.rank, rank),
+          ),
+        )
+        .limit(1)
+
+      if (sameRankVote.length) {
+        console.log('Already same rank voted.')
+        return 'alreadySameRankVoted'
+      }
+    }
+
+    return 'ok'
   }
 
   async create({
@@ -33,7 +76,7 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
   }): Promise<Vote> {
     const createdAt = new Date()
     try {
-      await db.insert(vote).values({
+      await this.db.insert(vote).values({
         id,
         odaiId,
         kotaeId,
@@ -60,7 +103,10 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     odaiId: string,
   ): Promise<VoteOfCurrentOdaiResponse> {
     try {
-      const rows = await db.select().from(vote).where(eq(vote.odaiId, odaiId))
+      const rows = await this.db
+        .select()
+        .from(vote)
+        .where(eq(vote.odaiId, odaiId))
 
       return rows.map((v) => ({
         votedBy: v.createdBy,
@@ -75,7 +121,31 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     }
   }
 
-  getAllByUser(_params: VoteCountByUserParams): Promise<Vote[]> {
-    throw new Error('Method not implemented.')
+  async getAllByUser({ userId }: VoteCountByUserParams): Promise<Vote[]> {
+    try {
+      const rows = await this.db
+        .select({
+          votedBy: vote.createdBy,
+          rank: vote.rank,
+          createdAt: vote.createdAt,
+          kotaeId: vote.kotaeId,
+          kotaeContent: kotae.content,
+        })
+        .from(vote)
+        .innerJoin(kotae, eq(vote.kotaeId, kotae.id))
+        .where(eq(kotae.createdBy, userId))
+
+      return rows.map((v) => ({
+        votedBy: v.votedBy,
+        rank: v.rank as Vote['rank'],
+        createdAt: new Date(v.createdAt).getTime(),
+        kotaeId: v.kotaeId,
+        kotaeContent: v.kotaeContent,
+        kotaeCreatedBy: userId,
+      }))
+    } catch (error) {
+      console.error(error)
+      return []
+    }
   }
 }

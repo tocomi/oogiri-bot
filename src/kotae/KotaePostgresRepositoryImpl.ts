@@ -11,16 +11,24 @@ import {
   Kotae,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
-import { db } from '../db/client'
+import { db as defaultDb } from '../db/client'
 import { kotae, vote } from '../db/schema'
 
+type Db = typeof defaultDb
+
 export class KotaePostgresRepositoryImpl implements KotaeRepository {
+  private db: Db
+
+  constructor(db: Db = defaultDb) {
+    this.db = db
+  }
+
   async create(
     { content, createdBy, id }: KotaePostRequestParams,
     odaiId: string,
   ): Promise<boolean> {
     try {
-      await db.insert(kotae).values({
+      await this.db.insert(kotae).values({
         id,
         odaiId,
         content,
@@ -39,8 +47,8 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     odaiId: string,
   ): Promise<Kotae[]> {
     const [kotaes, votes] = await Promise.all([
-      db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
-      db
+      this.db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
+      this.db
         .select({ kotaeId: vote.kotaeId, rank: vote.rank })
         .from(vote)
         .where(eq(vote.odaiId, odaiId)),
@@ -65,7 +73,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     { userId }: KotaePersonalResultParams,
     odaiId: string,
   ): Promise<Kotae[]> {
-    const kotaes = await db
+    const kotaes = await this.db
       .select()
       .from(kotae)
       .where(and(eq(kotae.odaiId, odaiId), eq(kotae.createdBy, userId)))
@@ -73,7 +81,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     const kotaeIds = kotaes.map((k) => k.id)
     if (kotaeIds.length === 0) return []
 
-    const votes = await db
+    const votes = await this.db
       .select({ kotaeId: vote.kotaeId, rank: vote.rank })
       .from(vote)
       .where(inArray(vote.kotaeId, kotaeIds))
@@ -97,7 +105,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     kotaeDocId,
   }: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
     try {
-      const rows = await db
+      const rows = await this.db
         .select({
           createdBy: vote.createdBy,
           rank: vote.rank,
@@ -117,18 +125,53 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     }
   }
 
-  getByContent(
-    _params: KotaeByContentParams & { odaiDocId: string },
-  ): Promise<KotaeByContentResponse | null> {
-    throw new Error('Method not implemented.')
+  async getByContent({
+    content,
+    odaiDocId,
+  }: KotaeByContentParams & {
+    odaiDocId: string
+  }): Promise<KotaeByContentResponse | null> {
+    try {
+      const rows = await this.db
+        .select()
+        .from(kotae)
+        .where(and(eq(kotae.odaiId, odaiDocId), eq(kotae.content, content)))
+        .limit(1)
+
+      const data = rows[0]
+      if (!data) {
+        console.log('No target kotae.')
+        return null
+      }
+
+      const votes = await this.db
+        .select({ rank: vote.rank })
+        .from(vote)
+        .where(eq(vote.kotaeId, data.id))
+
+      return {
+        id: data.id,
+        content: data.content,
+        createdBy: data.createdBy,
+        votedCount: votes.length,
+        votedFirstCount: votes.filter((v) => v.rank === 1).length,
+        votedSecondCount: votes.filter((v) => v.rank === 2).length,
+        votedThirdCount: votes.filter((v) => v.rank === 3).length,
+        createdAt: new Date(data.createdAt).getTime(),
+      }
+    } catch (error) {
+      console.error(error)
+      return null
+    }
   }
 
-  incrementVoteCount(
+  // Postgres では votedCount は vote テーブルから動的に集計するため no-op
+  async incrementVoteCount(
     _params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
       odaiDocId: string
       kotaeDocId: string
     },
   ): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return true
   }
 }
