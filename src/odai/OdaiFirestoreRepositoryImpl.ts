@@ -202,7 +202,7 @@ export class OdaiFirestoreRepositoryImpl implements OdaiRepository {
     }
     return {
       type: 'normal',
-      dueDate: convertTimestamp(data.dueDate),
+      dueDate: data.dueDate ? convertTimestamp(data.dueDate) : 0,
       ...responseBase,
     }
   }
