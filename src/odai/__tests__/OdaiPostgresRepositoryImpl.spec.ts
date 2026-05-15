@@ -1,4 +1,12 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import {
+  afterAll,
+  assert,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'vitest'
 import {
   ODAI_FINISHED_1_ID,
   ODAI_FINISHED_2_ID,
@@ -55,8 +63,8 @@ describe('OdaiPostgresRepositoryImpl', () => {
 
       const result = await repo.getCurrent({ slackTeamId: TEAM_ID })
 
-      expect(result).not.toBeNull()
-      expect(result!.status).not.toBe('finished')
+      assert(result !== null)
+      expect(result.status).not.toBe('finished')
     })
 
     it('finished のお題は返さない', async () => {
@@ -150,7 +158,8 @@ describe('OdaiPostgresRepositoryImpl', () => {
       )
 
       const updated = await repo.getCurrent({ slackTeamId: TEAM_ID })
-      expect(updated!.status).toBe('voting')
+      assert(updated !== null)
+      expect(updated.status).toBe('voting')
     })
   })
 
@@ -192,11 +201,11 @@ describe('OdaiPostgresRepositoryImpl', () => {
         odaiId: ODAI_FINISHED_2_ID,
       })
 
-      expect(result).not.toBeNull()
-      expect(result!.pointStats).toHaveLength(1)
-      expect(result!.countStats).toHaveLength(1)
-      expect(result!.pointStats[0].rank).toBe(1)
-      expect(result!.countStats[0].rank).toBe(2)
+      assert(result !== null)
+      expect(result.pointStats).toHaveLength(1)
+      expect(result.countStats).toHaveLength(1)
+      expect(result.pointStats[0].rank).toBe(1)
+      expect(result.countStats[0].rank).toBe(2)
     })
 
     it('存在しない odaiId は null を返す', async () => {
