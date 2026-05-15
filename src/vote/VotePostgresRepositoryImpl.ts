@@ -8,10 +8,18 @@ import {
   VoteOfCurrentOdaiResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
-import { db } from '../db/client'
+import { db as defaultDb } from '../db/client'
 import { kotae, vote } from '../db/schema'
 
+type Db = typeof defaultDb
+
 export class VotePostgresRepositoryImpl implements VoteRepository {
+  private db: Db
+
+  constructor(db: Db = defaultDb) {
+    this.db = db
+  }
+
   async checkDuplication({
     votedBy,
     rank,
@@ -20,7 +28,7 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
   }: VoteCheckDuplicationParams): Promise<
     'ok' | 'alreadyVoted' | 'alreadySameRankVoted'
   > {
-    const alreadyVoted = await db
+    const alreadyVoted = await this.db
       .select()
       .from(vote)
       .where(and(eq(vote.kotaeId, kotaeId), eq(vote.createdBy, votedBy)))
@@ -32,7 +40,7 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     }
 
     if (rank === 1 || rank === 2) {
-      const sameRankVote = await db
+      const sameRankVote = await this.db
         .select()
         .from(vote)
         .where(
@@ -68,7 +76,7 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
   }): Promise<Vote> {
     const createdAt = new Date()
     try {
-      await db.insert(vote).values({
+      await this.db.insert(vote).values({
         id,
         odaiId,
         kotaeId,
@@ -95,7 +103,10 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     odaiId: string,
   ): Promise<VoteOfCurrentOdaiResponse> {
     try {
-      const rows = await db.select().from(vote).where(eq(vote.odaiId, odaiId))
+      const rows = await this.db
+        .select()
+        .from(vote)
+        .where(eq(vote.odaiId, odaiId))
 
       return rows.map((v) => ({
         votedBy: v.createdBy,
@@ -112,7 +123,7 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
 
   async getAllByUser({ userId }: VoteCountByUserParams): Promise<Vote[]> {
     try {
-      const rows = await db
+      const rows = await this.db
         .select({
           votedBy: vote.createdBy,
           rank: vote.rank,

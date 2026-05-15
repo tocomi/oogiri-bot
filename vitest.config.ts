@@ -4,5 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     exclude: ['lib/**', 'node_modules/**'],
+    testTimeout: 60000,
+    hookTimeout: 60000,
   },
 })

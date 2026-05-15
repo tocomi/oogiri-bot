@@ -18,11 +18,19 @@ import {
   OdaiStatus,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
-import { db } from '../db/client'
+import { db as defaultDb } from '../db/client'
 import { kotae, odai, result, vote } from '../db/schema'
 import { generateId } from '../util/generateId'
 
+type Db = typeof defaultDb
+
 export class OdaiPostgresRepositoryImpl implements OdaiRepository {
+  private db: Db
+
+  constructor(db: Db = defaultDb) {
+    this.db = db
+  }
+
   async createNormal({
     title,
     dueDate,
@@ -32,7 +40,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     id,
   }: OdaiNormalPostRequest): Promise<boolean> {
     try {
-      await db.insert(odai).values({
+      await this.db.insert(odai).values({
         id,
         teamId: slackTeamId,
         title,
@@ -54,7 +62,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     slackTeamId,
   }: OdaiCurrentParams): Promise<OdaiCurrentResponse | null> {
     try {
-      const rows = await db
+      const rows = await this.db
         .select()
         .from(odai)
         .where(and(eq(odai.teamId, slackTeamId), ne(odai.status, 'finished')))
@@ -84,7 +92,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     slackTeamId,
   }: OdaiRecentFinishedParams): Promise<OdaiRecentFinishedResponse | null> {
     try {
-      const rows = await db
+      const rows = await this.db
         .select()
         .from(odai)
         .where(and(eq(odai.teamId, slackTeamId), eq(odai.status, 'finished')))
@@ -115,7 +123,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     slackTeamId,
   }: OdaiFinishedListParams): Promise<OdaiResponseBase[]> {
     try {
-      const rows = await db
+      const rows = await this.db
         .select()
         .from(odai)
         .where(and(eq(odai.teamId, slackTeamId), eq(odai.status, 'finished')))
@@ -142,7 +150,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     odaiId: string,
   ): Promise<boolean> {
     try {
-      await db
+      await this.db
         .update(odai)
         .set({ status: params.status })
         .where(eq(odai.id, odaiId))
@@ -177,7 +185,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     ]
 
     try {
-      await db
+      await this.db
         .insert(result)
         .values(
           data.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })),
@@ -193,7 +201,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     slackTeamId,
   }: OdaiGetAllResultsParams): Promise<OdaiWithResult[]> {
     try {
-      const odaiRows = await db
+      const odaiRows = await this.db
         .select()
         .from(odai)
         .where(and(eq(odai.teamId, slackTeamId), eq(odai.status, 'finished')))
@@ -203,12 +211,12 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
       const odaiIds = odaiRows.map((o) => o.id)
 
       const [kotaeCounts, voteCounts] = await Promise.all([
-        db
+        this.db
           .select({ odaiId: kotae.odaiId, count: count() })
           .from(kotae)
           .where(inArray(kotae.odaiId, odaiIds))
           .groupBy(kotae.odaiId),
-        db
+        this.db
           .select({ odaiId: vote.odaiId, count: count() })
           .from(vote)
           .where(inArray(vote.odaiId, odaiIds))
@@ -237,7 +245,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     odaiId,
   }: OdaiGetResultParams): Promise<OdaiWithResult | null> {
     try {
-      const odaiRows = await db
+      const odaiRows = await this.db
         .select()
         .from(odai)
         .where(and(eq(odai.id, odaiId), eq(odai.teamId, slackTeamId)))
@@ -247,9 +255,9 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
       if (!odaiData) return null
 
       const [results, kotaes, votes] = await Promise.all([
-        db.select().from(result).where(eq(result.odaiId, odaiId)),
-        db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
-        db.select().from(vote).where(eq(vote.odaiId, odaiId)),
+        this.db.select().from(result).where(eq(result.odaiId, odaiId)),
+        this.db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
+        this.db.select().from(vote).where(eq(vote.odaiId, odaiId)),
       ])
 
       if (!results.length) return null

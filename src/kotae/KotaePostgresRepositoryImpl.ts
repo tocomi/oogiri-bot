@@ -11,16 +11,24 @@ import {
   Kotae,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
-import { db } from '../db/client'
+import { db as defaultDb } from '../db/client'
 import { kotae, vote } from '../db/schema'
 
+type Db = typeof defaultDb
+
 export class KotaePostgresRepositoryImpl implements KotaeRepository {
+  private db: Db
+
+  constructor(db: Db = defaultDb) {
+    this.db = db
+  }
+
   async create(
     { content, createdBy, id }: KotaePostRequestParams,
     odaiId: string,
   ): Promise<boolean> {
     try {
-      await db.insert(kotae).values({
+      await this.db.insert(kotae).values({
         id,
         odaiId,
         content,
@@ -39,8 +47,8 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     odaiId: string,
   ): Promise<Kotae[]> {
     const [kotaes, votes] = await Promise.all([
-      db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
-      db
+      this.db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
+      this.db
         .select({ kotaeId: vote.kotaeId, rank: vote.rank })
         .from(vote)
         .where(eq(vote.odaiId, odaiId)),
@@ -65,7 +73,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     { userId }: KotaePersonalResultParams,
     odaiId: string,
   ): Promise<Kotae[]> {
-    const kotaes = await db
+    const kotaes = await this.db
       .select()
       .from(kotae)
       .where(and(eq(kotae.odaiId, odaiId), eq(kotae.createdBy, userId)))
@@ -73,7 +81,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     const kotaeIds = kotaes.map((k) => k.id)
     if (kotaeIds.length === 0) return []
 
-    const votes = await db
+    const votes = await this.db
       .select({ kotaeId: vote.kotaeId, rank: vote.rank })
       .from(vote)
       .where(inArray(vote.kotaeId, kotaeIds))
@@ -97,7 +105,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     kotaeDocId,
   }: KotaeVotedByParams): Promise<KotaeVotedBy[]> {
     try {
-      const rows = await db
+      const rows = await this.db
         .select({
           createdBy: vote.createdBy,
           rank: vote.rank,
@@ -124,7 +132,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     odaiDocId: string
   }): Promise<KotaeByContentResponse | null> {
     try {
-      const rows = await db
+      const rows = await this.db
         .select()
         .from(kotae)
         .where(and(eq(kotae.odaiId, odaiDocId), eq(kotae.content, content)))
@@ -136,7 +144,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
         return null
       }
 
-      const votes = await db
+      const votes = await this.db
         .select({ rank: vote.rank })
         .from(vote)
         .where(eq(vote.kotaeId, data.id))
