@@ -1,5 +1,6 @@
-import { and, desc, eq, ne } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, ne } from 'drizzle-orm'
 import {
+  CountStat,
   OdaiCurrentParams,
   OdaiCurrentResponse,
   OdaiFinishedListParams,
@@ -12,12 +13,13 @@ import {
   OdaiGetResultParams,
   OdaiWithResult,
   OdaiGetAllResultsParams,
+  PointStat,
   Result,
   OdaiStatus,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
 import { db } from '../db/client'
-import { odai, result } from '../db/schema'
+import { kotae, odai, result, vote } from '../db/schema'
 import { generateId } from '../util/generateId'
 
 export class OdaiPostgresRepositoryImpl implements OdaiRepository {
@@ -109,8 +111,30 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     }
   }
 
-  getAllFinished(_params: OdaiFinishedListParams): Promise<OdaiResponseBase[]> {
-    throw new Error('Method not implemented.')
+  async getAllFinished({
+    slackTeamId,
+  }: OdaiFinishedListParams): Promise<OdaiResponseBase[]> {
+    try {
+      const rows = await db
+        .select()
+        .from(odai)
+        .where(and(eq(odai.teamId, slackTeamId), eq(odai.status, 'finished')))
+        .orderBy(desc(odai.createdAt))
+
+      return rows.map((data) => ({
+        id: data.id,
+        type: 'normal' as const,
+        title: data.title,
+        imageUrl: data.imageUrl || undefined,
+        createdBy: data.createdBy,
+        status: data.status as OdaiStatus,
+        dueDate: new Date(data.dueDate).getTime(),
+        createdAt: new Date(data.createdAt).getTime(),
+      }))
+    } catch (error) {
+      console.error(error)
+      return []
+    }
   }
 
   async updateStatus(
@@ -165,11 +189,117 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
     }
   }
 
-  getAllResults(_params: OdaiGetAllResultsParams): Promise<OdaiWithResult[]> {
-    throw new Error('Method not implemented.')
+  async getAllResults({
+    slackTeamId,
+  }: OdaiGetAllResultsParams): Promise<OdaiWithResult[]> {
+    try {
+      const odaiRows = await db
+        .select()
+        .from(odai)
+        .where(and(eq(odai.teamId, slackTeamId), eq(odai.status, 'finished')))
+
+      if (!odaiRows.length) return []
+
+      const odaiIds = odaiRows.map((o) => o.id)
+
+      const [kotaeCounts, voteCounts] = await Promise.all([
+        db
+          .select({ odaiId: kotae.odaiId, count: count() })
+          .from(kotae)
+          .where(inArray(kotae.odaiId, odaiIds))
+          .groupBy(kotae.odaiId),
+        db
+          .select({ odaiId: vote.odaiId, count: count() })
+          .from(vote)
+          .where(inArray(vote.odaiId, odaiIds))
+          .groupBy(vote.odaiId),
+      ])
+
+      return odaiRows.map((o) => ({
+        id: o.id,
+        title: o.title,
+        imageUrl: o.imageUrl || undefined,
+        createdBy: o.createdBy,
+        dueDate: new Date(o.dueDate).getTime(),
+        kotaeCount: kotaeCounts.find((k) => k.odaiId === o.id)?.count ?? 0,
+        voteCount: voteCounts.find((v) => v.odaiId === o.id)?.count ?? 0,
+        pointStats: [],
+        countStats: [],
+      }))
+    } catch (error) {
+      console.error(error)
+      return []
+    }
   }
 
-  getResult(_params: OdaiGetResultParams): Promise<OdaiWithResult | null> {
-    throw new Error('Method not implemented.')
+  async getResult({
+    slackTeamId,
+    odaiId,
+  }: OdaiGetResultParams): Promise<OdaiWithResult | null> {
+    try {
+      const odaiRows = await db
+        .select()
+        .from(odai)
+        .where(and(eq(odai.id, odaiId), eq(odai.teamId, slackTeamId)))
+        .limit(1)
+
+      const odaiData = odaiRows[0]
+      if (!odaiData) return null
+
+      const [results, kotaes, votes] = await Promise.all([
+        db.select().from(result).where(eq(result.odaiId, odaiId)),
+        db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
+        db.select().from(vote).where(eq(vote.odaiId, odaiId)),
+      ])
+
+      if (!results.length) return null
+
+      const pointStats: PointStat[] = results
+        .filter((r) => r.type === 'point')
+        .map((r) => {
+          const k = kotaes.find((k) => k.id === r.kotaeId)
+          const kotaeVotes = votes.filter((v) => v.kotaeId === r.kotaeId)
+          return {
+            type: 'point' as const,
+            kotaeId: r.kotaeId,
+            kotaeContent: k?.content ?? '',
+            userName: k?.createdBy ?? '',
+            point: r.point,
+            rank: r.rank as 1 | 2 | 3,
+            votedFirstCount: kotaeVotes.filter((v) => v.rank === 1).length,
+            votedSecondCount: kotaeVotes.filter((v) => v.rank === 2).length,
+            votedThirdCount: kotaeVotes.filter((v) => v.rank === 3).length,
+          }
+        })
+
+      const countStats: CountStat[] = results
+        .filter((r) => r.type === 'count')
+        .map((r) => {
+          const k = kotaes.find((k) => k.id === r.kotaeId)
+          return {
+            type: 'count' as const,
+            kotaeId: r.kotaeId,
+            kotaeContent: k?.content ?? '',
+            userName: k?.createdBy ?? '',
+            rank: r.rank as 1 | 2 | 3,
+            votedCount: r.point,
+          }
+        })
+
+      return {
+        id: odaiData.id,
+        title: odaiData.title,
+        imageUrl: odaiData.imageUrl || undefined,
+        createdBy: odaiData.createdBy,
+        dueDate: new Date(odaiData.dueDate).getTime(),
+        kotaeCount: kotaes.length,
+        voteCount: votes.length,
+        pointStats,
+        countStats,
+      }
+    } catch (error) {
+      console.error(error)
+      return null
+    }
   }
 }

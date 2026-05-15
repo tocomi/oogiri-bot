@@ -58,16 +58,10 @@ export interface KotaeService {
 
 export class KotaeServiceImpl implements KotaeService {
   repository: KotaeRepository
-  newRepository: KotaeRepository
   odaiService: OdaiService
 
-  constructor(
-    repository: KotaeRepository,
-    newRepository: KotaeRepository,
-    odaiService: OdaiService,
-  ) {
+  constructor(repository: KotaeRepository, odaiService: OdaiService) {
     this.repository = repository
-    this.newRepository = newRepository
     this.odaiService = odaiService
   }
 
@@ -79,7 +73,6 @@ export class KotaeServiceImpl implements KotaeService {
     })
     if (hasError(currentOdai)) return currentOdai
 
-    // NOTE: 同じ内容の答えがすでに存在する場合は何もしない
     const sameContentKotae = await this.repository.getByContent({
       slackTeamId: params.slackTeamId,
       content: params.content,
@@ -91,11 +84,11 @@ export class KotaeServiceImpl implements KotaeService {
     }
 
     const id = generateId()
-    const [resultA, resultB] = await Promise.all([
-      this.repository.create({ ...params, id }, currentOdai.id),
-      this.newRepository.create({ ...params, id }, currentOdai.id),
-    ])
-    if (!resultA || !resultB) return InternalServerError
+    const result = await this.repository.create(
+      { ...params, id },
+      currentOdai.id,
+    )
+    if (!result) return InternalServerError
     return 'ok'
   }
 
@@ -107,7 +100,7 @@ export class KotaeServiceImpl implements KotaeService {
     })
     if (hasError(currentOdai)) return currentOdai
 
-    const kotaeList = await this.newRepository.getAllOfCurrentOdai(
+    const kotaeList = await this.repository.getAllOfCurrentOdai(
       params,
       currentOdai.id,
     )
@@ -131,24 +124,19 @@ export class KotaeServiceImpl implements KotaeService {
     })
     if (hasError(recentFinishedOdai)) return recentFinishedOdai
 
-    const kotaeList = await this.newRepository.getPersonalResult(
+    const kotaeList = await this.repository.getPersonalResult(
       { slackTeamId, userId },
       recentFinishedOdai.id,
     )
 
-    // NOTE: 回答ごとに投票の情報を取得する
     const kotaeWithVoteList: KotaeResultResponse[] = []
     for (const kotae of kotaeList) {
-      const votes = await this.newRepository.getVotedBy({
+      const votes = await this.repository.getVotedBy({
         slackTeamId,
         odaiDocId: recentFinishedOdai.id,
         kotaeDocId: kotae.id,
       })
-      const kotaeWithVote = {
-        ...kotae,
-        votedByList: votes,
-      }
-      kotaeWithVoteList.push(kotaeWithVote)
+      kotaeWithVoteList.push({ ...kotae, votedByList: votes })
     }
 
     return {

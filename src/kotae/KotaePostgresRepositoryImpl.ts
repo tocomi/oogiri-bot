@@ -117,18 +117,53 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     }
   }
 
-  getByContent(
-    _params: KotaeByContentParams & { odaiDocId: string },
-  ): Promise<KotaeByContentResponse | null> {
-    throw new Error('Method not implemented.')
+  async getByContent({
+    content,
+    odaiDocId,
+  }: KotaeByContentParams & {
+    odaiDocId: string
+  }): Promise<KotaeByContentResponse | null> {
+    try {
+      const rows = await db
+        .select()
+        .from(kotae)
+        .where(and(eq(kotae.odaiId, odaiDocId), eq(kotae.content, content)))
+        .limit(1)
+
+      const data = rows[0]
+      if (!data) {
+        console.log('No target kotae.')
+        return null
+      }
+
+      const votes = await db
+        .select({ rank: vote.rank })
+        .from(vote)
+        .where(eq(vote.kotaeId, data.id))
+
+      return {
+        id: data.id,
+        content: data.content,
+        createdBy: data.createdBy,
+        votedCount: votes.length,
+        votedFirstCount: votes.filter((v) => v.rank === 1).length,
+        votedSecondCount: votes.filter((v) => v.rank === 2).length,
+        votedThirdCount: votes.filter((v) => v.rank === 3).length,
+        createdAt: new Date(data.createdAt).getTime(),
+      }
+    } catch (error) {
+      console.error(error)
+      return null
+    }
   }
 
-  incrementVoteCount(
+  // Postgres では votedCount は vote テーブルから動的に集計するため no-op
+  async incrementVoteCount(
     _params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
       odaiDocId: string
       kotaeDocId: string
     },
   ): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return true
   }
 }

@@ -4,7 +4,6 @@ import {
   VoteCountParams,
   VoteCountByUserParams,
   VoteCountByUserResponse,
-  Vote,
   VoteCountByUser,
   VoteCreateResponse,
 } from './Vote'
@@ -29,18 +28,15 @@ export interface VoteService {
 
 export class VoteServiceImpl implements VoteService {
   repository: VoteRepository
-  newRepository: VoteRepository
   odaiService: OdaiService
   kotaeService: KotaeService
 
   constructor(
     repository: VoteRepository,
-    newRepository: VoteRepository,
     odaiService: OdaiService,
     kotaeService: KotaeService,
   ) {
     this.repository = repository
-    this.newRepository = newRepository
     this.odaiService = odaiService
     this.kotaeService = kotaeService
   }
@@ -58,7 +54,6 @@ export class VoteServiceImpl implements VoteService {
     const kotae = await this.kotaeService.getByContent({ slackTeamId, content })
     if (hasError(kotae)) return kotae
 
-    // NOTE: 投票の重複チェック
     const duplicationResult = await this.repository.checkDuplication({
       slackTeamId,
       votedBy,
@@ -71,28 +66,16 @@ export class VoteServiceImpl implements VoteService {
       return AlreadySameRankVotedError
 
     const id = generateId()
-    const [voteResultA, _voteResultB] = await Promise.all([
-      this.repository.create({
-        id,
-        slackTeamId,
-        content,
-        votedBy,
-        rank,
-        odaiId: currentOdai.id,
-        kotaeId: kotae.id,
-        kotaeCreatedBy: kotae.createdBy,
-      }),
-      this.newRepository.create({
-        id,
-        slackTeamId,
-        content,
-        votedBy,
-        rank,
-        odaiId: currentOdai.id,
-        kotaeId: kotae.id,
-        kotaeCreatedBy: kotae.createdBy,
-      }),
-    ])
+    const voteResult = await this.repository.create({
+      id,
+      slackTeamId,
+      content,
+      votedBy,
+      rank,
+      odaiId: currentOdai.id,
+      kotaeId: kotae.id,
+      kotaeCreatedBy: kotae.createdBy,
+    })
 
     await this.kotaeService.incrementVoteCount({
       slackTeamId,
@@ -100,7 +83,7 @@ export class VoteServiceImpl implements VoteService {
       rank,
     })
 
-    return { vote: voteResultA }
+    return { vote: voteResult }
   }
 
   async getVoteCount(params: VoteCountParams): Promise<VoteCountResponse> {
@@ -111,7 +94,7 @@ export class VoteServiceImpl implements VoteService {
 
     if (currentOdai.status !== 'voting') return NoVotingOdaiError
 
-    const votes = await this.newRepository.getAllOfCurrentOdai(
+    const votes = await this.repository.getAllOfCurrentOdai(
       params,
       currentOdai.id,
     )
@@ -128,17 +111,12 @@ export class VoteServiceImpl implements VoteService {
     params: VoteCountByUserParams,
   ): Promise<VoteCountByUserResponse> {
     const votes = await this.repository.getAllByUser(params)
-    const uniqueVotes = this.removeDuplication(votes)
 
-    // NOTE: 全期間
     let allVotes: VoteCountByUser[] = []
-    uniqueVotes.forEach((vote) => {
+    votes.forEach((vote) => {
       const target = allVotes.find((v) => v.votedBy === vote.votedBy)
       if (!target) {
-        allVotes.push({
-          votedBy: vote.votedBy,
-          voteCount: 1,
-        })
+        allVotes.push({ votedBy: vote.votedBy, voteCount: 1 })
         return
       }
       allVotes = allVotes.filter((v) => v.votedBy !== vote.votedBy)
@@ -148,7 +126,6 @@ export class VoteServiceImpl implements VoteService {
       })
     })
 
-    // NOTE: 直近 5 戦
     const recent5timesOdai = await this.odaiService.getRecent5timesFinished({
       slackTeamId: params.slackTeamId,
     })
@@ -157,15 +134,12 @@ export class VoteServiceImpl implements VoteService {
     const borderCreatedAt = recent5timesOdai.slice(-1)[0].createdAt
 
     let recent5timesVotes: VoteCountByUser[] = []
-    uniqueVotes
+    votes
       .filter((vote) => (vote.createdAt as number) > borderCreatedAt)
       .forEach((vote) => {
         const target = recent5timesVotes.find((v) => v.votedBy === vote.votedBy)
         if (!target) {
-          recent5timesVotes.push({
-            votedBy: vote.votedBy,
-            voteCount: 1,
-          })
+          recent5timesVotes.push({ votedBy: vote.votedBy, voteCount: 1 })
           return
         }
         recent5timesVotes = recent5timesVotes.filter(
@@ -183,20 +157,5 @@ export class VoteServiceImpl implements VoteService {
         (a, b) => b.voteCount - a.voteCount,
       ),
     }
-  }
-
-  /**
-   * 2 つの vote コレクションからドキュメントを取得することによって発生する重複を取り除く。
-   * @param {Vote[]} votes
-   * @return {Vote[]} unique votes
-   */
-  private removeDuplication(votes: Vote[]): Vote[] {
-    const newVotes: Vote[] = []
-    votes.forEach((vote) => {
-      if (newVotes.every((newVote) => newVote.createdAt !== vote.createdAt)) {
-        newVotes.push(vote)
-      }
-    })
-    return newVotes
   }
 }

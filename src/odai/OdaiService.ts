@@ -61,11 +61,9 @@ export interface OdaiService {
 
 export class OdaiServiceImpl implements OdaiService {
   repository: OdaiRepository
-  newRepository: OdaiRepository
 
-  constructor(repository: OdaiRepository, newRepository: OdaiRepository) {
+  constructor(repository: OdaiRepository) {
     this.repository = repository
-    this.newRepository = newRepository
   }
 
   async create(params: OdaiPostRequestParams): Promise<ApiPostStatus> {
@@ -73,16 +71,13 @@ export class OdaiServiceImpl implements OdaiService {
     if (currentOdai) return OdaiDuplicationError
 
     const id = generateId()
-    const [resultA, resultB] = await Promise.all([
-      this.repository.createNormal({ ...params, id }),
-      this.newRepository.createNormal({ ...params, id }),
-    ])
-    if (!resultA || !resultB) return InternalServerError
+    const result = await this.repository.createNormal({ ...params, id })
+    if (!result) return InternalServerError
     return 'ok'
   }
 
   async getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse> {
-    const currentOdai = await this.newRepository.getCurrent(params)
+    const currentOdai = await this.repository.getCurrent(params)
     if (!currentOdai) return NoActiveOdaiError
 
     return currentOdai
@@ -91,7 +86,7 @@ export class OdaiServiceImpl implements OdaiService {
   async getRecentFinished(
     params: OdaiRecentFinishedParams,
   ): Promise<OdaiRecentFinishedResponse> {
-    const finishedOdai = await this.newRepository.getRecentFinished(params)
+    const finishedOdai = await this.repository.getRecentFinished(params)
     if (!finishedOdai) return NoFinishedOdaiError
 
     return finishedOdai
@@ -113,17 +108,11 @@ export class OdaiServiceImpl implements OdaiService {
     if (hasError(currentOdai)) return currentOdai
     if (currentOdai.status !== 'posting') return NoPostingOdaiError
 
-    const [resultA, resultB] = await Promise.all([
-      this.repository.updateStatus(
-        { slackTeamId: params.slackTeamId, status: 'voting' },
-        currentOdai.id,
-      ),
-      this.newRepository.updateStatus(
-        { slackTeamId: params.slackTeamId, status: 'voting' },
-        currentOdai.id,
-      ),
-    ])
-    return resultA && resultB ? 'ok' : InternalServerError
+    const result = await this.repository.updateStatus(
+      { slackTeamId: params.slackTeamId, status: 'voting' },
+      currentOdai.id,
+    )
+    return result ? 'ok' : InternalServerError
   }
 
   async finish({
@@ -134,17 +123,15 @@ export class OdaiServiceImpl implements OdaiService {
     if (hasError(currentOdai)) return currentOdai
     if (currentOdai.status !== 'voting') return NoVotingOdaiError
 
-    // NOTE: お題の結果を result フィールドに格納する
-    // TODO: トランザクション管理できてない
     const odaiResult = this.makeOdaiResult({
       odaiId: currentOdai.id,
       kotaeList,
     })
-    const [result1, result2] = await Promise.all([
-      this.repository.createResult({ slackTeamId, odaiResult }),
-      this.newRepository.createResult({ slackTeamId, odaiResult }),
-    ])
-    if (!result1 || !result2) return InternalServerError
+    const result = await this.repository.createResult({
+      slackTeamId,
+      odaiResult,
+    })
+    if (!result) return InternalServerError
 
     let aiCommentary: CommentatorCommentary | undefined
     try {
@@ -154,7 +141,6 @@ export class OdaiServiceImpl implements OdaiService {
       })
     } catch (error) {
       console.error('AI講評の生成に失敗しました', error)
-      // エラー時はフォールバック講評で続行
       aiCommentary = {
         matsumoto: 'すんません、講評でけへんかった。',
         bakarism: '技術的な問題で講評を生成できませんでした。',
@@ -162,19 +148,11 @@ export class OdaiServiceImpl implements OdaiService {
       }
     }
 
-    const [resultA, resultB] = await Promise.all([
-      this.repository.updateStatus(
-        { slackTeamId, status: 'finished' },
-        currentOdai.id,
-      ),
-      this.newRepository.updateStatus(
-        { slackTeamId, status: 'finished' },
-        currentOdai.id,
-      ),
-    ])
-    return resultA && resultB
-      ? { aiCommentary: aiCommentary }
-      : InternalServerError
+    const updateResult = await this.repository.updateStatus(
+      { slackTeamId, status: 'finished' },
+      currentOdai.id,
+    )
+    return updateResult ? { aiCommentary } : InternalServerError
   }
 
   async getAllResults(
@@ -243,7 +221,6 @@ export class OdaiServiceImpl implements OdaiService {
           votedSecondCount: kotae.votedSecondCount,
           votedThirdCount: kotae.votedThirdCount,
         }))
-        // NOTE: ポイント制が無かった時代のデータがあるので、ポイントがNaNのものは除外する
         .filter((stat) => !isNaN(stat.point)),
       countStats: votedCountRanking.map((kotae) => ({
         type: 'count' as const,
