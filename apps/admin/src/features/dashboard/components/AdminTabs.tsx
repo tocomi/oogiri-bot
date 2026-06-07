@@ -1,24 +1,24 @@
-"use client";
+'use client'
 
-import { Tabs } from "@base-ui/react/tabs";
+import { Tabs } from '@base-ui/react/tabs'
 
 const adminSections = [
   {
-    value: "odai",
-    title: "Odai",
-    description: "Create and review prompts for Slack games.",
+    value: 'odai',
+    title: 'Odai',
+    description: 'Create and review prompts for Slack games.',
   },
   {
-    value: "kotae",
-    title: "Kotae",
-    description: "Inspect answers before moderation tools arrive.",
+    value: 'kotae',
+    title: 'Kotae',
+    description: 'Inspect answers before moderation tools arrive.',
   },
   {
-    value: "results",
-    title: "Results",
-    description: "Keep a place for vote summaries and AI reviews.",
+    value: 'results',
+    title: 'Results',
+    description: 'Keep a place for vote summaries and AI reviews.',
   },
-];
+]
 
 export function AdminTabs() {
   return (
@@ -27,7 +27,7 @@ export function AdminTabs() {
         {adminSections.map((section) => (
           <Tabs.Tab
             className={({ active }) =>
-              active ? "admin-tab admin-tab-active" : "admin-tab"
+              active ? 'admin-tab admin-tab-active' : 'admin-tab'
             }
             key={section.value}
             value={section.value}
@@ -47,5 +47,5 @@ export function AdminTabs() {
         </Tabs.Panel>
       ))}
     </Tabs.Root>
-  );
+  )
 }

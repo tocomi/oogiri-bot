@@ -6,8 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "type-check": "tsc --noEmit",
-    "lint": "echo 'admin lint is not configured yet'",
+    "type-check": "tsgo --noEmit --diagnostics",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "test": "echo 'admin app is not scaffolded yet'"
   },
   "dependencies": {
@@ -19,7 +22,6 @@
   "devDependencies": {
     "@types/node": "^25.9.2",
     "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "typescript": "^6.0.3"
+    "@types/react-dom": "^19.2.3"
   }
 }

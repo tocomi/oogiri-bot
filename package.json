@@ -11,6 +11,10 @@
     "admin:build": "pnpm --filter @oogiri-bot/admin build",
     "admin:start": "pnpm --filter @oogiri-bot/admin start",
     "admin:type-check": "pnpm --filter @oogiri-bot/admin type-check",
+    "admin:lint": "pnpm --filter @oogiri-bot/admin lint",
+    "admin:lint:fix": "pnpm --filter @oogiri-bot/admin lint:fix",
+    "admin:format": "pnpm --filter @oogiri-bot/admin format",
+    "admin:format:check": "pnpm --filter @oogiri-bot/admin format:check",
     "serve": "pnpm --filter @oogiri-bot/functions serve",
     "build": "pnpm --filter @oogiri-bot/functions build",
     "type-check": "pnpm --filter @oogiri-bot/functions type-check",
@@ -28,7 +32,10 @@
     "prepare": "node -e \"require('node:fs').existsSync('.git') && require('node:child_process').execSync('lefthook install', { stdio: 'inherit' })\""
   },
   "devDependencies": {
-    "lefthook": "^2.1.9"
+    "@typescript/native-preview": "7.0.0-dev.20260607.1",
+    "lefthook": "^2.1.9",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0"
   },
   "private": true
 }

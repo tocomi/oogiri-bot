@@ -47,11 +47,8 @@
     "@types/node-fetch": "2.6.7",
     "@types/pg": "^8.20.0",
     "@types/uuid": "^10",
-    "@typescript/native-preview": "7.0.0-dev.20260606.1",
     "concurrently": "^10.0.3",
     "drizzle-kit": "^0.31.10",
-    "oxfmt": "^0.53.0",
-    "oxlint": "^1.68.0",
     "testcontainers": "^11.14.0",
     "vitest": "^4.0.0"
   },

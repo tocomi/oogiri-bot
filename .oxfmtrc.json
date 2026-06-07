@@ -13,7 +13,8 @@
     "drizzle/**",
     "**/*.json",
     "**/*.md",
-    "**/*.yml"
+    "**/*.yml",
+    "**/next-env.d.ts"
   ],
   "sortImports": {
     "groups": [

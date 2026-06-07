@@ -1,4 +1,4 @@
-import { AdminTabs } from "@/features/dashboard/components/AdminTabs";
+import { AdminTabs } from '@/features/dashboard/components/AdminTabs'
 
 export default function Home() {
   return (
@@ -16,5 +16,5 @@ export default function Home() {
         <AdminTabs />
       </section>
     </main>
-  );
+  )
 }
