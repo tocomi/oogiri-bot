@@ -3,7 +3,7 @@ pre-commit:
   commands:
     lint:
       glob: '*.{ts,tsx,js,jsx}'
-      run: pnpm lint {staged_files}
+      run: pnpm lint
     format-check:
       glob: '*.{ts,tsx,js,jsx}'
-      run: pnpm format:check {staged_files}
+      run: pnpm format:check

@@ -1,0 +1,11 @@
+{
+  "name": "@oogiri-bot/admin",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'admin app is not scaffolded yet'",
+    "type-check": "echo 'admin app is not scaffolded yet'",
+    "lint": "echo 'admin app is not scaffolded yet'",
+    "test": "echo 'admin app is not scaffolded yet'"
+  }
+}

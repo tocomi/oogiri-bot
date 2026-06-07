@@ -8,7 +8,7 @@
       "pnpm --dir \"$RESOURCE_DIR\" run lint",
       "pnpm --dir \"$RESOURCE_DIR\" run build"
     ],
-    "source": ".",
+    "source": "apps/functions",
     "runtime": "nodejs22"
   },
   "emulators": {

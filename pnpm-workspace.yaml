@@ -1,4 +1,8 @@
+packages:
+  - 'apps/*'
+
 allowBuilds:
+  '@firebase/util': true
   cpu-features: false
   esbuild: false
   lefthook: true
