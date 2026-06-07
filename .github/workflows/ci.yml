@@ -51,7 +51,7 @@ jobs:
         run: pnpm lint
 
       - name: Check format
-        run: pnpm biome format
+        run: pnpm format:check
 
       - name: Run type-check
         run: pnpm type-check
