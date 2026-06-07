@@ -14,17 +14,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.2
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: yarn
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Cache postgres Docker image
         id: cache-postgres
@@ -45,13 +48,13 @@ jobs:
         run: docker load -i /tmp/docker-images/postgres-16.tar
 
       - name: Run lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Check format
-        run: yarn biome format
+        run: pnpm biome format
 
       - name: Run type-check
-        run: yarn type-check
+        run: pnpm type-check
 
       - name: Run tests
-        run: yarn test
+        run: pnpm test
