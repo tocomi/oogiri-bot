@@ -3,14 +3,6 @@ dist/
 .env
 .env.local
 
-# yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
 # Mac
 .DS_Store
 

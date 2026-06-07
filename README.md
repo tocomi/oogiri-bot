@@ -7,14 +7,14 @@ Slack 上で大喜利を遊べる Bot です 🎍
 `.env.local` の設定が必要（`.env.sample` 参照）
 
 ```shell
-yarn
-yarn serve
+pnpm install
+pnpm serve
 ```
 
 ## リリース
 
 ```shell
-yarn release
+pnpm release
 ```
 
 ## デプロイ
@@ -22,5 +22,5 @@ yarn release
 `.env` の設定が必要（`.env.sample` 参照）
 
 ```shell
-yarn deploy
+pnpm deploy
 ```

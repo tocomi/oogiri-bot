@@ -15,7 +15,6 @@ Firebase Functions ベースの単一アプリで、以下の構成です：
   - Firebase Functions エントリポイント
   - OpenAI API を使用した AI 講評機能
   - リポジトリパターンとサービス層を採用したアーキテクチャ
-- **src/generated/supabase.ts**: Supabase 型定義（`yarn generate-types` で再生成）
 - **lib/**: TypeScript コンパイル出力（管理対象外）
 
 ### データモデル
@@ -32,42 +31,39 @@ Firebase Functions ベースの単一アプリで、以下の構成です：
 
 ```bash
 # Firebase Emulator で開発起動
-yarn serve
+pnpm serve
 
 # リント実行
-yarn lint
+pnpm lint
 
 # リント修正
-yarn lint:fix
-
-# Supabase 型定義を再生成（supabase CLI が必要）
-yarn generate-types
+pnpm lint:fix
 ```
 
 ### テスト
 
 ```bash
-yarn test
+pnpm test
 ```
 
 ### デプロイ
 
 ```bash
 # Firebase Functions へデプロイ
-yarn deploy
+pnpm deploy
 
 # リリース
-yarn release
+pnpm release
 ```
 
 ### その他
 
 ```bash
 # ビルド
-yarn build
+pnpm build
 
 # 型チェック
-yarn type-check
+pnpm type-check
 ```
 
 ## データベースについて
@@ -82,10 +78,10 @@ PostgreSQL + Supabase を Drizzle ORM 経由で利用しています：
 # 1. src/db/schema.ts を編集
 
 # 2. マイグレーションファイルを生成
-yarn migrate:generate
+pnpm migrate:generate
 
 # 3. 本番 DB に適用
-yarn migrate
+pnpm migrate
 ```
 
 - Supabase ダッシュボードや supabase CLI でスキーマを直接変更しない（Drizzle と競合する）
@@ -101,5 +97,5 @@ yarn migrate
 
 ### 開発時の注意点
 
-- API は Firebase Functions で動作するため、`yarn serve` で Firebase Emulator を起動する
+- API は Firebase Functions で動作するため、`pnpm serve` で Firebase Emulator を起動する
 - Node.js バージョンは 22.22.1 を使用（mise で管理）
