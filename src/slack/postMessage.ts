@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
+
 import { config } from '../config'
 
 const CHANNEL_ID = config.slack.channelId

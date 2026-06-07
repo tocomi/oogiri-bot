@@ -1,8 +1,9 @@
 import { KnownBlock } from '@slack/types'
 import { Logger, WebClient } from '@slack/web-api'
+
 import { getCharacterMessage } from '../../message'
-import { VoteCreateRequest } from '../../vote/Vote'
 import { convertVoteRankText } from '../../vote/convertVoteValue'
+import { VoteCreateRequest } from '../../vote/Vote'
 import { postEphemeral } from '../postMessage'
 
 type ProcessingMessageParams = {

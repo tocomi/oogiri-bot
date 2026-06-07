@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "semi": false,
+  "printWidth": 80,
+  "tabWidth": 2,
+  "ignorePatterns": [
+    "lib/**",
+    "node_modules/**",
+    ".claude/**",
+    ".agents/**",
+    ".codex/**",
+    "drizzle/**",
+    "**/*.json",
+    "**/*.md",
+    "**/*.yml"
+  ],
+  "sortImports": {
+    "groups": [
+      "type-import",
+      ["value-builtin", "value-external"],
+      "type-internal",
+      "value-internal",
+      ["type-parent", "type-sibling", "type-index"],
+      ["value-parent", "value-sibling", "value-index"],
+      "unknown"
+    ]
+  }
+}

@@ -1,4 +1,7 @@
 import { and, eq, inArray } from 'drizzle-orm'
+
+import { db as defaultDb } from '../db/client'
+import { kotae, vote } from '../db/schema'
 import {
   KotaePostRequestParams,
   KotaeOfCurrentOdaiParams,
@@ -11,8 +14,6 @@ import {
   Kotae,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
-import { db as defaultDb } from '../db/client'
-import { kotae, vote } from '../db/schema'
 
 type Db = typeof defaultDb
 

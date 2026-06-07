@@ -1,16 +1,10 @@
 import { App, BlockAction, KnownBlock } from '@slack/bolt'
 import emojiRegex from 'emoji-regex'
-import { countKotae } from './action/countKotae'
-import {
-  kotaeCreateView,
-  KOTAE_CREATE_BLOCK_ID,
-  KOTAE_CREATE_ACTION_ID,
-  KOTAE_CREATE_CALLBACK_ID,
-} from './view/KotaeCreateView'
+
 import { hasError } from '../../../api/Error'
-import { KotaeService } from '../../../kotae/KotaeService'
 import { createPersonalCommentaryBlocks } from '../../../kotae/blocks/createPersonalCommentaryBlocks'
 import { kotaeCreatedBlocks } from '../../../kotae/blocks/kotaeCreatedBlocks'
+import { KotaeService } from '../../../kotae/KotaeService'
 import { makePointRanking } from '../../../kotae/rank/makePointRanking'
 import { OdaiService } from '../../../odai/OdaiService'
 import { getSlackUserList } from '../../../util/getSlackUserList'
@@ -26,6 +20,13 @@ import {
   postCommentaryProcessingMessage,
   postKotaeAcceptedMessage,
 } from '../processingMessage'
+import { countKotae } from './action/countKotae'
+import {
+  kotaeCreateView,
+  KOTAE_CREATE_BLOCK_ID,
+  KOTAE_CREATE_ACTION_ID,
+  KOTAE_CREATE_CALLBACK_ID,
+} from './view/KotaeCreateView'
 
 export const registerKotaeHandlers = ({
   app,

@@ -1,4 +1,7 @@
 import { and, eq } from 'drizzle-orm'
+
+import { db as defaultDb } from '../db/client'
+import { kotae, vote } from '../db/schema'
 import {
   VoteCreateRequest,
   Vote,
@@ -8,8 +11,6 @@ import {
   VoteOfCurrentOdaiResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
-import { db as defaultDb } from '../db/client'
-import { kotae, vote } from '../db/schema'
 
 type Db = typeof defaultDb
 

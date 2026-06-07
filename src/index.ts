@@ -3,6 +3,7 @@ import cors from 'cors'
 import express from 'express'
 import * as functions from 'firebase-functions'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
+
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
 import { config } from './config'
 import {

@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
+
 import { hasError } from '../../../../api/Error'
 import { getCharacterMessage } from '../../../../message'
 import { VoteService } from '../../../../vote/VoteService'

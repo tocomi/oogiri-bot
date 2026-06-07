@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+
 import { KEKKA_IMAGE_URL } from '../../const'
 import { VoteCount } from '../Vote'
 

@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+
 import { getCharacterMessage } from '../../message'
 
 export const createVoteStartHeaderBlocks = ({

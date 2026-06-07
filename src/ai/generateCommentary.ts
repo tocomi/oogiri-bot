@@ -1,8 +1,9 @@
 import type { ChatModel } from 'openai/resources/shared'
-import { COMMENTATORS } from './commentators'
-import { openai } from './openai'
+
 import { Kotae } from '../kotae/Kotae'
 import { CommentatorCommentary } from '../odai/Odai'
+import { COMMENTATORS } from './commentators'
+import { openai } from './openai'
 
 const MODEL: ChatModel = 'gpt-5.4'
 const MAX_TOKENS = 600

@@ -11,12 +11,13 @@
   },
   "scripts": {
     "release": "pnpm dlx release-it",
-    "serve": "tsc-watch --onFirstSuccess 'firebase emulators:start --only functions'",
-    "build": "tsc",
-    "type-check": "echo '# type-check' && tsc --noEmit --diagnostics",
-    "lint": "eslint --ext .js,.ts .",
-    "lint:fix": "eslint --ext .js,.ts ./src --fix",
-    "format": "biome format --write",
+    "serve": "tsgo && concurrently --kill-others --names tsc,emulator \"tsgo --watch\" \"firebase emulators:start --only functions\"",
+    "build": "tsgo",
+    "type-check": "echo '# type-check' && tsgo --noEmit --diagnostics",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "migrate": "drizzle-kit migrate",
     "migrate:generate": "drizzle-kit generate",
     "gcp-build": "echo 'no build step required'",
@@ -24,7 +25,9 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "hooks:install": "lefthook install",
+    "prepare": "node -e \"require('node:fs').existsSync('.git') && require('node:child_process').execSync('lefthook install', { stdio: 'inherit' })\""
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^5.0.2",
@@ -43,7 +46,6 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.6",
     "@slack/types": "^2.14.0",
     "@testcontainers/postgresql": "^11.14.0",
     "@types/cors": "^2.8.10",
@@ -51,16 +53,13 @@
     "@types/node-fetch": "2.6.7",
     "@types/pg": "^8.20.0",
     "@types/uuid": "^10",
-    "@typescript-eslint/eslint-plugin": "^8",
-    "@typescript-eslint/parser": "^8",
+    "@typescript/native-preview": "7.0.0-dev.20260606.1",
+    "concurrently": "^10.0.3",
     "drizzle-kit": "^0.31.10",
-    "eslint": "^8.57.0",
-    "eslint-config-google": "^0.14.0",
-    "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-unused-imports": "^4",
+    "lefthook": "^2.1.9",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
     "testcontainers": "^11.14.0",
-    "tsc-watch": "^4.4.0",
-    "typescript": "^5.9.2",
     "vitest": "^4.0.0"
   },
   "private": true

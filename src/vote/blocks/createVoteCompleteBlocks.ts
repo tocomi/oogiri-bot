@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+
 import { convertVoteRankText } from '../convertVoteValue'
 
 export const createVoteCompleteBlocks = ({

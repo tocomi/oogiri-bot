@@ -1,19 +1,3 @@
-import {
-  KotaeByContentParams,
-  KotaeByContentResponse,
-  KotaeCountsRequest,
-  KotaeCountsResponse,
-  KotaeGetAllResponse,
-  KotaeIncrementVoteCountParams,
-  KotaeOfCurrentOdaiParams as KotaeOfCurrentOdaiParams,
-  KotaePersonalCommentaryParams,
-  KotaePersonalCommentaryResponse,
-  KotaePersonalResultParams,
-  KotaePersonalResultResponse,
-  KotaePostRequestParams,
-  KotaeResultResponse,
-} from './Kotae'
-import { KotaeRepository } from './KotaeRepository'
 import { generatePersonalCommentary } from '../ai/generateCommentary'
 import { ApiPostStatus, SlackParams } from '../api/Api'
 import {
@@ -24,6 +8,22 @@ import {
 } from '../api/Error'
 import { OdaiService } from '../odai/OdaiService'
 import { generateId } from '../util/generateId'
+import {
+  KotaeByContentParams,
+  KotaeByContentResponse,
+  KotaeCountsRequest,
+  KotaeCountsResponse,
+  KotaeGetAllResponse,
+  KotaeIncrementVoteCountParams,
+  KotaeOfCurrentOdaiParams,
+  KotaePersonalCommentaryParams,
+  KotaePersonalCommentaryResponse,
+  KotaePersonalResultParams,
+  KotaePersonalResultResponse,
+  KotaePostRequestParams,
+  KotaeResultResponse,
+} from './Kotae'
+import { KotaeRepository } from './KotaeRepository'
 
 export interface KotaeService {
   /** 回答の作成 */
