@@ -1,8 +1,16 @@
 {
-  "editor.defaultFormatter": "biomejs.biome",
+  "typescript.experimental.useTsgo": true,
+  "oxc.fmt.configPath": ".oxfmtrc.json",
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit"
+    "source.fixAll.oxlint": "explicit"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "cSpell.words": [
     "firestore",

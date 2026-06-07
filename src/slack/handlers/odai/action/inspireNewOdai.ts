@@ -1,4 +1,5 @@
 import { KnownBlock, WebClient } from '@slack/web-api'
+
 import { hasError } from '../../../../api/Error'
 import { getCharacterMessage } from '../../../../message'
 import { OdaiService } from '../../../../odai/OdaiService'

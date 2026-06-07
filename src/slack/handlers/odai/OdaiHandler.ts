@@ -1,4 +1,39 @@
 import { App } from '@slack/bolt'
+
+import { hasError } from '../../../api/Error'
+import { KotaeService } from '../../../kotae/KotaeService'
+import { makePointRanking } from '../../../kotae/rank/makePointRanking'
+import { makeVotedCountRanking } from '../../../kotae/rank/makeVotedCountRanking'
+import {
+  createOdaiCreateBlocks,
+  createOdaiDuplicationBlocks,
+  createOdaiNothingBlocks,
+} from '../../../odai/blocks'
+import { OdaiService } from '../../../odai/OdaiService'
+import { getSlackUserList } from '../../../util/getSlackUserList'
+import { isImageUrl } from '../../../util/isImageUrl'
+import { logResult } from '../../../util/logResult'
+import {
+  createVoteStartHeaderBlocks,
+  createVoteSectionBlocks,
+  createVoteStartFooterBlocks,
+  createVoteResultHeaderBlocks,
+  createVoteResultContentBlocks,
+  createVoteResultFooterBlocks,
+} from '../../../vote/blocks'
+import { createAiCommentaryBlocks } from '../../../vote/blocks/createAiCommentaryBlocks'
+import { VoteService } from '../../../vote/VoteService'
+import {
+  CREATE_ODAI_ACTION_ID,
+  FINISH_ODAI_ACTION_ID,
+  START_VOTING_ACTION_ID,
+} from '../../actionIds'
+import {
+  postEphemeral,
+  postInternalErrorMessage,
+  postMessage,
+} from '../../postMessage'
+import { postRequestAcceptedMessage } from '../processingMessage'
 import {
   create,
   CREATE_ODAI_CALLBACK_ID,
@@ -12,40 +47,6 @@ import {
 import { finish, FINISH_ODAI_CALLBACK_ID } from './action/finishOdai'
 import { inspireNewOdai } from './action/inspireNewOdai'
 import { start, START_VOTING_CALLBACK_ID } from './action/startVoting'
-import { hasError } from '../../../api/Error'
-import { KotaeService } from '../../../kotae/KotaeService'
-import { makePointRanking } from '../../../kotae/rank/makePointRanking'
-import { makeVotedCountRanking } from '../../../kotae/rank/makeVotedCountRanking'
-import { OdaiService } from '../../../odai/OdaiService'
-import {
-  createOdaiCreateBlocks,
-  createOdaiDuplicationBlocks,
-  createOdaiNothingBlocks,
-} from '../../../odai/blocks'
-import { getSlackUserList } from '../../../util/getSlackUserList'
-import { isImageUrl } from '../../../util/isImageUrl'
-import { logResult } from '../../../util/logResult'
-import { VoteService } from '../../../vote/VoteService'
-import {
-  createVoteStartHeaderBlocks,
-  createVoteSectionBlocks,
-  createVoteStartFooterBlocks,
-  createVoteResultHeaderBlocks,
-  createVoteResultContentBlocks,
-  createVoteResultFooterBlocks,
-} from '../../../vote/blocks'
-import { createAiCommentaryBlocks } from '../../../vote/blocks/createAiCommentaryBlocks'
-import {
-  CREATE_ODAI_ACTION_ID,
-  FINISH_ODAI_ACTION_ID,
-  START_VOTING_ACTION_ID,
-} from '../../actionIds'
-import {
-  postEphemeral,
-  postInternalErrorMessage,
-  postMessage,
-} from '../../postMessage'
-import { postRequestAcceptedMessage } from '../processingMessage'
 
 export { START_VOTING_ACTION_ID, FINISH_ODAI_ACTION_ID }
 

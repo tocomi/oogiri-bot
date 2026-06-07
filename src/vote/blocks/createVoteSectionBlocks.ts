@@ -1,4 +1,5 @@
 import { KnownBlock } from '@slack/types'
+
 import { convertVoteRankText } from '../convertVoteValue'
 
 const ACTION_ID = 'vote-kotae'

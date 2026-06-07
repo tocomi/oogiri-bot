@@ -10,8 +10,12 @@ dist/
 .mcp.json
 .codex/*
 
-# tsc
+# build
 lib/
+coverage/
 
 # firebase
 firebase-debug.log
+
+# pnpm
+.pnpm-store

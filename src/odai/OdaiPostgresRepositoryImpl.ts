@@ -1,4 +1,8 @@
 import { and, count, desc, eq, inArray, ne } from 'drizzle-orm'
+
+import { db as defaultDb } from '../db/client'
+import { kotae, odai, result, vote } from '../db/schema'
+import { generateId } from '../util/generateId'
 import {
   CountStat,
   OdaiCurrentParams,
@@ -18,9 +22,6 @@ import {
   OdaiStatus,
 } from './Odai'
 import { OdaiRepository } from './OdaiRepository'
-import { db as defaultDb } from '../db/client'
-import { kotae, odai, result, vote } from '../db/schema'
-import { generateId } from '../util/generateId'
 
 type Db = typeof defaultDb
 

@@ -1,5 +1,6 @@
 import { KnownBlock } from '@slack/types'
 import { WebClient } from '@slack/web-api'
+
 import { hasError } from '../../../../api/Error'
 import { KotaeService } from '../../../../kotae/KotaeService'
 import { getCharacterMessage } from '../../../../message'

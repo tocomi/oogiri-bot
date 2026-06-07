@@ -1,22 +1,23 @@
 import { App, KnownBlock } from '@slack/bolt'
-import { countVote } from './action/countVote'
+
 import { hasError } from '../../../api/Error'
 import { decodeHtmlEntities } from '../../../util/decodeHtmlEntities'
 import { getSlackUserList } from '../../../util/getSlackUserList'
 import { logResult } from '../../../util/logResult'
-import { VoteService } from '../../../vote/VoteService'
 import {
   createVoteAlreadyBlocks,
   createVoteAlreadySameRankBlocks,
   createVoteCompleteBlocks,
 } from '../../../vote/blocks'
 import { convertVoteRank } from '../../../vote/convertVoteValue'
+import { VoteService } from '../../../vote/VoteService'
 import { VOTING_ACTION_ID } from '../../actionIds'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
 import {
   postAggregationProcessingMessage,
   postVoteAcceptedMessage,
 } from '../processingMessage'
+import { countVote } from './action/countVote'
 
 export const registerVoteHandlers = ({
   app,

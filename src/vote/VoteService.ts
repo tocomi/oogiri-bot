@@ -1,4 +1,13 @@
 import {
+  AlreadySameRankVotedError,
+  AlreadyVotedError,
+  hasError,
+  NoVotingOdaiError,
+} from '../api/Error'
+import { KotaeService } from '../kotae/KotaeService'
+import { OdaiService } from '../odai/OdaiService'
+import { generateId } from '../util/generateId'
+import {
   VoteCreateRequest,
   VoteCountResponse,
   VoteCountParams,
@@ -8,15 +17,6 @@ import {
   VoteCreateResponse,
 } from './Vote'
 import { VoteRepository } from './VoteRepository'
-import {
-  AlreadySameRankVotedError,
-  AlreadyVotedError,
-  hasError,
-  NoVotingOdaiError,
-} from '../api/Error'
-import { KotaeService } from '../kotae/KotaeService'
-import { OdaiService } from '../odai/OdaiService'
-import { generateId } from '../util/generateId'
 
 export interface VoteService {
   create(params: VoteCreateRequest): Promise<VoteCreateResponse>
