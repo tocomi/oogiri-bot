@@ -3,9 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "echo 'admin app is not scaffolded yet'",
-    "type-check": "echo 'admin app is not scaffolded yet'",
-    "lint": "echo 'admin app is not scaffolded yet'",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'admin lint is not configured yet'",
     "test": "echo 'admin app is not scaffolded yet'"
+  },
+  "dependencies": {
+    "next": "^16.2.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
   }
 }

@@ -7,4 +7,5 @@ allowBuilds:
   esbuild: false
   lefthook: true
   protobufjs: false
+  sharp: true
   ssh2: false

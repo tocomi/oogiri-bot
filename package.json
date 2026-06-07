@@ -7,6 +7,10 @@
   "packageManager": "pnpm@11.5.2",
   "scripts": {
     "release": "pnpm dlx release-it",
+    "admin:dev": "pnpm --filter @oogiri-bot/admin dev",
+    "admin:build": "pnpm --filter @oogiri-bot/admin build",
+    "admin:start": "pnpm --filter @oogiri-bot/admin start",
+    "admin:type-check": "pnpm --filter @oogiri-bot/admin type-check",
     "serve": "pnpm --filter @oogiri-bot/functions serve",
     "build": "pnpm --filter @oogiri-bot/functions build",
     "type-check": "pnpm --filter @oogiri-bot/functions type-check",

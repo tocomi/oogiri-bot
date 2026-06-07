@@ -13,6 +13,8 @@ dist/
 # build
 lib/
 coverage/
+.next/
+*.tsbuildinfo
 
 # firebase
 firebase-debug.log
