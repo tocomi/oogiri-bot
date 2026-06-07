@@ -22,13 +22,17 @@ const adminSections = [
 
 export function AdminTabs() {
   return (
-    <Tabs.Root className="admin-tabs" defaultValue="odai">
-      <Tabs.List className="admin-tab-list" aria-label="Admin sections">
+    <Tabs.Root
+      className="grid max-w-3xl gap-px border border-stone-300 bg-stone-300"
+      defaultValue="odai"
+    >
+      <Tabs.List
+        className="grid grid-cols-1 gap-px bg-stone-300 sm:grid-cols-3"
+        aria-label="Admin sections"
+      >
         {adminSections.map((section) => (
           <Tabs.Tab
-            className={({ active }) =>
-              active ? 'admin-tab admin-tab-active' : 'admin-tab'
-            }
+            className="min-h-12 cursor-pointer border-0 bg-[#f8f7f3] px-4 py-3 text-sm font-bold text-stone-500 hover:text-stone-950 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-700 data-active:bg-white data-active:text-stone-950"
             key={section.value}
             value={section.value}
           >
@@ -38,12 +42,14 @@ export function AdminTabs() {
       </Tabs.List>
       {adminSections.map((section) => (
         <Tabs.Panel
-          className="admin-tab-panel"
+          className="min-h-32 bg-[#f8f7f3] p-5 text-sm text-stone-600"
           key={section.value}
           value={section.value}
         >
-          <strong>{section.title}</strong>
-          <span>{section.description}</span>
+          <strong className="mb-3 block text-sm text-stone-950">
+            {section.title}
+          </strong>
+          <span className="leading-6">{section.description}</span>
         </Tabs.Panel>
       ))}
     </Tabs.Root>
