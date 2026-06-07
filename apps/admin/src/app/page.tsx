@@ -1,17 +1,4 @@
-const adminSections = [
-  {
-    title: "Odai",
-    description: "Create and review prompts for Slack games.",
-  },
-  {
-    title: "Kotae",
-    description: "Inspect answers before moderation tools arrive.",
-  },
-  {
-    title: "Results",
-    description: "Keep a place for vote summaries and AI reviews.",
-  },
-];
+import { AdminTabs } from "@/features/dashboard/components/AdminTabs";
 
 export default function Home() {
   return (
@@ -26,14 +13,7 @@ export default function Home() {
           Actions, Drizzle access, and authentication can be layered in from
           here without changing the app shape.
         </p>
-        <div className="admin-grid" aria-label="Planned admin sections">
-          {adminSections.map((section) => (
-            <article className="admin-cell" key={section.title}>
-              <strong>{section.title}</strong>
-              <span>{section.description}</span>
-            </article>
-          ))}
-        </div>
+        <AdminTabs />
       </section>
     </main>
   );
