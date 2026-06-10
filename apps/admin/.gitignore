@@ -1,0 +1,6 @@
+# vitest
+__screenshots__/
+
+# next.js
+.next/
+next-env.d.ts
