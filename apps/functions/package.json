@@ -1,0 +1,56 @@
+{
+  "name": "@oogiri-bot/functions",
+  "version": "3.1.0",
+  "description": "Firebase Functions Slack bot for oogiri",
+  "author": "tocomi",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "serve": "tsgo && concurrently --kill-others --names tsc,emulator \"tsgo --watch\" \"firebase emulators:start --only functions --config ../../firebase.json\"",
+    "build": "tsgo",
+    "type-check": "echo '# type-check' && tsgo --noEmit --diagnostics",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "migrate": "drizzle-kit migrate",
+    "migrate:generate": "drizzle-kit generate",
+    "gcp-build": "echo 'no build step required'",
+    "plugin": "echo dummyCommandForAvoidingFirebaseError",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^5.0.2",
+    "@slack/bolt": "3",
+    "@slack/web-api": "^6.2.4",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.0",
+    "dotenv": "^10.0.0",
+    "drizzle-orm": "^0.45.2",
+    "emoji-regex": "^9.0.0",
+    "express": "^4.17.1",
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.0.1",
+    "openai": "^6.27.0",
+    "pg": "^8.20.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@slack/types": "^2.14.0",
+    "@testcontainers/postgresql": "^11.14.0",
+    "@types/cors": "^2.8.10",
+    "@types/express": "^4.17.3",
+    "@types/node-fetch": "2.6.7",
+    "@types/pg": "^8.20.0",
+    "@types/uuid": "^10",
+    "concurrently": "^10.0.3",
+    "drizzle-kit": "^0.31.10",
+    "testcontainers": "^11.14.0",
+    "vitest": "^4.0.0"
+  },
+  "private": true
+}

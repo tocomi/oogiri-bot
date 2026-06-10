@@ -13,7 +13,7 @@ import { kotae, odai, result, team, vote } from '../db/schema'
 export type TestDb = typeof db
 
 let container: StartedPostgreSqlContainer
-let pool: Pool
+let pool: Pool | undefined
 export let testDb: TestDb
 
 export const startDb = async () => {
@@ -26,8 +26,8 @@ export const startDb = async () => {
 }
 
 export const stopDb = async () => {
-  await pool.end()
-  await container.stop()
+  await pool?.end()
+  await container?.stop()
 }
 
 export const clearDb = async () => {

@@ -8,14 +8,15 @@ Slack 上で大喜利を遊べる Bot です。大喜利（日本の即興コメ
 
 ## アーキテクチャ
 
-Firebase Functions ベースの単一アプリで、以下の構成です：
+pnpm workspace のモノレポ構成です。現在の主アプリは Firebase Functions ベースの Slack Bot です：
 
-- **src/**: アプリケーションソースコード
+- **apps/functions/src/**: Firebase Functions アプリケーションソースコード
   - Express.js を使用した REST API
   - Firebase Functions エントリポイント
   - OpenAI API を使用した AI 講評機能
   - リポジトリパターンとサービス層を採用したアーキテクチャ
-- **lib/**: TypeScript コンパイル出力（管理対象外）
+- **apps/functions/lib/**: TypeScript コンパイル出力（管理対象外）
+- **apps/admin/**: 管理画面用 workspace（未実装のプレースホルダ）
 
 ### データモデル
 
@@ -70,12 +71,12 @@ pnpm type-check
 
 PostgreSQL + Supabase を Drizzle ORM 経由で利用しています：
 
-- スキーマ定義: `src/db/schema.ts`
-- マイグレーションファイル: `drizzle/`（リポジトリ管理対象）
+- スキーマ定義: `apps/functions/src/db/schema.ts`
+- マイグレーションファイル: `apps/functions/drizzle/`（リポジトリ管理対象）
 - **スキーマを変更したときは必ず以下の手順で管理する**
 
 ```bash
-# 1. src/db/schema.ts を編集
+# 1. apps/functions/src/db/schema.ts を編集
 
 # 2. マイグレーションファイルを生成
 pnpm migrate:generate

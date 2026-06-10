@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  lint-format-typecheck:
-    name: Lint, Format, and Type Check
+  functions:
+    name: Functions CI
     runs-on: ubuntu-latest
 
     steps:
@@ -58,3 +58,44 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+
+  admin:
+    name: Admin CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.2
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browser
+        run: pnpm --filter @oogiri-bot/admin exec playwright install --with-deps chromium
+
+      - name: Run lint
+        run: pnpm admin:lint
+
+      - name: Check format
+        run: pnpm admin:format:check
+
+      - name: Run type-check
+        run: pnpm admin:type-check
+
+      - name: Run tests
+        run: pnpm admin:test
+
+      - name: Run build
+        run: pnpm admin:build
