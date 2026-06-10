@@ -1,4 +1,11 @@
-import { AdminMetricCard } from '@/features/dashboard/components/AdminMetricCard'
+import { Suspense } from 'react'
+
+import {
+  AdminDashboardMetrics,
+  AdminDashboardMetricsSkeleton,
+} from '@/features/dashboard/components/AdminDashboardMetrics'
+
+export const dynamic = 'force-dynamic'
 
 export default function Home() {
   return (
@@ -16,11 +23,9 @@ export default function Home() {
         >
           ダッシュボード
         </h1>
-        <div className="flex flex-wrap gap-1">
-          <AdminMetricCard title="お題の数" value={0} />
-          <AdminMetricCard title="答えの数" value={0} />
-          <AdminMetricCard title="投票の数" value={0} />
-        </div>
+        <Suspense fallback={<AdminDashboardMetricsSkeleton />}>
+          <AdminDashboardMetrics />
+        </Suspense>
       </section>
     </main>
   )
