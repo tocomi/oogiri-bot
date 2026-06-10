@@ -23,32 +23,6 @@ The repository-level `AGENTS.md` still applies; this file adds admin-specific in
 - `.next/`: Next.js のビルド出力。編集しない
 - `node_modules/`: 依存関係。編集しない
 
-## よく使用するコマンド
-
-リポジトリルートから実行する場合：
-
-```bash
-pnpm admin:dev
-pnpm admin:build
-pnpm admin:type-check
-pnpm admin:lint
-pnpm admin:lint:fix
-pnpm admin:format
-pnpm admin:format:check
-```
-
-`apps/admin` 内から実行する場合：
-
-```bash
-pnpm dev
-pnpm build
-pnpm type-check
-pnpm lint
-pnpm lint:fix
-pnpm format
-pnpm format:check
-```
-
 ## 実装方針
 
 - App Router の Server Component を基本にし、ブラウザ API や状態管理が必要な箇所だけ Client Component にする
@@ -83,6 +57,7 @@ pnpm format:check
 admin 変更後は影響範囲に応じて以下を実行する：
 
 ```bash
+pnpm admin:test
 pnpm admin:type-check
 pnpm admin:lint
 pnpm admin:format
@@ -91,3 +66,10 @@ pnpm admin:build
 
 UI を変更した場合は `http://localhost:3000` で主要な viewport でレイアウト崩れがないか確認する。
 勝手に起動コマンドは実行せず、起動は人間に任せる。
+
+### テスト
+
+- Vitest Browser Mode を使う
+- React コンポーネントの描画テストは `vitest-browser-react` の `render` を使い、`createRoot` や手動 cleanup は基本的に書かない
+- テストファイルは対象ファイルの近くの `__tests__/` に置く
+- ファイル名は `*.spec.tsx` にする

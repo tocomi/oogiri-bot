@@ -15,6 +15,8 @@
     "admin:lint:fix": "pnpm --filter @oogiri-bot/admin lint:fix",
     "admin:format": "pnpm --filter @oogiri-bot/admin format",
     "admin:format:check": "pnpm --filter @oogiri-bot/admin format:check",
+    "admin:test": "pnpm --filter @oogiri-bot/admin test",
+    "admin:test:watch": "pnpm --filter @oogiri-bot/admin test:watch",
     "serve": "pnpm --filter @oogiri-bot/functions serve",
     "build": "pnpm --filter @oogiri-bot/functions build",
     "type-check": "pnpm --filter @oogiri-bot/functions type-check",
