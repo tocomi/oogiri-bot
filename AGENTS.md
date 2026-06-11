@@ -100,3 +100,9 @@ pnpm migrate
 
 - API は Firebase Functions で動作するため、`pnpm serve` で Firebase Emulator を起動する
 - Node.js バージョンは 22.22.1 を使用（mise で管理）
+
+## コーディング規約
+- any は出来る限り使用しない
+- optional は特定の理由がない限り使用しない
+- 関数や型のフィールドには JSDoc 形式でコメントをつける
+  - 関数ではなにをするかだけでなく、何のために必要なのかも明記する
