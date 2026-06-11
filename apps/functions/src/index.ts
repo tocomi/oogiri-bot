@@ -4,6 +4,7 @@ import express from 'express'
 import * as functions from 'firebase-functions'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 
+import { handleAdminApiRequest } from './admin/adminApi'
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
 import { config } from './config'
 import {
@@ -320,6 +321,7 @@ registerHandlers({
 functions.setGlobalOptions({ region: 'asia-northeast1' })
 
 exports.api = functions.https.onRequest(app)
+exports.adminApi = functions.https.onRequest(handleAdminApiRequest)
 
 // NOTE: 毎日 9 時にカウント通知
 exports.scheduledNotifyCount = onSchedule(
