@@ -1,5 +1,6 @@
 import { and, count, desc, eq, inArray, ne } from 'drizzle-orm'
 
+import { SlackParams } from '../api/Api'
 import { db as defaultDb } from '../db/client'
 import { kotae, odai, result, vote } from '../db/schema'
 import { generateId } from '../util/generateId'
@@ -30,6 +31,22 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
 
   constructor(db: Db = defaultDb) {
     this.db = db
+  }
+
+  /**
+   * 登録されているお題の総数を Postgres から取得する
+   */
+  async countAll({ slackTeamId }: SlackParams): Promise<number | null> {
+    try {
+      const rows = await this.db
+        .select({ count: count() })
+        .from(odai)
+        .where(eq(odai.teamId, slackTeamId))
+      return rows[0].count
+    } catch (error) {
+      console.error(error)
+      return null
+    }
   }
 
   async createNormal({

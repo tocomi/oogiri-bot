@@ -1,7 +1,8 @@
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, count, eq, inArray } from 'drizzle-orm'
 
+import { SlackParams } from '../api/Api'
 import { db as defaultDb } from '../db/client'
-import { kotae, vote } from '../db/schema'
+import { kotae, odai, vote } from '../db/schema'
 import {
   KotaePostRequestParams,
   KotaeOfCurrentOdaiParams,
@@ -22,6 +23,23 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
 
   constructor(db: Db = defaultDb) {
     this.db = db
+  }
+
+  /**
+   * 投稿されている答えの総数を Postgres から取得する
+   */
+  async countAll({ slackTeamId }: SlackParams): Promise<number | null> {
+    try {
+      const rows = await this.db
+        .select({ count: count() })
+        .from(kotae)
+        .innerJoin(odai, eq(kotae.odaiId, odai.id))
+        .where(eq(odai.teamId, slackTeamId))
+      return rows[0].count
+    } catch (error) {
+      console.error(error)
+      return null
+    }
   }
 
   async create(

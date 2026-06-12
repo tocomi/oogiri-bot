@@ -1,3 +1,4 @@
+import { SlackParams } from '../api/Api'
 import {
   OdaiCurrentParams,
   OdaiCurrentResponse,
@@ -15,6 +16,10 @@ import {
 
 export interface OdaiRepository {
   createNormal(params: OdaiNormalPostRequest): Promise<boolean>
+  /**
+   * 登録されているお題の総数を取得する
+   */
+  countAll(params: SlackParams): Promise<number | null>
   getCurrent(params: OdaiCurrentParams): Promise<OdaiCurrentResponse | null>
   getRecentFinished(
     params: OdaiRecentFinishedParams,

@@ -1,3 +1,4 @@
+import { SlackParams } from '../api/Api'
 import {
   KotaeByContentParams,
   KotaeByContentResponse,
@@ -12,6 +13,10 @@ import {
 
 export interface KotaeRepository {
   create(params: KotaePostRequestParams, odaiId: string): Promise<boolean>
+  /**
+   * 投稿されている答えの総数を取得する
+   */
+  countAll(params: SlackParams): Promise<number | null>
   getAllOfCurrentOdai(
     params: KotaeOfCurrentOdaiParams,
     odaiDocId: string,

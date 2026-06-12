@@ -73,6 +73,69 @@ export const seedVote = async (
   return base
 }
 
+/**
+ * 管理画面の集計テスト用データを投入する。
+ * teamId ごとの絞り込みが repository の join を含めて機能することを検証するために使う。
+ *
+ * TEAM_ID:
+ * - お題: 2件
+ * - 回答: 3件
+ * - 投票: 2件
+ *
+ * OTHER_TEAM_ID:
+ * - お題: 1件
+ * - 回答: 1件
+ * - 投票: 1件
+ */
+export const seedDashboardMetricsScenario = async (db: TestDb) => {
+  await seedOdai(db, { id: 'odai-team-1', teamId: TEAM_ID })
+  await seedOdai(db, { id: 'odai-team-2', teamId: TEAM_ID })
+  await seedOdai(db, {
+    id: 'odai-other-team',
+    teamId: OTHER_TEAM_ID,
+  })
+
+  await seedKotae(db, {
+    createdBy: USER_1,
+    id: 'kotae-team-1',
+    odaiId: 'odai-team-1',
+  })
+  await seedKotae(db, {
+    createdBy: USER_2,
+    id: 'kotae-team-2',
+    odaiId: 'odai-team-1',
+  })
+  await seedKotae(db, {
+    createdBy: USER_1,
+    id: 'kotae-team-3',
+    odaiId: 'odai-team-2',
+  })
+  await seedKotae(db, {
+    createdBy: USER_2,
+    id: 'kotae-other-team',
+    odaiId: 'odai-other-team',
+  })
+
+  await seedVote(db, {
+    createdBy: USER_3,
+    id: 'vote-team-1',
+    kotaeId: 'kotae-team-1',
+    odaiId: 'odai-team-1',
+  })
+  await seedVote(db, {
+    createdBy: USER_2,
+    id: 'vote-team-2',
+    kotaeId: 'kotae-team-3',
+    odaiId: 'odai-team-2',
+  })
+  await seedVote(db, {
+    createdBy: USER_1,
+    id: 'vote-other-team',
+    kotaeId: 'kotae-other-team',
+    odaiId: 'odai-other-team',
+  })
+}
+
 // ── シナリオシード ────────────────────────────────────────────
 
 /**

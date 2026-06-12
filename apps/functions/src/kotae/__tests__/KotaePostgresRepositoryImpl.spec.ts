@@ -5,10 +5,12 @@ import {
   KOTAE_2_ID,
   KOTAE_3_ID,
   ODAI_VOTING_ID,
+  OTHER_TEAM_ID,
   TEAM_ID,
   USER_1,
   USER_2,
   USER_3,
+  seedDashboardMetricsScenario,
   seedVotingScenario,
 } from '../../test/seeds'
 import { clearDb, startDb, stopDb, testDb } from '../../test/setupDb'
@@ -28,6 +30,26 @@ describe('KotaePostgresRepositoryImpl', () => {
 
   beforeEach(async () => {
     await clearDb()
+  })
+
+  // ── countAll ──────────────────────────────────────────────
+
+  describe('countAll', () => {
+    it('指定チームの回答数だけを返す', async () => {
+      await seedDashboardMetricsScenario(testDb)
+
+      const result = await repo.countAll({ slackTeamId: TEAM_ID })
+
+      expect(result).toBe(3)
+    })
+
+    it('別チームの回答数だけを返す', async () => {
+      await seedDashboardMetricsScenario(testDb)
+
+      const result = await repo.countAll({ slackTeamId: OTHER_TEAM_ID })
+
+      expect(result).toBe(1)
+    })
   })
 
   // ── getAllOfCurrentOdai ───────────────────────────────────

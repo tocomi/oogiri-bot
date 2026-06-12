@@ -1,9 +1,27 @@
 import type * as functions from 'firebase-functions'
 
 import { Hono } from 'hono'
+import { z } from 'zod'
+
+import { hasError, IllegalArgumentError } from '../api/Error'
+import { KotaePostgresRepositoryImpl } from '../kotae/KotaePostgresRepositoryImpl'
+import { OdaiPostgresRepositoryImpl } from '../odai/OdaiPostgresRepositoryImpl'
+import { VotePostgresRepositoryImpl } from '../vote/VotePostgresRepositoryImpl'
+import { AdminDashboardMetricsServiceImpl } from './AdminDashboardMetricsService'
 
 type AdminApiHandler = Parameters<typeof functions.https.onRequest>[0]
 type AdminApiRequest = Parameters<AdminApiHandler>[0]
+
+const adminDashboardMetricsQuerySchema = z.object({
+  /** 集計対象の Slack チーム ID */
+  slackTeamId: z.string().min(1),
+})
+
+const adminDashboardMetricsService = new AdminDashboardMetricsServiceImpl({
+  kotaeRepository: new KotaePostgresRepositoryImpl(),
+  odaiRepository: new OdaiPostgresRepositoryImpl(),
+  voteRepository: new VotePostgresRepositoryImpl(),
+})
 
 /**
  * Firebase Functions の HTTP request headers を Hono が扱う Web Headers に変換する
@@ -54,6 +72,22 @@ export const adminApp = new Hono()
 
 adminApp.get('/health', (c) => {
   return c.json({ ok: true, service: 'admin-api' })
+})
+
+adminApp.get('/dashboard/metrics', async (c) => {
+  const query = adminDashboardMetricsQuerySchema.safeParse({
+    slackTeamId: c.req.query('slackTeamId'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const metrics = await adminDashboardMetricsService.get(query.data)
+  if (hasError(metrics)) {
+    return c.json(metrics, metrics.status)
+  }
+
+  return c.json(metrics)
 })
 
 /**
