@@ -39,6 +39,22 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     }
   }
 
+  /**
+   * 指定お題に紐づく投票の件数を Postgres から取得する
+   */
+  async countByOdaiId({ odaiId }: { odaiId: string }): Promise<number | null> {
+    try {
+      const rows = await this.db
+        .select({ count: count() })
+        .from(vote)
+        .where(eq(vote.odaiId, odaiId))
+      return rows[0].count
+    } catch (error) {
+      console.error(error)
+      return null
+    }
+  }
+
   async checkDuplication({
     votedBy,
     rank,

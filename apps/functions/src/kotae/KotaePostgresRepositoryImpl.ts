@@ -42,6 +42,22 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
     }
   }
 
+  /**
+   * 指定お題に紐づく答えの件数を Postgres から取得する
+   */
+  async countByOdaiId({ odaiId }: { odaiId: string }): Promise<number | null> {
+    try {
+      const rows = await this.db
+        .select({ count: count() })
+        .from(kotae)
+        .where(eq(kotae.odaiId, odaiId))
+      return rows[0].count
+    } catch (error) {
+      console.error(error)
+      return null
+    }
+  }
+
   async create(
     { content, createdBy, id }: KotaePostRequestParams,
     odaiId: string,

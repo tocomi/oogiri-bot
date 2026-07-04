@@ -17,6 +17,10 @@ export interface KotaeRepository {
    * 投稿されている答えの総数を取得する
    */
   countAll(params: SlackParams): Promise<number | null>
+  /**
+   * 指定お題に紐づく答えの件数を取得する
+   */
+  countByOdaiId(params: { odaiId: string }): Promise<number | null>
   getAllOfCurrentOdai(
     params: KotaeOfCurrentOdaiParams,
     odaiDocId: string,

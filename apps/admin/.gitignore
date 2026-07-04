@@ -1,5 +1,6 @@
 # vitest
 __screenshots__/
+.vitest-attachments/
 
 # next.js
 .next/

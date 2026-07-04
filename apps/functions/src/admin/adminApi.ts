@@ -7,6 +7,7 @@ import { hasError, IllegalArgumentError } from '../api/Error'
 import { KotaePostgresRepositoryImpl } from '../kotae/KotaePostgresRepositoryImpl'
 import { OdaiPostgresRepositoryImpl } from '../odai/OdaiPostgresRepositoryImpl'
 import { VotePostgresRepositoryImpl } from '../vote/VotePostgresRepositoryImpl'
+import { AdminActiveOdaiServiceImpl } from './AdminActiveOdaiService'
 import { AdminDashboardMetricsServiceImpl } from './AdminDashboardMetricsService'
 
 type AdminApiHandler = Parameters<typeof functions.https.onRequest>[0]
@@ -18,6 +19,12 @@ const adminDashboardMetricsQuerySchema = z.object({
 })
 
 const adminDashboardMetricsService = new AdminDashboardMetricsServiceImpl({
+  kotaeRepository: new KotaePostgresRepositoryImpl(),
+  odaiRepository: new OdaiPostgresRepositoryImpl(),
+  voteRepository: new VotePostgresRepositoryImpl(),
+})
+
+const adminActiveOdaiService = new AdminActiveOdaiServiceImpl({
   kotaeRepository: new KotaePostgresRepositoryImpl(),
   odaiRepository: new OdaiPostgresRepositoryImpl(),
   voteRepository: new VotePostgresRepositoryImpl(),
@@ -88,6 +95,22 @@ adminApp.get('/dashboard/metrics', async (c) => {
   }
 
   return c.json(metrics)
+})
+
+adminApp.get('/dashboard/active-odai', async (c) => {
+  const query = adminDashboardMetricsQuerySchema.safeParse({
+    slackTeamId: c.req.query('slackTeamId'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const overview = await adminActiveOdaiService.get(query.data)
+  if (hasError(overview)) {
+    return c.json(overview, overview.status)
+  }
+
+  return c.json(overview)
 })
 
 /**

@@ -1,6 +1,10 @@
 import { Suspense } from 'react'
 
 import {
+  AdminActiveOdaiOverview,
+  AdminActiveOdaiOverviewSkeleton,
+} from '@/features/dashboard/components/AdminActiveOdaiOverview'
+import {
   AdminDashboardMetrics,
   AdminDashboardMetricsSkeleton,
 } from '@/features/dashboard/components/AdminDashboardMetrics'
@@ -23,6 +27,9 @@ export default function Home() {
         >
           ダッシュボード
         </h1>
+        <Suspense fallback={<AdminActiveOdaiOverviewSkeleton />}>
+          <AdminActiveOdaiOverview />
+        </Suspense>
         <Suspense fallback={<AdminDashboardMetricsSkeleton />}>
           <AdminDashboardMetrics />
         </Suspense>

@@ -10,6 +10,7 @@ import {
   USER_2,
   USER_3,
   seedDashboardMetricsScenario,
+  seedOdai,
   seedVotingScenario,
 } from '../../test/seeds'
 import { clearDb, startDb, stopDb, testDb } from '../../test/setupDb'
@@ -48,6 +49,26 @@ describe('VotePostgresRepositoryImpl', () => {
       const result = await repo.countAll({ slackTeamId: OTHER_TEAM_ID })
 
       expect(result).toBe(1)
+    })
+  })
+
+  // ── countByOdaiId ─────────────────────────────────────────
+
+  describe('countByOdaiId', () => {
+    it('指定お題の投票数だけを返す', async () => {
+      await seedVotingScenario(testDb)
+
+      const result = await repo.countByOdaiId({ odaiId: ODAI_VOTING_ID })
+
+      expect(result).toBe(4)
+    })
+
+    it('投票がないお題は 0 を返す', async () => {
+      await seedOdai(testDb, { id: 'odai-no-votes' })
+
+      const result = await repo.countByOdaiId({ odaiId: 'odai-no-votes' })
+
+      expect(result).toBe(0)
     })
   })
 
