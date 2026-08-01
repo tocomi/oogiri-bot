@@ -29,34 +29,21 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
   }: VoteCheckDuplicationParams): Promise<
     'ok' | 'alreadyVoted' | 'alreadySameRankVoted'
   > {
-    const alreadyVoted = await this.db
-      .select()
+    // NOTE: 同一お題における自分の投票をまとめて取得し、重複判定はメモリ上で行う
+    const myVotes = await this.db
+      .select({ kotaeId: vote.kotaeId, rank: vote.rank })
       .from(vote)
-      .where(and(eq(vote.kotaeId, kotaeId), eq(vote.createdBy, votedBy)))
-      .limit(1)
+      .where(and(eq(vote.odaiId, odaiId), eq(vote.createdBy, votedBy)))
 
-    if (alreadyVoted.length) {
+    if (myVotes.some((v) => v.kotaeId === kotaeId)) {
       console.log('Already voted.')
       return 'alreadyVoted'
     }
 
-    if (rank === 1 || rank === 2) {
-      const sameRankVote = await this.db
-        .select()
-        .from(vote)
-        .where(
-          and(
-            eq(vote.odaiId, odaiId),
-            eq(vote.createdBy, votedBy),
-            eq(vote.rank, rank),
-          ),
-        )
-        .limit(1)
-
-      if (sameRankVote.length) {
-        console.log('Already same rank voted.')
-        return 'alreadySameRankVoted'
-      }
+    // NOTE: rank1 / rank2 は 1 お題につき 1 回のみ
+    if ((rank === 1 || rank === 2) && myVotes.some((v) => v.rank === rank)) {
+      console.log('Already same rank voted.')
+      return 'alreadySameRankVoted'
     }
 
     return 'ok'

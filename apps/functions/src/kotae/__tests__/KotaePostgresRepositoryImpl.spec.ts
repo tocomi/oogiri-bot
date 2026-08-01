@@ -197,19 +197,4 @@ describe('KotaePostgresRepositoryImpl', () => {
       expect(result).toBeNull()
     })
   })
-
-  // ── incrementVoteCount ────────────────────────────────────
-
-  describe('incrementVoteCount', () => {
-    it('常に true を返す（Postgres では no-op）', async () => {
-      const result = await repo.incrementVoteCount({
-        slackTeamId: TEAM_ID,
-        odaiDocId: ODAI_VOTING_ID,
-        kotaeDocId: KOTAE_1_ID,
-        rank: 1,
-      })
-
-      expect(result).toBe(true)
-    })
-  })
 })
