@@ -8,9 +8,8 @@ import {
   KotaePersonalResultParams,
   KotaeVotedByParams,
   KotaeVotedBy,
-  KotaeByContentParams,
-  KotaeByContentResponse,
-  KotaeIncrementVoteCountParams,
+  KotaeByContentQuery,
+  KotaeIdentity,
   Kotae,
 } from './Kotae'
 import { KotaeRepository } from './KotaeRepository'
@@ -129,9 +128,7 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
   async getByContent({
     content,
     odaiDocId,
-  }: KotaeByContentParams & {
-    odaiDocId: string
-  }): Promise<KotaeByContentResponse | null> {
+  }: KotaeByContentQuery): Promise<KotaeIdentity | null> {
     try {
       const rows = await this.db
         .select()
@@ -145,34 +142,15 @@ export class KotaePostgresRepositoryImpl implements KotaeRepository {
         return null
       }
 
-      const votes = await this.db
-        .select({ rank: vote.rank })
-        .from(vote)
-        .where(eq(vote.kotaeId, data.id))
-
       return {
         id: data.id,
         content: data.content,
         createdBy: data.createdBy,
-        votedCount: votes.length,
-        votedFirstCount: votes.filter((v) => v.rank === 1).length,
-        votedSecondCount: votes.filter((v) => v.rank === 2).length,
-        votedThirdCount: votes.filter((v) => v.rank === 3).length,
         createdAt: new Date(data.createdAt).getTime(),
       }
     } catch (error) {
       console.error(error)
       return null
     }
-  }
-
-  // Postgres では votedCount は vote テーブルから動的に集計するため no-op
-  async incrementVoteCount(
-    _params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
-      odaiDocId: string
-      kotaeDocId: string
-    },
-  ): Promise<boolean> {
-    return true
   }
 }

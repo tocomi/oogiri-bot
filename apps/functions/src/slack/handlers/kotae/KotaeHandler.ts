@@ -6,7 +6,6 @@ import { createPersonalCommentaryBlocks } from '../../../kotae/blocks/createPers
 import { kotaeCreatedBlocks } from '../../../kotae/blocks/kotaeCreatedBlocks'
 import { KotaeService } from '../../../kotae/KotaeService'
 import { makePointRanking } from '../../../kotae/rank/makePointRanking'
-import { OdaiService } from '../../../odai/OdaiService'
 import { getSlackUserList } from '../../../util/getSlackUserList'
 import { logResult } from '../../../util/logResult'
 import { medalEmoji } from '../../../vote/util'
@@ -31,11 +30,9 @@ import {
 export const registerKotaeHandlers = ({
   app,
   kotaeService,
-  odaiService,
 }: {
   app: App
   kotaeService: KotaeService
-  odaiService: OdaiService
 }) => {
   // NOTE: ショートカット/ボタンからの回答モーダルオープン
   app.shortcut(
@@ -122,16 +119,6 @@ export const registerKotaeHandlers = ({
           logger.error(result.message)
           await postInternalErrorMessage({ client, user: body.user.id })
         }
-        return
-      }
-
-      const odaiResult = logResult(
-        'odaiService.getCurrent',
-        await odaiService.getCurrent({ slackTeamId: view.team_id }),
-      )
-      if (hasError(odaiResult)) {
-        logger.error(odaiResult.message)
-        postInternalErrorMessage({ client, user: body.user.id })
         return
       }
 

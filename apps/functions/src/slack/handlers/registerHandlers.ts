@@ -19,6 +19,6 @@ export const registerHandlers = ({
   voteService: VoteService
 }) => {
   registerOdaiHandlers({ app, odaiService, kotaeService, voteService })
-  registerKotaeHandlers({ app, kotaeService, odaiService })
+  registerKotaeHandlers({ app, kotaeService })
   registerVoteHandlers({ app, voteService })
 }

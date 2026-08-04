@@ -14,7 +14,6 @@ import {
   KotaeCountsRequest,
   KotaeCountsResponse,
   KotaeGetAllResponse,
-  KotaeIncrementVoteCountParams,
   KotaeOfCurrentOdaiParams,
   KotaePersonalCommentaryParams,
   KotaePersonalCommentaryResponse,
@@ -39,13 +38,8 @@ export interface KotaeService {
     params: KotaePersonalResultParams,
   ): Promise<KotaePersonalResultResponse>
 
-  /** 回答内容をキーに情報を取得 */
+  /** 回答内容をキーに情報を取得。対象のお題は呼び出し側が解決して渡す */
   getByContent(params: KotaeByContentParams): Promise<KotaeByContentResponse>
-
-  /** 投票数を加算する */
-  incrementVoteCount(
-    params: KotaeIncrementVoteCountParams,
-  ): Promise<ApiPostStatus>
 
   /** 現在アクティブなお題の回答数と回答参加者数を取得 */
   getCurrentCounts(params: KotaeCountsRequest): Promise<KotaeCountsResponse>
@@ -150,38 +144,15 @@ export class KotaeServiceImpl implements KotaeService {
   async getByContent({
     slackTeamId,
     content,
+    odaiId,
   }: KotaeByContentParams): Promise<KotaeByContentResponse | ApiError> {
-    const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
-    if (hasError(currentOdai)) return currentOdai
-
     const kotae = await this.repository.getByContent({
       slackTeamId,
       content,
-      odaiDocId: currentOdai.id,
+      odaiDocId: odaiId,
     })
     if (!kotae) return NoTargetKotaeError
     return kotae
-  }
-
-  async incrementVoteCount({
-    slackTeamId,
-    content,
-    rank,
-  }: KotaeIncrementVoteCountParams): Promise<ApiPostStatus> {
-    const currentOdai = await this.odaiService.getCurrent({ slackTeamId })
-    if (hasError(currentOdai)) return currentOdai
-
-    const kotae = await this.getByContent({ slackTeamId, content })
-    if (hasError(kotae)) return kotae
-
-    const result = await this.repository.incrementVoteCount({
-      slackTeamId,
-      odaiDocId: currentOdai.id,
-      kotaeDocId: kotae.id,
-      rank,
-    })
-
-    return result ? 'ok' : InternalServerError
   }
 
   async getPersonalCommentary({

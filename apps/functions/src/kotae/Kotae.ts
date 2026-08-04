@@ -55,14 +55,23 @@ export type KotaePersonalResultResponse =
 
 export type KotaeByContentParams = SlackParams & {
   content: string
+  /** 解決済みのお題 ID。呼び出し側で解決してから渡す */
+  odaiId: string
 }
 
-export type KotaeByContentResponse = Kotae | ApiError
-
-export type KotaeIncrementVoteCountParams = SlackParams & {
+/** repository 層の検索条件 */
+export type KotaeByContentQuery = SlackParams & {
   content: string
-  rank: 1 | 2 | 3
+  odaiDocId: string
 }
+
+/** 回答の識別に必要な情報のみ。投票数の集計は含まない */
+export type KotaeIdentity = Pick<
+  Kotae,
+  'id' | 'content' | 'createdBy' | 'createdAt'
+>
+
+export type KotaeByContentResponse = KotaeIdentity | ApiError
 
 export type KotaeCountsRequest = SlackParams
 export type KotaeCountsResponse =

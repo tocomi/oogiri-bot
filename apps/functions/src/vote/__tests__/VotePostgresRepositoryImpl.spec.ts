@@ -8,6 +8,7 @@ import {
   USER_1,
   USER_2,
   USER_3,
+  seedPastOdaiVotes,
   seedVotingScenario,
 } from '../../test/seeds'
 import { clearDb, startDb, stopDb, testDb } from '../../test/setupDb'
@@ -104,6 +105,39 @@ describe('VotePostgresRepositoryImpl', () => {
         rank: 3,
         odaiId: ODAI_VOTING_ID,
         kotaeId: KOTAE_3_ID,
+      })
+
+      expect(result).toBe('ok')
+    })
+
+    it('別お題で rank1 を使っていても現在のお題では rank1 を使える', async () => {
+      await seedVotingScenario(testDb)
+      await seedPastOdaiVotes(testDb)
+
+      // USER_1 は ODAI_FINISHED_1_ID で rank1 を使用済みだが、
+      // ODAI_VOTING_ID ではまだ使っていない
+      const result = await repo.checkDuplication({
+        slackTeamId: TEAM_ID,
+        votedBy: USER_1,
+        rank: 1,
+        odaiId: ODAI_VOTING_ID,
+        kotaeId: KOTAE_3_ID,
+      })
+
+      expect(result).toBe('ok')
+    })
+
+    it('別お題で投票済みでも現在のお題の回答には投票できる', async () => {
+      await seedVotingScenario(testDb)
+      await seedPastOdaiVotes(testDb)
+
+      // USER_1 は KOTAE_PAST_ID に投票済みだが、別お題の回答なので影響しない
+      const result = await repo.checkDuplication({
+        slackTeamId: TEAM_ID,
+        votedBy: USER_1,
+        rank: 3,
+        odaiId: ODAI_VOTING_ID,
+        kotaeId: KOTAE_1_ID,
       })
 
       expect(result).toBe('ok')
