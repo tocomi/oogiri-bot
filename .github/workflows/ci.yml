@@ -59,6 +59,21 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      # apps/functions だけを npm install する Cloud Build と同じ条件を再現し、
+      # 実行時依存が解決できることを確認する。pnpm workspace のリンク越しでは
+      # 見えない依存欠落を、デプロイ前にここで検出する。
+      - name: Verify deploy-time dependency resolution
+        run: |
+          DEPLOY_CHECK_DIR="$(mktemp -d)"
+          cp apps/functions/package.json "$DEPLOY_CHECK_DIR/"
+          npm install \
+            --prefix "$DEPLOY_CHECK_DIR" \
+            --omit=dev \
+            --ignore-scripts \
+            --no-audit \
+            --no-fund
+          node apps/functions/scripts/verify-runtime-deps.mjs "$DEPLOY_CHECK_DIR"
+
   admin:
     name: Admin CI
     runs-on: ubuntu-latest
