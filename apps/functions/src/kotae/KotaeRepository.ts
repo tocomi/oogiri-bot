@@ -1,8 +1,7 @@
 import { SlackParams } from '../api/Api'
 import {
-  KotaeByContentParams,
-  KotaeByContentResponse,
-  KotaeIncrementVoteCountParams,
+  KotaeByContentQuery,
+  KotaeIdentity,
   KotaeOfCurrentOdaiParams,
   KotaePersonalResultParams,
   KotaePostRequestParams,
@@ -30,13 +29,5 @@ export interface KotaeRepository {
     odaiDocId: string,
   ): Promise<Kotae[]>
   getVotedBy(params: KotaeVotedByParams): Promise<KotaeVotedBy[]>
-  getByContent(
-    params: KotaeByContentParams & { odaiDocId: string },
-  ): Promise<KotaeByContentResponse | null>
-  incrementVoteCount(
-    params: Pick<KotaeIncrementVoteCountParams, 'slackTeamId' | 'rank'> & {
-      odaiDocId: string
-      kotaeDocId: string
-    },
-  ): Promise<boolean>
+  getByContent(params: KotaeByContentQuery): Promise<KotaeIdentity | null>
 }

@@ -51,7 +51,12 @@ export class VoteServiceImpl implements VoteService {
     if (hasError(currentOdai)) return currentOdai
     if (currentOdai.status !== 'voting') return NoVotingOdaiError
 
-    const kotae = await this.kotaeService.getByContent({ slackTeamId, content })
+    // NOTE: 解決済みのお題を渡してお題の再取得を省略する
+    const kotae = await this.kotaeService.getByContent({
+      slackTeamId,
+      content,
+      odaiId: currentOdai.id,
+    })
     if (hasError(kotae)) return kotae
 
     const duplicationResult = await this.repository.checkDuplication({
@@ -75,12 +80,6 @@ export class VoteServiceImpl implements VoteService {
       odaiId: currentOdai.id,
       kotaeId: kotae.id,
       kotaeCreatedBy: kotae.createdBy,
-    })
-
-    await this.kotaeService.incrementVoteCount({
-      slackTeamId,
-      content,
-      rank,
     })
 
     return { vote: voteResult }

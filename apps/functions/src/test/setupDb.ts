@@ -30,6 +30,51 @@ export const stopDb = async () => {
   await container?.stop()
 }
 
+/**
+ * fn の実行中に発行された SQL を記録する。
+ * DB 往復回数そのものを固定するための計測用ヘルパー。
+ */
+export const recordQueries = async <T>(
+  fn: () => Promise<T>,
+): Promise<{ result: T; queries: string[] }> => {
+  const target = pool
+  if (!target) throw new Error('DB が起動していません')
+
+  const queries: string[] = []
+  const original = target.query.bind(target) as (
+    ...args: unknown[]
+  ) => Promise<unknown>
+
+  const patched = (...args: unknown[]) => {
+    const [first] = args
+    queries.push(
+      typeof first === 'string'
+        ? first
+        : String((first as { text?: string })?.text ?? ''),
+    )
+    return original(...args)
+  }
+  target.query = patched as typeof target.query
+
+  try {
+    const result = await fn()
+    return { result, queries }
+  } finally {
+    target.query = original as typeof target.query
+  }
+}
+
+/**
+ * 記録した SQL を `操作 テーブル名` の一覧に畳む。
+ * 例: ['select Odai', 'select Kotae', 'select Vote', 'insert Vote']
+ */
+export const summarizeQueries = (queries: string[]): string[] =>
+  queries.map((query) => {
+    const operation = query.trim().split(/\s+/)[0].toLowerCase()
+    const table = query.match(/(?:from|into|update)\s+"(\w+)"/)
+    return `${operation} ${table?.[1] ?? '?'}`
+  })
+
 export const clearDb = async () => {
   await testDb.delete(result)
   await testDb.delete(vote)

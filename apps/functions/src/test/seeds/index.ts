@@ -13,6 +13,7 @@ export const ODAI_FINISHED_2_ID = 'odai-finished-2' // 新しい（直近）
 export const KOTAE_1_ID = 'kotae-1' // user-1 が投稿、票あり
 export const KOTAE_2_ID = 'kotae-2' // user-2 が投稿、票あり
 export const KOTAE_3_ID = 'kotae-3' // user-1 が投稿、票なし
+export const KOTAE_PAST_ID = 'kotae-past' // 過去のお題の回答
 
 export const USER_1 = 'user-1'
 export const USER_2 = 'user-2'
@@ -294,6 +295,47 @@ export const seedVotingScenario = async (db: TestDb) => {
       createdAt: new Date('2025-02-03T03:00:00Z').toISOString(),
     },
   ])
+}
+
+/**
+ * 過去（終了済み）のお題とそこでの投票を投入する。
+ * seedVotingScenario と併用し、重複判定がお題をまたがないことの確認に使う。
+ *
+ * お題: ODAI_FINISHED_1_ID（status='finished'）
+ * 回答: KOTAE_PAST_ID: USER_2 が投稿
+ * 投票: USER_1 → KOTAE_PAST_ID rank1
+ *       （USER_1 は ODAI_VOTING_ID では未投票なので、
+ *         お題スコープが効いていれば現在のお題で rank1 を使える）
+ */
+export const seedPastOdaiVotes = async (db: TestDb) => {
+  await db.insert(odai).values({
+    id: ODAI_FINISHED_1_ID,
+    teamId: TEAM_ID,
+    title: '古い終了お題',
+    type: 'normal',
+    status: 'finished',
+    dueDate: new Date('2024-12-31').toISOString(),
+    imageUrl: null,
+    createdBy: USER_1,
+    createdAt: new Date('2024-12-01').toISOString(),
+  })
+
+  await db.insert(kotae).values({
+    id: KOTAE_PAST_ID,
+    odaiId: ODAI_FINISHED_1_ID,
+    content: '過去の回答',
+    createdBy: USER_2,
+    createdAt: new Date('2024-12-02').toISOString(),
+  })
+
+  await db.insert(vote).values({
+    id: 'vote-u1-past-r1',
+    odaiId: ODAI_FINISHED_1_ID,
+    kotaeId: KOTAE_PAST_ID,
+    rank: 1,
+    createdBy: USER_1,
+    createdAt: new Date('2024-12-03').toISOString(),
+  })
 }
 
 /**
