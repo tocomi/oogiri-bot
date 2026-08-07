@@ -9,25 +9,74 @@ import { OdaiPostgresRepositoryImpl } from '../odai/OdaiPostgresRepositoryImpl'
 import { VotePostgresRepositoryImpl } from '../vote/VotePostgresRepositoryImpl'
 import { AdminActiveOdaiServiceImpl } from './AdminActiveOdaiService'
 import { AdminDashboardMetricsServiceImpl } from './AdminDashboardMetricsService'
+import { AdminOdaiDetailServiceImpl } from './AdminOdaiDetailService'
+import { AdminOdaiListServiceImpl } from './AdminOdaiListService'
+import { AdminReportingPostgresRepositoryImpl } from './AdminReportingPostgresRepositoryImpl'
+import { AdminSummaryServiceImpl } from './AdminSummaryService'
+import { SlackAdminUserNameResolver } from './AdminUserNameResolver'
 
 type AdminApiHandler = Parameters<typeof functions.https.onRequest>[0]
 type AdminApiRequest = Parameters<AdminApiHandler>[0]
 
+const kotaeRepository = new KotaePostgresRepositoryImpl()
+const odaiRepository = new OdaiPostgresRepositoryImpl()
+const voteRepository = new VotePostgresRepositoryImpl()
+const reportingRepository = new AdminReportingPostgresRepositoryImpl()
+
+const slackTeamIdSchema = z.string().min(1)
+
+/** 期間を受け取るエンドポイントで共通の検証 */
+const periodSchema = z
+  .object({
+    /** 集計期間の開始（Unix ミリ秒） */
+    from: z.coerce.number().int().nonnegative(),
+    /** 集計期間の終了（Unix ミリ秒） */
+    to: z.coerce.number().int().nonnegative(),
+  })
+  .refine(({ from, to }) => from < to, {
+    message: 'from must be earlier than to',
+  })
+
 const adminDashboardMetricsQuerySchema = z.object({
-  /** 集計対象の Slack チーム ID */
-  slackTeamId: z.string().min(1),
+  slackTeamId: slackTeamIdSchema,
 })
 
+const adminSummaryQuerySchema = z
+  .object({ slackTeamId: slackTeamIdSchema })
+  .and(periodSchema)
+
+const adminOdaiListQuerySchema = z
+  .object({
+    slackTeamId: slackTeamIdSchema,
+    /** 取得する最大件数 */
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+  })
+  .and(periodSchema)
+
 const adminDashboardMetricsService = new AdminDashboardMetricsServiceImpl({
-  kotaeRepository: new KotaePostgresRepositoryImpl(),
-  odaiRepository: new OdaiPostgresRepositoryImpl(),
-  voteRepository: new VotePostgresRepositoryImpl(),
+  kotaeRepository,
+  odaiRepository,
+  voteRepository,
 })
 
 const adminActiveOdaiService = new AdminActiveOdaiServiceImpl({
-  kotaeRepository: new KotaePostgresRepositoryImpl(),
-  odaiRepository: new OdaiPostgresRepositoryImpl(),
-  voteRepository: new VotePostgresRepositoryImpl(),
+  kotaeRepository,
+  odaiRepository,
+  voteRepository,
+})
+
+const adminSummaryService = new AdminSummaryServiceImpl({
+  reportingRepository,
+})
+
+const adminOdaiListService = new AdminOdaiListServiceImpl({
+  reportingRepository,
+})
+
+const adminOdaiDetailService = new AdminOdaiDetailServiceImpl({
+  kotaeRepository,
+  odaiRepository,
+  userNameResolver: new SlackAdminUserNameResolver(),
 })
 
 /**
@@ -95,6 +144,62 @@ adminApp.get('/dashboard/metrics', async (c) => {
   }
 
   return c.json(metrics)
+})
+
+adminApp.get('/summary', async (c) => {
+  const query = adminSummaryQuerySchema.safeParse({
+    from: c.req.query('from'),
+    slackTeamId: c.req.query('slackTeamId'),
+    to: c.req.query('to'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const summary = await adminSummaryService.get(query.data)
+  if (hasError(summary)) {
+    return c.json(summary, summary.status)
+  }
+
+  return c.json(summary)
+})
+
+adminApp.get('/odai', async (c) => {
+  const query = adminOdaiListQuerySchema.safeParse({
+    from: c.req.query('from'),
+    limit: c.req.query('limit'),
+    slackTeamId: c.req.query('slackTeamId'),
+    to: c.req.query('to'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const list = await adminOdaiListService.get(query.data)
+  if (hasError(list)) {
+    return c.json(list, list.status)
+  }
+
+  return c.json(list)
+})
+
+adminApp.get('/odai/:odaiId', async (c) => {
+  const query = adminDashboardMetricsQuerySchema.safeParse({
+    slackTeamId: c.req.query('slackTeamId'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const detail = await adminOdaiDetailService.get({
+    odaiId: c.req.param('odaiId'),
+    slackTeamId: query.data.slackTeamId,
+  })
+  if (hasError(detail)) {
+    return c.json(detail, detail.status)
+  }
+
+  return c.json(detail)
 })
 
 adminApp.get('/dashboard/active-odai', async (c) => {

@@ -53,6 +53,12 @@ export const NoFinishedOdaiError: ApiError = {
   message: 'No Finished Odai',
 }
 
+export const NoTargetOdaiError: ApiError = {
+  status: 400,
+  code: 'noTargetOdai',
+  message: 'No Target Odai',
+}
+
 export const NoTargetKotaeError: ApiError = {
   status: 400,
   code: 'noTargetKotae',

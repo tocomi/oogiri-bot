@@ -16,6 +16,7 @@ import {
   OdaiResponseBase,
   OdaiAddResultParams,
   OdaiGetResultParams,
+  OdaiWithPublishedResult,
   OdaiWithResult,
   OdaiGetAllResultsParams,
   PointStat,
@@ -91,6 +92,37 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         console.log('No active odai.')
         return null
       }
+
+      return {
+        ...data,
+        imageUrl: data.imageUrl || undefined,
+        type: data.type as 'normal',
+        dueDate: new Date(data.dueDate).getTime(),
+        status: data.status as OdaiStatus,
+        createdAt: new Date(data.createdAt).getTime(),
+      }
+    } catch (error) {
+      console.error(error)
+      return null
+    }
+  }
+
+  /**
+   * ID を指定してお題を Postgres から取得する
+   */
+  async getById({
+    slackTeamId,
+    odaiId,
+  }: OdaiGetResultParams): Promise<OdaiResponseBase | null> {
+    try {
+      const rows = await this.db
+        .select()
+        .from(odai)
+        .where(and(eq(odai.id, odaiId), eq(odai.teamId, slackTeamId)))
+        .limit(1)
+
+      const data = rows[0]
+      if (!data) return null
 
       return {
         ...data,
@@ -261,7 +293,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
   async getResult({
     slackTeamId,
     odaiId,
-  }: OdaiGetResultParams): Promise<OdaiWithResult | null> {
+  }: OdaiGetResultParams): Promise<OdaiWithPublishedResult | null> {
     try {
       const odaiRows = await this.db
         .select()
@@ -322,6 +354,10 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         voteCount: votes.length,
         pointStats,
         countStats,
+        // NOTE: 結果は発表時に一括で作られるため、最も古い行の作成日時が発表日時になる
+        publishedAt: Math.min(
+          ...results.map((r) => new Date(r.createdAt).getTime()),
+        ),
       }
     } catch (error) {
       console.error(error)

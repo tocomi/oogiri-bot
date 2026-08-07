@@ -412,3 +412,120 @@ export const seedFinishedScenario = async (db: TestDb) => {
     },
   ])
 }
+
+/** 集計 API テストの対象期間 */
+export const SUMMARY_PERIOD = {
+  from: new Date('2025-02-01').getTime(),
+  to: new Date('2025-03-01').getTime(),
+}
+
+/**
+ * 期間つき集計テスト用のデータを投入する。
+ * 対象期間・前期・別チームを混ぜ、期間とチームの両方で絞り込めることを検証するために使う。
+ *
+ * TEAM_ID の対象期間: お題 2件 / 回答 3件（2人）/ 投票 4件（3人）
+ * TEAM_ID の前期: お題 1件 / 回答 1件（1人）/ 投票 1件（1人）
+ * OTHER_TEAM_ID の対象期間: お題 1件 / 回答 1件 / 投票 1件
+ */
+export const seedSummaryScenario = async (db: TestDb) => {
+  const current = new Date('2025-02-10').toISOString()
+  const previous = new Date('2025-01-10').toISOString()
+
+  await seedOdai(db, { id: 'odai-cur-1', createdAt: current })
+  await seedOdai(db, { id: 'odai-cur-2', createdAt: current })
+  await seedOdai(db, { id: 'odai-prev', createdAt: previous })
+  await seedOdai(db, {
+    id: 'odai-other',
+    teamId: OTHER_TEAM_ID,
+    createdAt: current,
+  })
+
+  await db.insert(kotae).values([
+    {
+      id: 'k-cur-1',
+      odaiId: 'odai-cur-1',
+      content: 'a',
+      createdBy: USER_1,
+      createdAt: current,
+    },
+    {
+      id: 'k-cur-2',
+      odaiId: 'odai-cur-1',
+      content: 'b',
+      createdBy: USER_1,
+      createdAt: current,
+    },
+    {
+      id: 'k-cur-3',
+      odaiId: 'odai-cur-2',
+      content: 'c',
+      createdBy: USER_2,
+      createdAt: current,
+    },
+    {
+      id: 'k-prev',
+      odaiId: 'odai-prev',
+      content: 'd',
+      createdBy: USER_1,
+      createdAt: previous,
+    },
+    {
+      id: 'k-other',
+      odaiId: 'odai-other',
+      content: 'e',
+      createdBy: USER_1,
+      createdAt: current,
+    },
+  ])
+
+  await db.insert(vote).values([
+    {
+      id: 'v-cur-1',
+      odaiId: 'odai-cur-1',
+      kotaeId: 'k-cur-1',
+      rank: 1,
+      createdBy: USER_2,
+      createdAt: current,
+    },
+    {
+      id: 'v-cur-2',
+      odaiId: 'odai-cur-1',
+      kotaeId: 'k-cur-2',
+      rank: 2,
+      createdBy: USER_2,
+      createdAt: current,
+    },
+    {
+      id: 'v-cur-3',
+      odaiId: 'odai-cur-1',
+      kotaeId: 'k-cur-1',
+      rank: 1,
+      createdBy: USER_3,
+      createdAt: current,
+    },
+    {
+      id: 'v-cur-4',
+      odaiId: 'odai-cur-2',
+      kotaeId: 'k-cur-3',
+      rank: 1,
+      createdBy: USER_1,
+      createdAt: current,
+    },
+    {
+      id: 'v-prev',
+      odaiId: 'odai-prev',
+      kotaeId: 'k-prev',
+      rank: 1,
+      createdBy: USER_3,
+      createdAt: previous,
+    },
+    {
+      id: 'v-other',
+      odaiId: 'odai-other',
+      kotaeId: 'k-other',
+      rank: 1,
+      createdBy: USER_3,
+      createdAt: current,
+    },
+  ])
+}
