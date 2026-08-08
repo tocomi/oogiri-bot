@@ -4,13 +4,10 @@ import {
   KOTAE_1_ID,
   KOTAE_3_ID,
   ODAI_VOTING_ID,
-  OTHER_TEAM_ID,
   TEAM_ID,
   USER_1,
   USER_2,
   USER_3,
-  seedDashboardMetricsScenario,
-  seedOdai,
   seedPastOdaiVotes,
   seedVotingScenario,
 } from '../../test/seeds'
@@ -31,46 +28,6 @@ describe('VotePostgresRepositoryImpl', () => {
 
   beforeEach(async () => {
     await clearDb()
-  })
-
-  // ── countAll ──────────────────────────────────────────────
-
-  describe('countAll', () => {
-    it('指定チームの投票数だけを返す', async () => {
-      await seedDashboardMetricsScenario(testDb)
-
-      const result = await repo.countAll({ slackTeamId: TEAM_ID })
-
-      expect(result).toBe(2)
-    })
-
-    it('別チームの投票数だけを返す', async () => {
-      await seedDashboardMetricsScenario(testDb)
-
-      const result = await repo.countAll({ slackTeamId: OTHER_TEAM_ID })
-
-      expect(result).toBe(1)
-    })
-  })
-
-  // ── countByOdaiId ─────────────────────────────────────────
-
-  describe('countByOdaiId', () => {
-    it('指定お題の投票数だけを返す', async () => {
-      await seedVotingScenario(testDb)
-
-      const result = await repo.countByOdaiId({ odaiId: ODAI_VOTING_ID })
-
-      expect(result).toBe(4)
-    })
-
-    it('投票がないお題は 0 を返す', async () => {
-      await seedOdai(testDb, { id: 'odai-no-votes' })
-
-      const result = await repo.countByOdaiId({ odaiId: 'odai-no-votes' })
-
-      expect(result).toBe(0)
-    })
   })
 
   // ── checkDuplication ──────────────────────────────────────

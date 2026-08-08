@@ -15,8 +15,13 @@ import { SlackPeriodParams } from '../api/Api'
 import { db as defaultDb } from '../db/client'
 import { kotae, odai, result, vote } from '../db/schema'
 import { OdaiStatus } from '../odai/Odai'
+import { AdminOdaiDetailParams } from './AdminOdaiDetail'
 import { AdminOdaiListItem, AdminOdaiListParams } from './AdminOdaiList'
-import { AdminReportingRepository } from './AdminReportingRepository'
+import {
+  AdminOdaiDetailSource,
+  AdminReadResult,
+  AdminReportingRepository,
+} from './AdminReportingRepository'
 import { AdminSummaryCounts } from './AdminSummary'
 
 type Db = typeof defaultDb
@@ -36,7 +41,7 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
     slackTeamId,
     from,
     to,
-  }: SlackPeriodParams): Promise<AdminSummaryCounts | null> {
+  }: SlackPeriodParams): Promise<AdminReadResult<AdminSummaryCounts>> {
     const fromAt = new Date(from).toISOString()
     const toAt = new Date(to).toISOString()
 
@@ -83,15 +88,18 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
       ])
 
       return {
-        kotaeCount: kotaeRows[0].count,
-        kotaeUserCount: kotaeRows[0].userCount,
-        odaiCount: odaiRows[0].count,
-        voteCount: voteRows[0].count,
-        voteUserCount: voteRows[0].userCount,
+        status: 'ok',
+        value: {
+          kotaeCount: kotaeRows[0].count,
+          kotaeUserCount: kotaeRows[0].userCount,
+          odaiCount: odaiRows[0].count,
+          voteCount: voteRows[0].count,
+          voteUserCount: voteRows[0].userCount,
+        },
       }
     } catch (error) {
       console.error(error)
-      return null
+      return { status: 'error' }
     }
   }
 
@@ -104,7 +112,7 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
     from,
     to,
     limit,
-  }: AdminOdaiListParams): Promise<AdminOdaiListItem[] | null> {
+  }: AdminOdaiListParams): Promise<AdminReadResult<AdminOdaiListItem[]>> {
     try {
       const odaiRows = await this.db
         .select()
@@ -120,7 +128,7 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
         .orderBy(desc(odai.createdAt), desc(odai.id))
         .limit(limit)
 
-      if (!odaiRows.length) return []
+      if (!odaiRows.length) return { status: 'ok', value: [] }
 
       const odaiIds = odaiRows.map((o) => o.id)
 
@@ -152,7 +160,7 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
           .groupBy(result.odaiId),
       ])
 
-      return odaiRows.map((o) => {
+      const items = odaiRows.map((o) => {
         const kotaeStat = kotaeStats.find((k) => k.odaiId === o.id)
         const resultStat = resultStats.find((r) => r.odaiId === o.id)
         const status = o.status as OdaiStatus
@@ -174,9 +182,123 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
             status === 'finished' ? (resultStat?.topPoint ?? null) : null,
         }
       })
+
+      return { status: 'ok', value: items }
     } catch (error) {
       console.error(error)
-      return null
+      return { status: 'error' }
+    }
+  }
+
+  /**
+   * 1 件のお題の集計と順位の材料を Postgres から取得する
+   * 順位の算出は service 側で行うため、ここでは素材だけを返す
+   */
+  async getOdaiDetailSource({
+    slackTeamId,
+    odaiId,
+  }: AdminOdaiDetailParams): Promise<AdminReadResult<AdminOdaiDetailSource>> {
+    try {
+      const odaiRows = await this.db
+        .select()
+        .from(odai)
+        .where(and(eq(odai.id, odaiId), eq(odai.teamId, slackTeamId)))
+        .limit(1)
+
+      const odaiRow = odaiRows[0]
+      if (!odaiRow) return { status: 'notFound' }
+
+      const status = odaiRow.status as OdaiStatus
+
+      const [kotaeRows, voteRows, resultRows] = await Promise.all([
+        this.db.select().from(kotae).where(eq(kotae.odaiId, odaiId)),
+        this.db
+          .select({
+            kotaeId: vote.kotaeId,
+            rank: vote.rank,
+            createdBy: vote.createdBy,
+          })
+          .from(vote)
+          .where(eq(vote.odaiId, odaiId)),
+        // NOTE: 結果行は status 更新より先に作られるため、発表済みになるまでは読まない
+        status === 'finished'
+          ? this.db.select().from(result).where(eq(result.odaiId, odaiId))
+          : [],
+      ])
+
+      const kotaeList = kotaeRows.map((k) => {
+        const kotaeVotes = voteRows.filter((v) => v.kotaeId === k.id)
+        return {
+          id: k.id,
+          content: k.content,
+          createdBy: k.createdBy,
+          votedCount: kotaeVotes.length,
+          votedFirstCount: kotaeVotes.filter((v) => v.rank === 1).length,
+          votedSecondCount: kotaeVotes.filter((v) => v.rank === 2).length,
+          votedThirdCount: kotaeVotes.filter((v) => v.rank === 3).length,
+          createdAt: new Date(k.createdAt).getTime(),
+        }
+      })
+
+      const findKotae = (kotaeId: string) =>
+        kotaeRows.find((k) => k.id === kotaeId)
+
+      const publishedResult = resultRows.length
+        ? {
+            pointStats: resultRows
+              .filter((r) => r.type === 'point')
+              .map((r) => ({
+                type: 'point' as const,
+                kotaeId: r.kotaeId,
+                kotaeContent: findKotae(r.kotaeId)?.content ?? '',
+                userName: findKotae(r.kotaeId)?.createdBy ?? '',
+                point: r.point,
+                rank: r.rank as 1 | 2 | 3,
+                votedFirstCount: voteRows.filter(
+                  (v) => v.kotaeId === r.kotaeId && v.rank === 1,
+                ).length,
+                votedSecondCount: voteRows.filter(
+                  (v) => v.kotaeId === r.kotaeId && v.rank === 2,
+                ).length,
+                votedThirdCount: voteRows.filter(
+                  (v) => v.kotaeId === r.kotaeId && v.rank === 3,
+                ).length,
+              })),
+            countStats: resultRows
+              .filter((r) => r.type === 'count')
+              .map((r) => ({
+                type: 'count' as const,
+                kotaeId: r.kotaeId,
+                kotaeContent: findKotae(r.kotaeId)?.content ?? '',
+                userName: findKotae(r.kotaeId)?.createdBy ?? '',
+                rank: r.rank as 1 | 2 | 3,
+                votedCount: r.point,
+              })),
+            // NOTE: 結果は発表時に一括で作られるため、最も古い行の作成日時が発表日時になる
+            publishedAt: Math.min(
+              ...resultRows.map((r) => new Date(r.createdAt).getTime()),
+            ),
+          }
+        : null
+
+      return {
+        status: 'ok',
+        value: {
+          kotaeList,
+          odai: {
+            createdAt: new Date(odaiRow.createdAt).getTime(),
+            dueDate: new Date(odaiRow.dueDate).getTime(),
+            id: odaiRow.id,
+            status,
+            title: odaiRow.title,
+          },
+          publishedResult,
+          voteUserCount: new Set(voteRows.map((v) => v.createdBy)).size,
+        },
+      }
+    } catch (error) {
+      console.error(error)
+      return { status: 'error' }
     }
   }
 }

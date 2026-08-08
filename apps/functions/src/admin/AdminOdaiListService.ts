@@ -28,8 +28,8 @@ export class AdminOdaiListServiceImpl implements AdminOdaiListService {
    */
   async get(params: AdminOdaiListParams): Promise<AdminOdaiList | ApiError> {
     const items = await this.reportingRepository.getOdaiList(params)
-    if (items === null) return InternalServerError
+    if (items.status !== 'ok') return InternalServerError
 
-    return { items }
+    return { items: items.value }
   }
 }

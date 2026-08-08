@@ -1,10 +1,12 @@
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { hasError, NoTargetOdaiError } from '../../api/Error'
+import {
+  hasError,
+  InternalServerError,
+  NoTargetOdaiError,
+} from '../../api/Error'
 import { odai } from '../../db/schema'
-import { KotaePostgresRepositoryImpl } from '../../kotae/KotaePostgresRepositoryImpl'
-import { OdaiPostgresRepositoryImpl } from '../../odai/OdaiPostgresRepositoryImpl'
 import {
   KOTAE_1_ID,
   KOTAE_2_ID,
@@ -19,6 +21,7 @@ import {
 } from '../../test/seeds'
 import { clearDb, startDb, stopDb, testDb } from '../../test/setupDb'
 import { AdminOdaiDetailServiceImpl } from '../AdminOdaiDetailService'
+import { AdminReportingPostgresRepositoryImpl } from '../AdminReportingPostgresRepositoryImpl'
 import { AdminUserNameResolver } from '../AdminUserNameResolver'
 
 /** Slack を叩かずに表示名を解決する */
@@ -39,8 +42,7 @@ const createResolver = (names: {
 
 const createService = (resolver: AdminUserNameResolver) =>
   new AdminOdaiDetailServiceImpl({
-    kotaeRepository: new KotaePostgresRepositoryImpl(testDb),
-    odaiRepository: new OdaiPostgresRepositoryImpl(testDb),
+    reportingRepository: new AdminReportingPostgresRepositoryImpl(testDb),
     userNameResolver: resolver,
   })
 
@@ -64,6 +66,22 @@ describe('AdminOdaiDetailServiceImpl', () => {
     })
 
     expect(result).toEqual(NoTargetOdaiError)
+  })
+
+  it('取得に失敗した場合は「お題なし」ではなく共通エラーを返す', async () => {
+    const failedService = new AdminOdaiDetailServiceImpl({
+      reportingRepository: {
+        getOdaiDetailSource: async () => ({ status: 'error' }),
+      },
+      userNameResolver: createResolver({}),
+    })
+
+    const result = await failedService.get({
+      odaiId: ODAI_VOTING_ID,
+      slackTeamId: TEAM_ID,
+    })
+
+    expect(result).toEqual(InternalServerError)
   })
 
   it('別チームのお題は取得できない', async () => {
@@ -113,7 +131,7 @@ describe('AdminOdaiDetailServiceImpl', () => {
     expect(result.kotaeCount).toBe(3)
     expect(result.kotaeUserCount).toBe(2)
     expect(result.voteCount).toBe(4)
-    expect(result.noVoteKotaeCount).toBe(1)
+    expect(result.voteUserCount).toBe(2)
     expect(result.voteDistribution).toEqual({
       top3: 4,
       rank4to10: 0,

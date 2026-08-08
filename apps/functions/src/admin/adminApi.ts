@@ -4,11 +4,6 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 
 import { hasError, IllegalArgumentError } from '../api/Error'
-import { KotaePostgresRepositoryImpl } from '../kotae/KotaePostgresRepositoryImpl'
-import { OdaiPostgresRepositoryImpl } from '../odai/OdaiPostgresRepositoryImpl'
-import { VotePostgresRepositoryImpl } from '../vote/VotePostgresRepositoryImpl'
-import { AdminActiveOdaiServiceImpl } from './AdminActiveOdaiService'
-import { AdminDashboardMetricsServiceImpl } from './AdminDashboardMetricsService'
 import { AdminOdaiDetailServiceImpl } from './AdminOdaiDetailService'
 import { AdminOdaiListServiceImpl } from './AdminOdaiListService'
 import { AdminReportingPostgresRepositoryImpl } from './AdminReportingPostgresRepositoryImpl'
@@ -18,9 +13,6 @@ import { SlackAdminUserNameResolver } from './AdminUserNameResolver'
 type AdminApiHandler = Parameters<typeof functions.https.onRequest>[0]
 type AdminApiRequest = Parameters<AdminApiHandler>[0]
 
-const kotaeRepository = new KotaePostgresRepositoryImpl()
-const odaiRepository = new OdaiPostgresRepositoryImpl()
-const voteRepository = new VotePostgresRepositoryImpl()
 const reportingRepository = new AdminReportingPostgresRepositoryImpl()
 
 const slackTeamIdSchema = z.string().min(1)
@@ -37,7 +29,8 @@ const periodSchema = z
     message: 'from must be earlier than to',
   })
 
-const adminDashboardMetricsQuerySchema = z.object({
+/** チーム ID だけを受け取るエンドポイントで共通の検証 */
+const adminTeamQuerySchema = z.object({
   slackTeamId: slackTeamIdSchema,
 })
 
@@ -53,18 +46,6 @@ const adminOdaiListQuerySchema = z
   })
   .and(periodSchema)
 
-const adminDashboardMetricsService = new AdminDashboardMetricsServiceImpl({
-  kotaeRepository,
-  odaiRepository,
-  voteRepository,
-})
-
-const adminActiveOdaiService = new AdminActiveOdaiServiceImpl({
-  kotaeRepository,
-  odaiRepository,
-  voteRepository,
-})
-
 const adminSummaryService = new AdminSummaryServiceImpl({
   reportingRepository,
 })
@@ -74,8 +55,7 @@ const adminOdaiListService = new AdminOdaiListServiceImpl({
 })
 
 const adminOdaiDetailService = new AdminOdaiDetailServiceImpl({
-  kotaeRepository,
-  odaiRepository,
+  reportingRepository,
   userNameResolver: new SlackAdminUserNameResolver(),
 })
 
@@ -130,22 +110,6 @@ adminApp.get('/health', (c) => {
   return c.json({ ok: true, service: 'admin-api' })
 })
 
-adminApp.get('/dashboard/metrics', async (c) => {
-  const query = adminDashboardMetricsQuerySchema.safeParse({
-    slackTeamId: c.req.query('slackTeamId'),
-  })
-  if (!query.success) {
-    return c.json(IllegalArgumentError, IllegalArgumentError.status)
-  }
-
-  const metrics = await adminDashboardMetricsService.get(query.data)
-  if (hasError(metrics)) {
-    return c.json(metrics, metrics.status)
-  }
-
-  return c.json(metrics)
-})
-
 adminApp.get('/summary', async (c) => {
   const query = adminSummaryQuerySchema.safeParse({
     from: c.req.query('from'),
@@ -184,7 +148,7 @@ adminApp.get('/odai', async (c) => {
 })
 
 adminApp.get('/odai/:odaiId', async (c) => {
-  const query = adminDashboardMetricsQuerySchema.safeParse({
+  const query = adminTeamQuerySchema.safeParse({
     slackTeamId: c.req.query('slackTeamId'),
   })
   if (!query.success) {
@@ -200,22 +164,6 @@ adminApp.get('/odai/:odaiId', async (c) => {
   }
 
   return c.json(detail)
-})
-
-adminApp.get('/dashboard/active-odai', async (c) => {
-  const query = adminDashboardMetricsQuerySchema.safeParse({
-    slackTeamId: c.req.query('slackTeamId'),
-  })
-  if (!query.success) {
-    return c.json(IllegalArgumentError, IllegalArgumentError.status)
-  }
-
-  const overview = await adminActiveOdaiService.get(query.data)
-  if (hasError(overview)) {
-    return c.json(overview, overview.status)
-  }
-
-  return c.json(overview)
 })
 
 /**

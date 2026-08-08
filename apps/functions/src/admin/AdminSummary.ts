@@ -18,8 +18,8 @@ export type AdminSummary = {
   period: PeriodParams
   /** 集計期間の実績 */
   current: AdminSummaryCounts
-  /** 同じ長さだけ前にずらした期間の実績 */
-  previous: AdminSummaryCounts
+  /** 同じ長さだけ前にずらした期間の実績。比較できる前期がなければ null */
+  previous: AdminSummaryCounts | null
 }
 
 export type AdminSummaryParams = {
@@ -29,12 +29,14 @@ export type AdminSummaryParams = {
 
 /**
  * 前期比の比較対象となる、同じ長さだけ前にずらした期間を求める
- * 画面側で期間の長さを意識せずに前期比を出せるようにするために使う
+ * 全期間のように起点が 0 の場合は前期が存在しないため null を返す
  */
 export const createPreviousPeriod = ({
   from,
   to,
-}: PeriodParams): PeriodParams => {
+}: PeriodParams): PeriodParams | null => {
+  if (from <= 0) return null
+
   const length = to - from
-  return { from: from - length, to: from }
+  return { from: Math.max(0, from - length), to: from }
 }

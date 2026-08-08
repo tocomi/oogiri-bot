@@ -41,8 +41,8 @@ export type AdminOdaiDetail = {
   kotaeUserCount: number
   /** 投票の件数 */
   voteCount: number
-  /** 1 票も入らなかった回答の件数 */
-  noVoteKotaeCount: number
+  /** 1 回以上投票した人数 */
+  voteUserCount: number
   /** 打点王（ポイント）の上位 */
   pointRanking: AdminRankedKotae[]
   /** 首位打者（総票数）の上位 */

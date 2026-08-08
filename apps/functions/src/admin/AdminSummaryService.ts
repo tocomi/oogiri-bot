@@ -40,18 +40,27 @@ export class AdminSummaryServiceImpl implements AdminSummaryService {
     to,
   }: AdminSummaryParams): Promise<AdminSummary | ApiError> {
     const period = { from, to }
+    const previousPeriod = createPreviousPeriod(period)
+
     const [current, previous] = await Promise.all([
       this.reportingRepository.getSummaryCounts({ slackTeamId, ...period }),
-      this.reportingRepository.getSummaryCounts({
-        slackTeamId,
-        ...createPreviousPeriod(period),
-      }),
+      previousPeriod === null
+        ? null
+        : this.reportingRepository.getSummaryCounts({
+            slackTeamId,
+            ...previousPeriod,
+          }),
     ])
 
-    if (current === null || previous === null) {
+    if (current.status !== 'ok') return InternalServerError
+    if (previous !== null && previous.status !== 'ok') {
       return InternalServerError
     }
 
-    return { current, period, previous }
+    return {
+      current: current.value,
+      period,
+      previous: previous === null ? null : previous.value,
+    }
   }
 }

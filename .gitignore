@@ -11,7 +11,7 @@ dist/
 .codex/*
 
 # build
-lib/
+apps/functions/lib/
 coverage/
 .next/
 *.tsbuildinfo

@@ -112,7 +112,7 @@ describe('AdminOdaiListServiceImpl', () => {
 
   it('取得に失敗した場合は共通エラーを返す', async () => {
     const failedService = new AdminOdaiListServiceImpl({
-      reportingRepository: { getOdaiList: async () => null },
+      reportingRepository: { getOdaiList: async () => ({ status: 'error' }) },
     })
 
     const result = await failedService.get({

@@ -1,6 +1,5 @@
 import { and, count, desc, eq, inArray, ne } from 'drizzle-orm'
 
-import { SlackParams } from '../api/Api'
 import { db as defaultDb } from '../db/client'
 import { kotae, odai, result, vote } from '../db/schema'
 import { generateId } from '../util/generateId'
@@ -16,7 +15,6 @@ import {
   OdaiResponseBase,
   OdaiAddResultParams,
   OdaiGetResultParams,
-  OdaiWithPublishedResult,
   OdaiWithResult,
   OdaiGetAllResultsParams,
   PointStat,
@@ -32,22 +30,6 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
 
   constructor(db: Db = defaultDb) {
     this.db = db
-  }
-
-  /**
-   * 登録されているお題の総数を Postgres から取得する
-   */
-  async countAll({ slackTeamId }: SlackParams): Promise<number | null> {
-    try {
-      const rows = await this.db
-        .select({ count: count() })
-        .from(odai)
-        .where(eq(odai.teamId, slackTeamId))
-      return rows[0].count
-    } catch (error) {
-      console.error(error)
-      return null
-    }
   }
 
   async createNormal({
@@ -92,37 +74,6 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         console.log('No active odai.')
         return null
       }
-
-      return {
-        ...data,
-        imageUrl: data.imageUrl || undefined,
-        type: data.type as 'normal',
-        dueDate: new Date(data.dueDate).getTime(),
-        status: data.status as OdaiStatus,
-        createdAt: new Date(data.createdAt).getTime(),
-      }
-    } catch (error) {
-      console.error(error)
-      return null
-    }
-  }
-
-  /**
-   * ID を指定してお題を Postgres から取得する
-   */
-  async getById({
-    slackTeamId,
-    odaiId,
-  }: OdaiGetResultParams): Promise<OdaiResponseBase | null> {
-    try {
-      const rows = await this.db
-        .select()
-        .from(odai)
-        .where(and(eq(odai.id, odaiId), eq(odai.teamId, slackTeamId)))
-        .limit(1)
-
-      const data = rows[0]
-      if (!data) return null
 
       return {
         ...data,
@@ -293,7 +244,7 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
   async getResult({
     slackTeamId,
     odaiId,
-  }: OdaiGetResultParams): Promise<OdaiWithPublishedResult | null> {
+  }: OdaiGetResultParams): Promise<OdaiWithResult | null> {
     try {
       const odaiRows = await this.db
         .select()
@@ -354,10 +305,6 @@ export class OdaiPostgresRepositoryImpl implements OdaiRepository {
         voteCount: votes.length,
         pointStats,
         countStats,
-        // NOTE: 結果は発表時に一括で作られるため、最も古い行の作成日時が発表日時になる
-        publishedAt: Math.min(
-          ...results.map((r) => new Date(r.createdAt).getTime()),
-        ),
       }
     } catch (error) {
       console.error(error)

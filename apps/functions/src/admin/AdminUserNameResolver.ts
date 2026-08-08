@@ -1,15 +1,12 @@
 import { WebClient } from '@slack/web-api'
 
 import { config } from '../config'
-import { getSlackUserList } from '../util/getSlackUserList'
-
-/** 解決できなかったユーザーの表示名 */
-export const UNKNOWN_USER_NAME = 'unknown'
 
 export interface AdminUserNameResolver {
   /**
    * Slack のユーザー ID を表示名に変換する
    * 結果発表で公開済みの入賞者名を管理画面にも出すために使う
+   * 引けなかったユーザーは結果に含めず、呼び出し側で名前なしとして扱えるようにする
    */
   resolve(userIds: string[]): Promise<{ [userId: string]: string }>
 }
@@ -26,34 +23,41 @@ export class SlackAdminUserNameResolver implements AdminUserNameResolver {
     this.client = client
   }
 
-  async resolve(userIds: string[]): Promise<{ [userId: string]: string }> {
-    const unknownIds = [...new Set(userIds)].filter(
-      (userId) => !this.cache.has(userId),
-    )
-
-    if (unknownIds.length) {
-      try {
-        const userInfoMap = await getSlackUserList({
-          client: this.client,
-          userIdList: unknownIds,
-        })
-        unknownIds.forEach((userId) => {
-          const profile = userInfoMap[userId]?.profile
-          const name = profile?.display_name || profile?.real_name
-          // NOTE: 引けなかったものはキャッシュしない。次回の取得で回復させる
-          if (name) this.cache.set(userId, name)
-        })
-      } catch (error) {
-        // NOTE: 表示名が引けなくても順位と内容は返せるため、握りつぶして unknown に倒す
-        console.error(error)
-      }
+  /**
+   * 1 人分の表示名を取得する
+   * 退職済みなど引けないユーザーが混ざっても他の解決を巻き込まないよう、ここで失敗を閉じ込める
+   */
+  private async fetchName(userId: string): Promise<string | null> {
+    try {
+      const response = await this.client.users.info({ user: userId })
+      const profile = response.user?.profile
+      return profile?.display_name || profile?.real_name || null
+    } catch (error) {
+      console.error(`Failed to resolve slack user: ${userId}`, error)
+      return null
     }
+  }
+
+  async resolve(userIds: string[]): Promise<{ [userId: string]: string }> {
+    const uniqueIds = [...new Set(userIds)]
+    const missingIds = uniqueIds.filter((userId) => !this.cache.has(userId))
+
+    const fetched = await Promise.all(
+      missingIds.map(
+        async (userId) => [userId, await this.fetchName(userId)] as const,
+      ),
+    )
+    fetched.forEach(([userId, name]) => {
+      // NOTE: 引けなかったものはキャッシュしない。次回の取得で回復させる
+      if (name) this.cache.set(userId, name)
+    })
 
     return Object.fromEntries(
-      [...new Set(userIds)].map((userId) => [
-        userId,
-        this.cache.get(userId) ?? UNKNOWN_USER_NAME,
-      ]),
+      uniqueIds
+        .map((userId) => [userId, this.cache.get(userId)] as const)
+        .filter((entry): entry is readonly [string, string] =>
+          Boolean(entry[1]),
+        ),
     )
   }
 }

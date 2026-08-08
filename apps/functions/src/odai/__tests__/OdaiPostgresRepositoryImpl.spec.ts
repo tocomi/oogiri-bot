@@ -16,7 +16,6 @@ import {
   OTHER_TEAM_ID,
   TEAM_ID,
   USER_1,
-  seedDashboardMetricsScenario,
   seedFinishedScenario,
   seedOdai,
   seedOdaiSet,
@@ -38,26 +37,6 @@ describe('OdaiPostgresRepositoryImpl', () => {
 
   beforeEach(async () => {
     await clearDb()
-  })
-
-  // ── countAll ──────────────────────────────────────────────
-
-  describe('countAll', () => {
-    it('指定チームのお題数だけを返す', async () => {
-      await seedDashboardMetricsScenario(testDb)
-
-      const result = await repo.countAll({ slackTeamId: TEAM_ID })
-
-      expect(result).toBe(2)
-    })
-
-    it('別チームのお題数だけを返す', async () => {
-      await seedDashboardMetricsScenario(testDb)
-
-      const result = await repo.countAll({ slackTeamId: OTHER_TEAM_ID })
-
-      expect(result).toBe(1)
-    })
   })
 
   // ── createNormal ──────────────────────────────────────────

@@ -1,8 +1,7 @@
-import { and, count, eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
-import { SlackParams } from '../api/Api'
 import { db as defaultDb } from '../db/client'
-import { kotae, odai, vote } from '../db/schema'
+import { kotae, vote } from '../db/schema'
 import {
   VoteCreateRequest,
   Vote,
@@ -20,39 +19,6 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
 
   constructor(db: Db = defaultDb) {
     this.db = db
-  }
-
-  /**
-   * 投稿されている投票の総数を Postgres から取得する
-   */
-  async countAll({ slackTeamId }: SlackParams): Promise<number | null> {
-    try {
-      const rows = await this.db
-        .select({ count: count() })
-        .from(vote)
-        .innerJoin(odai, eq(vote.odaiId, odai.id))
-        .where(eq(odai.teamId, slackTeamId))
-      return rows[0].count
-    } catch (error) {
-      console.error(error)
-      return null
-    }
-  }
-
-  /**
-   * 指定お題に紐づく投票の件数を Postgres から取得する
-   */
-  async countByOdaiId({ odaiId }: { odaiId: string }): Promise<number | null> {
-    try {
-      const rows = await this.db
-        .select({ count: count() })
-        .from(vote)
-        .where(eq(vote.odaiId, odaiId))
-      return rows[0].count
-    } catch (error) {
-      console.error(error)
-      return null
-    }
   }
 
   async checkDuplication({

@@ -43,11 +43,6 @@ export type OdaiResult = {
 
 export type OdaiWithResult = Omit<Odai, 'type'> & OdaiResult
 
-export type OdaiWithPublishedResult = OdaiWithResult & {
-  /** 結果を発表した日時（Unix ミリ秒） */
-  publishedAt: number
-}
-
 export type OdaiWithResultSummary = Omit<Odai, 'type'> &
   Pick<OdaiResult, 'id' | 'kotaeCount' | 'voteCount'>
 

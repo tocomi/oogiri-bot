@@ -99,9 +99,26 @@ describe('AdminSummaryServiceImpl', () => {
     )
   })
 
+  it('全期間は比較できる前期がないため previous を null にする', async () => {
+    await seedSummaryScenario(testDb)
+
+    const result = await service.get({
+      slackTeamId: TEAM_ID,
+      from: 0,
+      to: SUMMARY_PERIOD.to,
+    })
+
+    if ('status' in result) throw new Error('summary should be returned')
+
+    expect(result.previous).toBeNull()
+    expect(result.current.odaiCount).toBe(3)
+  })
+
   it('repository が取得に失敗した場合は共通エラーを返す', async () => {
     const failedService = new AdminSummaryServiceImpl({
-      reportingRepository: { getSummaryCounts: async () => null },
+      reportingRepository: {
+        getSummaryCounts: async () => ({ status: 'error' }),
+      },
     })
 
     const result = await failedService.get({
