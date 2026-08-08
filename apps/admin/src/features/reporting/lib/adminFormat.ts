@@ -20,7 +20,7 @@ const fullDateFormatter = new Intl.DateTimeFormat('ja-JP', {
 })
 
 /**
- * 一覧やグラフの軸に使う短い日付にする
+ * 一覧に使う短い日付にする
  * サーバーとクライアントで表示がずれないよう、タイムゾーンを固定する
  */
 export const formatAdminDate = (unixMs: number) =>

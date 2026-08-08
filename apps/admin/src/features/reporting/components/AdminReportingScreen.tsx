@@ -9,14 +9,13 @@ import {
   createAdminPeriodRange,
 } from '@/features/reporting/lib/adminPeriod'
 
-import { AdminOdaiChart } from './AdminOdaiChart'
 import { AdminOdaiDetailDrawer } from './AdminOdaiDetailDrawer'
 import { AdminOdaiDetailPanel } from './AdminOdaiDetailPanel'
 import { AdminOdaiTable } from './AdminOdaiTable'
 import { AdminPeriodTabs } from './AdminPeriodTabs'
 import { AdminSummaryTiles } from './AdminSummaryTiles'
 
-/** 一覧とグラフに載せるお題の件数 */
+/** 一覧に載せるお題の件数 */
 const ODAI_LIMIT = 12
 
 type AdminReportingScreenProps = {
@@ -63,7 +62,6 @@ export async function AdminReportingScreen({
 
       <main className="min-w-0 flex-1 pb-6">
         <AdminSummaryTiles summary={summary} />
-        <AdminOdaiChart items={odaiList.items} />
         <AdminOdaiTable
           items={odaiList.items}
           selectedOdaiId={selected?.id ?? null}

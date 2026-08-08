@@ -89,7 +89,7 @@ export async function getAdminSummary({ from, to }: PeriodRange) {
 }
 
 /**
- * グラフと一覧に表示するお題を取得する
+ * 一覧に表示するお題を取得する
  */
 export async function getAdminOdaiList({
   from,
