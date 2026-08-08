@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react'
 
 import { XIcon } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -14,41 +13,36 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer'
 
+import { AdminOdaiDetailSkeleton } from './AdminOdaiDetailSkeleton'
+import { useAdminOdaiSelection } from './AdminOdaiSelection'
+
 type AdminOdaiDetailDrawerProps = {
-  /** 開いているかどうか。URL に odaiId があるかで決まる */
-  open: boolean
-  /** 閉じたときに戻る URL */
-  closeHref: string
-  /** スクリーンリーダー向けの見出し */
-  title: string
+  /** サーバーで取得した詳細。取得中は骨格に差し替える */
   children: ReactNode
 }
 
 /**
  * お題の集計をドロワーで表示する
- * 開閉を URL に持たせるため、閉じたときは検索条件だけの URL に戻す
+ * 開閉を URL に持たせつつ、行を押した時点で開いて詳細の到着を待たせない
  */
 export function AdminOdaiDetailDrawer({
-  open,
-  closeHref,
-  title,
   children,
 }: AdminOdaiDetailDrawerProps) {
-  const router = useRouter()
+  const { openOdai, isDetailPending, closeOdai } = useAdminOdaiSelection()
 
   return (
     <Drawer
       // NOTE: 開いている間も一覧を操作できるよう、オーバーレイを出さない
       modal={false}
-      open={open}
+      open={openOdai !== null}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) router.push(closeHref, { scroll: false })
+        if (!nextOpen) closeOdai()
       }}
       swipeDirection="right"
       showSwipeHandle
     >
       <DrawerContent className="w-full border-l shadow-xl sm:w-[560px]">
-        <DrawerTitle className="sr-only">{title}</DrawerTitle>
+        <DrawerTitle className="sr-only">{openOdai?.title ?? ''}</DrawerTitle>
         <DrawerDescription className="sr-only">
           選択したお題の集計と順位
         </DrawerDescription>
@@ -64,7 +58,11 @@ export function AdminOdaiDetailDrawer({
         </div>
 
         <div className="min-h-0 w-full min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 pb-4">
-          {children}
+          {isDetailPending ? (
+            <AdminOdaiDetailSkeleton title={openOdai?.title ?? ''} />
+          ) : (
+            children
+          )}
         </div>
       </DrawerContent>
     </Drawer>

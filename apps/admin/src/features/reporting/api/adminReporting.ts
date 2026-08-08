@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
 import {
+  ADMIN_NO_CACHE_SECONDS,
+  ADMIN_REPORTING_REVALIDATE_SECONDS,
+} from '@/features/reporting/lib/adminCache'
+import {
   createAdminApiUrl,
   fetchAdminApi,
 } from '@/features/shared/api/adminApiClient'
@@ -86,7 +90,11 @@ type PeriodRange = {
  * 期間選択に並べる年を取得する
  */
 export async function getAdminAvailableYears() {
-  return fetchAdminApi(createAdminApiUrl('years'), adminAvailableYearsSchema)
+  return fetchAdminApi(
+    createAdminApiUrl('years'),
+    adminAvailableYearsSchema,
+    ADMIN_REPORTING_REVALIDATE_SECONDS,
+  )
 }
 
 /**
@@ -96,6 +104,7 @@ export async function getAdminSummary({ from, to }: PeriodRange) {
   return fetchAdminApi(
     createAdminApiUrl('summary', { from: String(from), to: String(to) }),
     adminSummarySchema,
+    ADMIN_REPORTING_REVALIDATE_SECONDS,
   )
 }
 
@@ -106,15 +115,18 @@ export async function getAdminOdaiList({ from, to }: PeriodRange) {
   return fetchAdminApi(
     createAdminApiUrl('odai', { from: String(from), to: String(to) }),
     adminOdaiListSchema,
+    ADMIN_REPORTING_REVALIDATE_SECONDS,
   )
 }
 
 /**
  * 詳細ペインに表示する 1 件のお題を取得する
+ * 開いたお題の数値は一覧より細かく見るため、毎回取得して最新にする
  */
 export async function getAdminOdaiDetail(odaiId: string) {
   return fetchAdminApi(
     createAdminApiUrl(`odai/${encodeURIComponent(odaiId)}`),
     adminOdaiDetailSchema,
+    ADMIN_NO_CACHE_SECONDS,
   )
 }

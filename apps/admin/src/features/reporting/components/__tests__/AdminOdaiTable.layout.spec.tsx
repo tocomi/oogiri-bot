@@ -1,9 +1,15 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import type { AdminOdaiListItem } from '@/features/reporting/api/adminReporting'
 
+import { AdminOdaiSelectionProvider } from '../AdminOdaiSelection'
 import { AdminOdaiTable } from '../AdminOdaiTable'
+
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ push: vi.fn() }),
+}))
 
 const items: AdminOdaiListItem[] = Array.from({ length: 12 }, (_, index) => ({
   id: `odai-${index}`,
@@ -24,7 +30,9 @@ const items: AdminOdaiListItem[] = Array.from({ length: 12 }, (_, index) => ({
 const renderAtWidth = async (width: number) => {
   await render(
     <div style={{ width: `${width}px` }}>
-      <AdminOdaiTable items={items} selectedOdaiId={null} period="2026" />
+      <AdminOdaiSelectionProvider selectedOdai={null} closeHref="/">
+        <AdminOdaiTable items={items} period="2026" />
+      </AdminOdaiSelectionProvider>
     </div>,
   )
 

@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 
 import type { AdminOdaiListItem } from '@/features/reporting/api/adminReporting'
@@ -13,13 +15,12 @@ import {
 import { formatAdminFullDate } from '@/features/reporting/lib/adminFormat'
 import { cn } from '@/lib/utils'
 
+import { useAdminOdaiSelection } from './AdminOdaiSelection'
 import { AdminOdaiStatusBadge } from './AdminOdaiStatusBadge'
 
 type AdminOdaiTableProps = {
   /** 新しい順のお題 */
   items: AdminOdaiListItem[]
-  /** 詳細ペインで開いているお題 */
-  selectedOdaiId: string | null
   /** 行のリンクに引き継ぐ期間 */
   period: string
 }
@@ -28,11 +29,9 @@ type AdminOdaiTableProps = {
  * お題ごとの数値を一覧する
  * 行を選ぶと詳細ペインが切り替わるため、タイトルをリンクにする
  */
-export function AdminOdaiTable({
-  items,
-  selectedOdaiId,
-  period,
-}: AdminOdaiTableProps) {
+export function AdminOdaiTable({ items, period }: AdminOdaiTableProps) {
+  const { openOdai, openOdaiOptimistically } = useAdminOdaiSelection()
+
   if (!items.length) {
     return (
       <p className="px-3 py-8 text-center text-sm text-muted-foreground">
@@ -57,7 +56,7 @@ export function AdminOdaiTable({
 
       <TableBody>
         {items.map((item) => {
-          const isSelected = item.id === selectedOdaiId
+          const isSelected = item.id === openOdai?.id
           return (
             <TableRow
               key={item.id}
@@ -69,6 +68,18 @@ export function AdminOdaiTable({
               <TableCell className="max-w-0 truncate pl-3">
                 <Link
                   href={`/?period=${period}&odaiId=${encodeURIComponent(item.id)}`}
+                  onClick={(event) => {
+                    // 別タブで開く操作では今の画面を切り替えない
+                    if (
+                      event.metaKey ||
+                      event.ctrlKey ||
+                      event.shiftKey ||
+                      event.altKey
+                    ) {
+                      return
+                    }
+                    openOdaiOptimistically({ id: item.id, title: item.title })
+                  }}
                   className={cn(
                     'block truncate rounded-sm hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
                     isSelected && 'font-semibold',

@@ -35,13 +35,20 @@ export const createAdminApiUrl = (
 
 /**
  * Admin API から JSON を取得し、schema で検証する
- * 管理画面は常に最新の集計を見せたいため、キャッシュしない
+ * 鮮度の要求は endpoint ごとに違うため、保持する秒数は呼び出し側で決める
+ *
+ * @param url 問い合わせ先
+ * @param schema レスポンスの検証に使う schema
+ * @param revalidateSeconds 同じ URL のレスポンスを使い回す秒数。0 なら毎回取得する
  */
 export const fetchAdminApi = async <T>(
   url: URL,
   schema: z.ZodType<T>,
+  revalidateSeconds: number,
 ): Promise<T> => {
-  const response = await fetch(url, { cache: 'no-store' })
+  const response = await fetch(url, {
+    next: { revalidate: revalidateSeconds },
+  })
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url.pathname}: ${response.status}`)
