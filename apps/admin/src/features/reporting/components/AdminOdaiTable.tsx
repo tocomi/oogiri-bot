@@ -45,13 +45,13 @@ export function AdminOdaiTable({
     <Table className="text-[13px]">
       <TableHeader>
         <TableRow>
-          <TableHead className="min-w-72">お題</TableHead>
+          <TableHead className="min-w-72 pl-3">お題</TableHead>
           <TableHead className="w-20">状態</TableHead>
           <TableHead className="w-24 text-right">発表</TableHead>
           <TableHead className="w-14 text-right">回答</TableHead>
           <TableHead className="w-14 text-right">投票</TableHead>
           <TableHead className="w-16 text-right">回答者</TableHead>
-          <TableHead className="w-16 text-right">1位 pt</TableHead>
+          <TableHead className="w-16 pr-3 text-right">1位 pt</TableHead>
         </TableRow>
       </TableHeader>
 
@@ -66,7 +66,7 @@ export function AdminOdaiTable({
                 isSelected && 'shadow-[inset_2px_0_0_0_var(--primary)]',
               )}
             >
-              <TableCell className="max-w-0 truncate">
+              <TableCell className="max-w-0 truncate pl-3">
                 <Link
                   href={`/?period=${period}&odaiId=${encodeURIComponent(item.id)}`}
                   className={cn(
@@ -94,7 +94,7 @@ export function AdminOdaiTable({
               <TableCell className="text-right tabular-nums">
                 {item.kotaeUserCount}
               </TableCell>
-              <TableCell className="text-right font-semibold tabular-nums">
+              <TableCell className="pr-3 text-right font-semibold tabular-nums">
                 {item.topPoint ?? '—'}
               </TableCell>
             </TableRow>

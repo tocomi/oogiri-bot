@@ -61,7 +61,7 @@ export async function AdminReportingScreen({
         </span>
       </div>
 
-      <main className="min-w-0 flex-1">
+      <main className="min-w-0 flex-1 pb-6">
         <AdminSummaryTiles summary={summary} />
         <AdminOdaiChart items={odaiList.items} />
         <AdminOdaiTable
