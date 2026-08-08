@@ -8,7 +8,6 @@ import {
   inArray,
   lt,
   min,
-  sql,
 } from 'drizzle-orm'
 
 import { SlackPeriodParams } from '../api/Api'
@@ -143,7 +142,11 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
           .where(inArray(kotae.odaiId, odaiIds))
           .groupBy(kotae.odaiId),
         this.db
-          .select({ odaiId: vote.odaiId, count: count() })
+          .select({
+            odaiId: vote.odaiId,
+            count: count(),
+            userCount: countDistinct(vote.createdBy),
+          })
           .from(vote)
           .where(inArray(vote.odaiId, odaiIds))
           .groupBy(vote.odaiId),
@@ -151,9 +154,6 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
           .select({
             odaiId: result.odaiId,
             publishedAt: min(result.createdAt),
-            topPoint: sql<
-              number | null
-            >`max(case when ${result.type} = 'point' and ${result.rank} = 1 then ${result.point} end)`,
           })
           .from(result)
           .where(inArray(result.odaiId, odaiIds))
@@ -162,6 +162,7 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
 
       const items = odaiRows.map((o) => {
         const kotaeStat = kotaeStats.find((k) => k.odaiId === o.id)
+        const voteStat = voteStats.find((v) => v.odaiId === o.id)
         const resultStat = resultStats.find((r) => r.odaiId === o.id)
         const status = o.status as OdaiStatus
         return {
@@ -177,9 +178,8 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
               : null,
           kotaeCount: kotaeStat?.count ?? 0,
           kotaeUserCount: kotaeStat?.userCount ?? 0,
-          voteCount: voteStats.find((v) => v.odaiId === o.id)?.count ?? 0,
-          topPoint:
-            status === 'finished' ? (resultStat?.topPoint ?? null) : null,
+          voteCount: voteStat?.count ?? 0,
+          voteUserCount: voteStat?.userCount ?? 0,
         }
       })
 

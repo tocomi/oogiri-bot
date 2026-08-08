@@ -17,7 +17,7 @@ const createItem = (
   kotaeCount: 51,
   kotaeUserCount: 31,
   voteCount: 102,
-  topPoint: 34,
+  voteUserCount: 34,
   ...overrides,
 })
 
@@ -47,7 +47,7 @@ describe('AdminOdaiTable', () => {
     await expect.element(screen.getByText('34', { exact: true })).toBeVisible()
   })
 
-  test('未発表のお題は発表日と 1 位 pt を伏せる', async () => {
+  test('未発表のお題は発表日を伏せる', async () => {
     const screen = await render(
       <AdminOdaiTable
         items={[
@@ -56,7 +56,6 @@ describe('AdminOdaiTable', () => {
             title: '締切前のお題',
             status: 'voting',
             publishedAt: null,
-            topPoint: null,
           }),
         ]}
         selectedOdaiId={null}
@@ -67,7 +66,7 @@ describe('AdminOdaiTable', () => {
     await expect
       .element(screen.getByText('投票中', { exact: true }))
       .toBeVisible()
-    expect(await screen.getByText('—').all()).toHaveLength(2)
+    expect(await screen.getByText('—').all()).toHaveLength(1)
   })
 
   test('期間と ID を引き継ぐリンクを張る', async () => {

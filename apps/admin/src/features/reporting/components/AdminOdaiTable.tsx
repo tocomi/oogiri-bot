@@ -51,7 +51,7 @@ export function AdminOdaiTable({
           <TableHead className="w-14 text-right">回答</TableHead>
           <TableHead className="w-14 text-right">投票</TableHead>
           <TableHead className="w-16 text-right">回答者</TableHead>
-          <TableHead className="w-16 pr-3 text-right">1位 pt</TableHead>
+          <TableHead className="w-16 pr-3 text-right">投票者</TableHead>
         </TableRow>
       </TableHeader>
 
@@ -94,8 +94,8 @@ export function AdminOdaiTable({
               <TableCell className="text-right tabular-nums">
                 {item.kotaeUserCount}
               </TableCell>
-              <TableCell className="pr-3 text-right font-semibold tabular-nums">
-                {item.topPoint ?? '—'}
+              <TableCell className="pr-3 text-right tabular-nums">
+                {item.voteUserCount}
               </TableCell>
             </TableRow>
           )

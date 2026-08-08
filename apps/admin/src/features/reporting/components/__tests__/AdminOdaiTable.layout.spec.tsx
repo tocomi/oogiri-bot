@@ -15,7 +15,7 @@ const items: AdminOdaiListItem[] = Array.from({ length: 12 }, (_, index) => ({
   kotaeCount: 51,
   kotaeUserCount: 31,
   voteCount: 102,
-  topPoint: 34,
+  voteUserCount: 34,
 }))
 
 /**

@@ -31,7 +31,7 @@ const adminOdaiListItemSchema = z.object({
   kotaeCount: z.number(),
   kotaeUserCount: z.number(),
   voteCount: z.number(),
-  topPoint: z.number().nullable(),
+  voteUserCount: z.number(),
 })
 
 const adminOdaiListSchema = z.object({

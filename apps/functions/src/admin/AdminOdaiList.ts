@@ -20,8 +20,8 @@ export type AdminOdaiListItem = {
   kotaeUserCount: number
   /** 投票の件数 */
   voteCount: number
-  /** 打点王 1 位のポイント。未発表なら null */
-  topPoint: number | null
+  /** 投票した人数 */
+  voteUserCount: number
 }
 
 export type AdminOdaiList = {

@@ -58,7 +58,7 @@ describe('AdminOdaiListServiceImpl', () => {
       kotaeCount: 1,
       kotaeUserCount: 1,
       voteCount: 1,
-      topPoint: null,
+      voteUserCount: 1,
     })
     expect(items[1]).toEqual(
       expect.objectContaining({
@@ -66,6 +66,7 @@ describe('AdminOdaiListServiceImpl', () => {
         kotaeCount: 2,
         kotaeUserCount: 1,
         voteCount: 3,
+        voteUserCount: 2,
       }),
     )
   })
