@@ -24,7 +24,7 @@ const createItem = (
 describe('AdminOdaiTable', () => {
   test('お題がなければその旨を表示する', async () => {
     const screen = await render(
-      <AdminOdaiTable items={[]} selectedOdaiId={null} period="90d" />,
+      <AdminOdaiTable items={[]} selectedOdaiId={null} period="2026" />,
     )
 
     await expect
@@ -37,7 +37,7 @@ describe('AdminOdaiTable', () => {
       <AdminOdaiTable
         items={[createItem()]}
         selectedOdaiId={null}
-        period="90d"
+        period="2026"
       />,
     )
 
@@ -59,7 +59,7 @@ describe('AdminOdaiTable', () => {
           }),
         ]}
         selectedOdaiId={null}
-        period="90d"
+        period="2026"
       />,
     )
 
@@ -74,12 +74,12 @@ describe('AdminOdaiTable', () => {
       <AdminOdaiTable
         items={[createItem()]}
         selectedOdaiId={null}
-        period="30d"
+        period="2025"
       />,
     )
 
     await expect
       .element(screen.getByRole('link', { name: '発表済みのお題' }))
-      .toHaveAttribute('href', '/?period=30d&odaiId=odai-1')
+      .toHaveAttribute('href', '/?period=2025&odaiId=odai-1')
   })
 })

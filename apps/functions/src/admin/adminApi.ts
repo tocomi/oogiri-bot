@@ -4,6 +4,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 
 import { hasError, IllegalArgumentError } from '../api/Error'
+import { AdminAvailableYearsServiceImpl } from './AdminAvailableYearsService'
 import { AdminOdaiDetailServiceImpl } from './AdminOdaiDetailService'
 import { AdminOdaiListServiceImpl } from './AdminOdaiListService'
 import { AdminReportingPostgresRepositoryImpl } from './AdminReportingPostgresRepositoryImpl'
@@ -47,6 +48,10 @@ const adminSummaryService = new AdminSummaryServiceImpl({
 })
 
 const adminOdaiListService = new AdminOdaiListServiceImpl({
+  reportingRepository,
+})
+
+const adminAvailableYearsService = new AdminAvailableYearsServiceImpl({
   reportingRepository,
 })
 
@@ -122,6 +127,22 @@ adminApp.get('/summary', async (c) => {
   }
 
   return c.json(summary)
+})
+
+adminApp.get('/years', async (c) => {
+  const query = adminTeamQuerySchema.safeParse({
+    slackTeamId: c.req.query('slackTeamId'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const years = await adminAvailableYearsService.get(query.data)
+  if (hasError(years)) {
+    return c.json(years, years.status)
+  }
+
+  return c.json(years)
 })
 
 adminApp.get('/odai', async (c) => {

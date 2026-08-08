@@ -1,39 +1,70 @@
 import { describe, expect, test } from 'vitest'
 
 import {
-  DEFAULT_ADMIN_PERIOD,
+  ADMIN_ALL_PERIOD,
   createAdminPeriodRange,
-  parseAdminPeriodPreset,
+  formatAdminPeriodParam,
+  parseAdminPeriod,
 } from '../adminPeriod'
 
-const NOW = new Date('2026-08-07T00:00:00Z').getTime()
-const DAY_IN_MS = 24 * 60 * 60 * 1000
+const AVAILABLE_YEARS = [2026, 2025, 2024]
 
-describe('parseAdminPeriodPreset', () => {
-  test('既知の値はそのまま返す', () => {
-    expect(parseAdminPeriodPreset('30d')).toBe('30d')
-    expect(parseAdminPeriodPreset('all')).toBe('all')
+/** 日本時間 2026-08-07 00:00 */
+const NOW = new Date('2026-08-06T15:00:00Z').getTime()
+/** 日本時間 2026-01-01 00:00 */
+const YEAR_2026_START = new Date('2025-12-31T15:00:00Z').getTime()
+/** 日本時間 2025-01-01 00:00 */
+const YEAR_2025_START = new Date('2024-12-31T15:00:00Z').getTime()
+
+describe('parseAdminPeriod', () => {
+  test('全期間はそのまま返す', () => {
+    expect(parseAdminPeriod(ADMIN_ALL_PERIOD, AVAILABLE_YEARS)).toBe(
+      ADMIN_ALL_PERIOD,
+    )
   })
 
-  test('未指定や不正な値は既定の期間に倒す', () => {
-    expect(parseAdminPeriodPreset(undefined)).toBe(DEFAULT_ADMIN_PERIOD)
-    expect(parseAdminPeriodPreset('7d')).toBe(DEFAULT_ADMIN_PERIOD)
+  test('選べる年ならその年を返す', () => {
+    expect(parseAdminPeriod('2024', AVAILABLE_YEARS)).toBe(2024)
+  })
+
+  test('未指定や不正な値は直近の年に倒す', () => {
+    expect(parseAdminPeriod(null, AVAILABLE_YEARS)).toBe(2026)
+    expect(parseAdminPeriod('30d', AVAILABLE_YEARS)).toBe(2026)
+    expect(parseAdminPeriod('2020', AVAILABLE_YEARS)).toBe(2026)
+  })
+
+  test('選べる年がなければ全期間に倒す', () => {
+    expect(parseAdminPeriod('2026', [])).toBe(ADMIN_ALL_PERIOD)
+    expect(parseAdminPeriod(null, [])).toBe(ADMIN_ALL_PERIOD)
   })
 })
 
 describe('createAdminPeriodRange', () => {
-  test('指定した日数だけ遡った範囲を返す', () => {
-    expect(createAdminPeriodRange('30d', NOW)).toEqual({
-      from: NOW - 30 * DAY_IN_MS,
-      to: NOW,
-    })
-    expect(createAdminPeriodRange('1y', NOW)).toEqual({
-      from: NOW - 365 * DAY_IN_MS,
+  test('全期間は開始を 0 にする', () => {
+    expect(createAdminPeriodRange(ADMIN_ALL_PERIOD, NOW)).toEqual({
+      from: 0,
       to: NOW,
     })
   })
 
-  test('全期間は開始を 0 にする', () => {
-    expect(createAdminPeriodRange('all', NOW)).toEqual({ from: 0, to: NOW })
+  test('過ぎた年は日本時間の元日から翌年の元日までを返す', () => {
+    expect(createAdminPeriodRange(2025, NOW)).toEqual({
+      from: YEAR_2025_START,
+      to: YEAR_2026_START,
+    })
+  })
+
+  test('進行中の年は終わりを現在時刻で止める', () => {
+    expect(createAdminPeriodRange(2026, NOW)).toEqual({
+      from: YEAR_2026_START,
+      to: NOW,
+    })
+  })
+})
+
+describe('formatAdminPeriodParam', () => {
+  test('searchParams に載せる文字列にする', () => {
+    expect(formatAdminPeriodParam(ADMIN_ALL_PERIOD)).toBe('all')
+    expect(formatAdminPeriodParam(2026)).toBe('2026')
   })
 })

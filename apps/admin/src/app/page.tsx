@@ -1,5 +1,4 @@
 import { AdminReportingScreen } from '@/features/reporting/components/AdminReportingScreen'
-import { parseAdminPeriodPreset } from '@/features/reporting/lib/adminPeriod'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +11,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <AdminReportingScreen
-      period={parseAdminPeriodPreset(period)}
+      periodParam={period ?? null}
       odaiId={odaiId ?? null}
     />
   )

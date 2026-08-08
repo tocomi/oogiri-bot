@@ -8,12 +8,14 @@ import {
   inArray,
   lt,
   min,
+  sql,
 } from 'drizzle-orm'
 
 import { SlackPeriodParams } from '../api/Api'
 import { db as defaultDb } from '../db/client'
 import { kotae, odai, result, vote } from '../db/schema'
 import { OdaiStatus } from '../odai/Odai'
+import { AdminAvailableYearsParams } from './AdminAvailableYears'
 import { AdminOdaiDetailParams } from './AdminOdaiDetail'
 import { AdminOdaiListItem, AdminOdaiListParams } from './AdminOdaiList'
 import {
@@ -24,6 +26,12 @@ import {
 import { AdminSummaryCounts } from './AdminSummary'
 
 type Db = typeof defaultDb
+
+/**
+ * お題の作成日時を日本時間の年に丸める式
+ * createdAt は ISO 文字列の text 列のため、比較の前に timestamptz へ揃える
+ */
+const odaiCreatedYearInJst = sql<number>`extract(year from (${odai.createdAt})::timestamptz at time zone 'Asia/Tokyo')::int`
 
 export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepository {
   private db: Db
@@ -182,6 +190,28 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
       })
 
       return { status: 'ok', value: items }
+    } catch (error) {
+      console.error(error)
+      return { status: 'error' }
+    }
+  }
+
+  /**
+   * お題が 1 件以上ある年を Postgres から新しい順に取得する
+   * 年の区切りは画面の日付表示と揃えるため、日本時間で判定する
+   */
+  async getAvailableYears({
+    slackTeamId,
+  }: AdminAvailableYearsParams): Promise<AdminReadResult<number[]>> {
+    try {
+      const rows = await this.db
+        .select({ year: odaiCreatedYearInJst })
+        .from(odai)
+        .where(eq(odai.teamId, slackTeamId))
+        .groupBy(odaiCreatedYearInJst)
+        .orderBy(desc(odaiCreatedYearInJst))
+
+      return { status: 'ok', value: rows.map((row) => Number(row.year)) }
     } catch (error) {
       console.error(error)
       return { status: 'error' }

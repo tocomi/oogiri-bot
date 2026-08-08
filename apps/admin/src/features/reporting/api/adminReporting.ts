@@ -21,6 +21,10 @@ const adminSummarySchema = z.object({
   previous: summaryCountsSchema.nullable(),
 })
 
+const adminAvailableYearsSchema = z.object({
+  years: z.array(z.number()),
+})
+
 const adminOdaiListItemSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -76,6 +80,13 @@ type PeriodRange = {
   from: number
   /** 集計期間の終了（Unix ミリ秒） */
   to: number
+}
+
+/**
+ * 期間選択に並べる年を取得する
+ */
+export async function getAdminAvailableYears() {
+  return fetchAdminApi(createAdminApiUrl('years'), adminAvailableYearsSchema)
 }
 
 /**

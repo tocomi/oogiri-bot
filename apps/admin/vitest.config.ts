@@ -4,7 +4,13 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   optimizeDeps: {
-    include: ['react', 'react-dom/client'],
+    include: [
+      'react',
+      'react-dom/client',
+      'next/navigation',
+      '@base-ui/react/select',
+      'lucide-react',
+    ],
   },
   resolve: {
     alias: {

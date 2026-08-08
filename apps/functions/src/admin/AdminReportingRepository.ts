@@ -1,6 +1,7 @@
 import { SlackPeriodParams } from '../api/Api'
 import { Kotae } from '../kotae/Kotae'
 import { CountStat, OdaiStatus, PointStat } from '../odai/Odai'
+import { AdminAvailableYearsParams } from './AdminAvailableYears'
 import { AdminOdaiDetailParams } from './AdminOdaiDetail'
 import { AdminOdaiListItem, AdminOdaiListParams } from './AdminOdaiList'
 import { AdminSummaryCounts } from './AdminSummary'
@@ -55,6 +56,13 @@ export interface AdminReportingRepository {
   getOdaiList(
     params: AdminOdaiListParams,
   ): Promise<AdminReadResult<AdminOdaiListItem[]>>
+  /**
+   * お題が 1 件以上ある年を新しい順に取得する
+   * 管理画面の期間選択に、実際にデータがある年だけを並べるために使う
+   */
+  getAvailableYears(
+    params: AdminAvailableYearsParams,
+  ): Promise<AdminReadResult<number[]>>
   /**
    * 1 件のお題について、集計と順位の材料をまとめて取得する
    */

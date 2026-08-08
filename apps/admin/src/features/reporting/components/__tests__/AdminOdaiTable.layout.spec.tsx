@@ -24,7 +24,7 @@ const items: AdminOdaiListItem[] = Array.from({ length: 12 }, (_, index) => ({
 const renderAtWidth = async (width: number) => {
   await render(
     <div style={{ width: `${width}px` }}>
-      <AdminOdaiTable items={items} selectedOdaiId={null} period="90d" />
+      <AdminOdaiTable items={items} selectedOdaiId={null} period="2026" />
     </div>,
   )
 

@@ -1,23 +1,26 @@
 import {
+  getAdminAvailableYears,
   getAdminOdaiDetail,
   getAdminOdaiList,
   getAdminSummary,
 } from '@/features/reporting/api/adminReporting'
 import { formatAdminFullDate } from '@/features/reporting/lib/adminFormat'
 import {
-  AdminPeriodPreset,
+  ADMIN_ALL_PERIOD,
   createAdminPeriodRange,
+  formatAdminPeriodParam,
+  parseAdminPeriod,
 } from '@/features/reporting/lib/adminPeriod'
 
 import { AdminOdaiDetailDrawer } from './AdminOdaiDetailDrawer'
 import { AdminOdaiDetailPanel } from './AdminOdaiDetailPanel'
 import { AdminOdaiTable } from './AdminOdaiTable'
-import { AdminPeriodTabs } from './AdminPeriodTabs'
+import { AdminPeriodSelector } from './AdminPeriodSelector'
 import { AdminSummaryTiles } from './AdminSummaryTiles'
 
 type AdminReportingScreenProps = {
-  /** 表示する期間 */
-  period: AdminPeriodPreset
+  /** searchParams で指定された期間。未指定なら null */
+  periodParam: string | null
   /** ドロワーで開くお題。未選択なら null */
   odaiId: string | null
 }
@@ -27,9 +30,14 @@ type AdminReportingScreenProps = {
  * 期間と開いているお題は URL から受け取り、この階層でまとめて取得する
  */
 export async function AdminReportingScreen({
-  period,
+  periodParam,
   odaiId,
 }: AdminReportingScreenProps) {
+  // 選べる年が決まらないと期間を確定できないため、先に取得する
+  const { years } = await getAdminAvailableYears()
+
+  const period = parseAdminPeriod(periodParam, years)
+  const periodValue = formatAdminPeriodParam(period)
   const range = createAdminPeriodRange(period, Date.now())
 
   const [summary, odaiList] = await Promise.all([
@@ -49,9 +57,9 @@ export async function AdminReportingScreen({
       </header>
 
       <div className="flex flex-wrap items-center gap-3 border-b px-3 py-2">
-        <AdminPeriodTabs current={period} />
+        <AdminPeriodSelector current={period} availableYears={years} />
         <span className="text-[11px] text-muted-foreground tabular-nums">
-          {period === 'all'
+          {period === ADMIN_ALL_PERIOD
             ? `${formatAdminFullDate(range.to)} まで`
             : `${formatAdminFullDate(range.from)} – ${formatAdminFullDate(range.to)}`}
         </span>
@@ -62,13 +70,13 @@ export async function AdminReportingScreen({
         <AdminOdaiTable
           items={odaiList.items}
           selectedOdaiId={selected?.id ?? null}
-          period={period}
+          period={periodValue}
         />
       </main>
 
       <AdminOdaiDetailDrawer
         open={detail !== null}
-        closeHref={`/?period=${period}`}
+        closeHref={`/?period=${periodValue}`}
         title={detail?.title ?? ''}
       >
         {detail && <AdminOdaiDetailPanel detail={detail} />}
