@@ -6,10 +6,11 @@ import {
   InternalServerError,
   NoTargetOdaiError,
 } from '../../api/Error'
-import { odai } from '../../db/schema'
+import { kotae, odai, result } from '../../db/schema'
 import {
   KOTAE_1_ID,
   KOTAE_2_ID,
+  KOTAE_3_ID,
   ODAI_FINISHED_2_ID,
   ODAI_VOTING_ID,
   OTHER_TEAM_ID,
@@ -194,5 +195,53 @@ describe('AdminOdaiDetailServiceImpl', () => {
         rank: 2,
       },
     ])
+  })
+
+  it('発表済みの順位は result の保存順に関わらず上位から並べて返す', async () => {
+    await seedFinishedScenario(testDb)
+    // 保存順と順位が逆の結果を足し、取得順のまま返していないことを確かめる
+    await testDb.insert(kotae).values({
+      id: KOTAE_3_ID,
+      odaiId: ODAI_FINISHED_2_ID,
+      content: '3位回答',
+      createdBy: USER_2,
+      createdAt: new Date('2025-01-11').toISOString(),
+    })
+    await testDb.insert(result).values([
+      {
+        id: 'result-3',
+        odaiId: ODAI_FINISHED_2_ID,
+        kotaeId: KOTAE_3_ID,
+        type: 'point',
+        point: 1,
+        rank: 3,
+        createdAt: new Date('2025-01-12').toISOString(),
+      },
+      {
+        id: 'result-4',
+        odaiId: ODAI_FINISHED_2_ID,
+        kotaeId: KOTAE_2_ID,
+        type: 'point',
+        point: 2,
+        rank: 2,
+        createdAt: new Date('2025-01-12').toISOString(),
+      },
+    ])
+    const resolver = createResolver({ [USER_1]: '田中', [USER_2]: '佐藤' })
+
+    const detail = await createService(resolver).get({
+      odaiId: ODAI_FINISHED_2_ID,
+      slackTeamId: TEAM_ID,
+    })
+
+    if (hasError(detail)) throw new Error('detail should be returned')
+
+    expect(detail.pointRanking.map((kotae) => kotae.rank)).toEqual([1, 2, 3])
+    expect(detail.pointRanking.map((kotae) => kotae.kotaeId)).toEqual([
+      KOTAE_1_ID,
+      KOTAE_2_ID,
+      KOTAE_3_ID,
+    ])
+    expect(detail.pointRanking.map((kotae) => kotae.point)).toEqual([3, 2, 1])
   })
 })

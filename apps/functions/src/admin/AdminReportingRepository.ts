@@ -34,9 +34,9 @@ export type AdminOdaiDetailSource = {
   voteUserCount: number
   /** 発表済みの結果。未発表なら null */
   publishedResult: {
-    /** 打点王の順位 */
+    /** 打点王の順位。並び順は保証しないため、表示側で並べ替える */
     pointStats: PointStat[]
-    /** 首位打者の順位 */
+    /** 首位打者の順位。並び順は保証しないため、表示側で並べ替える */
     countStats: CountStat[]
     /** 発表日時（Unix ミリ秒） */
     publishedAt: number

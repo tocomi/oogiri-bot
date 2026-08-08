@@ -33,19 +33,35 @@ const createVoteDistribution = (kotaeList: Kotae[]): AdminVoteDistribution => {
 }
 
 /**
+ * 順位に表示する点数を取り出す
+ * 打点王はポイント、首位打者は票数と、種類によって見せる値が変わるため一箇所にまとめる
+ */
+const getStatPoint = (stat: PointStat | CountStat): number =>
+  stat.type === 'point' ? stat.point : stat.votedCount
+
+/**
  * 発表済みの順位に表示名を添える
+ * 保存済みの結果は取得順が保証されないため、表示前にここで順位順へ並べ直す
  */
 const createPublishedRanking = (
   stats: (PointStat | CountStat)[],
   nameMap: { [userId: string]: string },
 ): AdminRankedKotae[] =>
-  stats.map((stat) => ({
-    authorName: nameMap[stat.userName] ?? null,
-    content: stat.kotaeContent,
-    kotaeId: stat.kotaeId,
-    point: stat.type === 'point' ? stat.point : stat.votedCount,
-    rank: stat.rank,
-  }))
+  [...stats]
+    // NOTE: 同順位が並ぶことがあるため、点数と回答 ID まで見て並びを確定させる
+    .sort(
+      (a, b) =>
+        a.rank - b.rank ||
+        getStatPoint(b) - getStatPoint(a) ||
+        a.kotaeId.localeCompare(b.kotaeId),
+    )
+    .map((stat) => ({
+      authorName: nameMap[stat.userName] ?? null,
+      content: stat.kotaeContent,
+      kotaeId: stat.kotaeId,
+      point: getStatPoint(stat),
+      rank: stat.rank,
+    }))
 
 export interface AdminOdaiDetailService {
   /**
