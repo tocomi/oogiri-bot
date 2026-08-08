@@ -5,8 +5,8 @@ import type {
 
 import { Separator } from '@/components/ui/separator'
 import {
-  formatAdminDate,
   formatAdminDateTime,
+  formatAdminFullDate,
 } from '@/features/reporting/lib/adminFormat'
 
 import { AdminOdaiStatusBadge } from './AdminOdaiStatusBadge'
@@ -121,7 +121,7 @@ export function AdminOdaiDetailPanel({ detail }: AdminOdaiDetailPanelProps) {
         <p className="flex items-center gap-2 text-[11px] text-muted-foreground tabular-nums">
           {detail.publishedAt === null
             ? `締切 ${formatAdminDateTime(detail.dueDate)}`
-            : `${formatAdminDate(detail.publishedAt)} 発表`}
+            : `${formatAdminFullDate(detail.publishedAt)} 発表`}
           <AdminOdaiStatusBadge status={detail.status} />
         </p>
         <h2 className="mt-1 text-[15px] leading-snug font-semibold text-pretty">

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatAdminDate } from '@/features/reporting/lib/adminFormat'
+import { formatAdminFullDate } from '@/features/reporting/lib/adminFormat'
 import { cn } from '@/lib/utils'
 
 import { AdminOdaiStatusBadge } from './AdminOdaiStatusBadge'
@@ -83,7 +83,7 @@ export function AdminOdaiTable({
               <TableCell className="text-right text-[11px] tabular-nums">
                 {item.publishedAt === null
                   ? '—'
-                  : formatAdminDate(item.publishedAt)}
+                  : formatAdminFullDate(item.publishedAt)}
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {item.kotaeCount}
