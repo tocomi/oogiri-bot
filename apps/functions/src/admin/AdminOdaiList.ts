@@ -32,6 +32,4 @@ export type AdminOdaiList = {
 export type AdminOdaiListParams = {
   /** 集計対象の Slack チーム ID */
   slackTeamId: string
-  /** 取得する最大件数 */
-  limit: number
 } & PeriodParams

@@ -39,11 +39,7 @@ const adminSummaryQuerySchema = z
   .and(periodSchema)
 
 const adminOdaiListQuerySchema = z
-  .object({
-    slackTeamId: slackTeamIdSchema,
-    /** 取得する最大件数 */
-    limit: z.coerce.number().int().min(1).max(100).default(20),
-  })
+  .object({ slackTeamId: slackTeamIdSchema })
   .and(periodSchema)
 
 const adminSummaryService = new AdminSummaryServiceImpl({
@@ -131,7 +127,6 @@ adminApp.get('/summary', async (c) => {
 adminApp.get('/odai', async (c) => {
   const query = adminOdaiListQuerySchema.safeParse({
     from: c.req.query('from'),
-    limit: c.req.query('limit'),
     slackTeamId: c.req.query('slackTeamId'),
     to: c.req.query('to'),
   })

@@ -110,7 +110,6 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
     slackTeamId,
     from,
     to,
-    limit,
   }: AdminOdaiListParams): Promise<AdminReadResult<AdminOdaiListItem[]>> {
     try {
       const odaiRows = await this.db
@@ -125,7 +124,6 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
         )
         // NOTE: createdAt が同じお題があっても並びが揺れないよう id で確定させる
         .orderBy(desc(odai.createdAt), desc(odai.id))
-        .limit(limit)
 
       if (!odaiRows.length) return { status: 'ok', value: [] }
 

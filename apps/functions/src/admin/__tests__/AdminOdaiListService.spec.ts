@@ -41,7 +41,6 @@ describe('AdminOdaiListServiceImpl', () => {
 
     const result = await service.get({
       slackTeamId: TEAM_ID,
-      limit: 20,
       ...SUMMARY_PERIOD,
     })
     if (hasError(result)) throw new Error('list should be returned')
@@ -76,7 +75,6 @@ describe('AdminOdaiListServiceImpl', () => {
 
     const result = await service.get({
       slackTeamId: OTHER_TEAM_ID,
-      limit: 20,
       ...SUMMARY_PERIOD,
     })
     if (hasError(result)) throw new Error('list should be returned')
@@ -85,24 +83,9 @@ describe('AdminOdaiListServiceImpl', () => {
     expect(items.map((item) => item.id)).toEqual(['odai-other'])
   })
 
-  it('limit を超えて返さない', async () => {
-    await seedSummaryScenario(testDb)
-
-    const result = await service.get({
-      slackTeamId: TEAM_ID,
-      limit: 1,
-      ...SUMMARY_PERIOD,
-    })
-    if (hasError(result)) throw new Error('list should be returned')
-    const { items } = result
-
-    expect(items.map((item) => item.id)).toEqual(['odai-cur-2'])
-  })
-
   it('該当するお題がなければ空配列を返す', async () => {
     const result = await service.get({
       slackTeamId: TEAM_ID,
-      limit: 20,
       ...SUMMARY_PERIOD,
     })
     if (hasError(result)) throw new Error('list should be returned')
@@ -118,7 +101,6 @@ describe('AdminOdaiListServiceImpl', () => {
 
     const result = await failedService.get({
       slackTeamId: TEAM_ID,
-      limit: 20,
       ...SUMMARY_PERIOD,
     })
 
@@ -129,7 +111,7 @@ describe('AdminOdaiListServiceImpl', () => {
     await seedSummaryScenario(testDb)
 
     const { queries } = await recordQueries(() =>
-      service.get({ slackTeamId: TEAM_ID, limit: 20, ...SUMMARY_PERIOD }),
+      service.get({ slackTeamId: TEAM_ID, ...SUMMARY_PERIOD }),
     )
 
     expect(summarizeQueries(queries)).toEqual([

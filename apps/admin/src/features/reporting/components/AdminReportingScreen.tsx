@@ -15,9 +15,6 @@ import { AdminOdaiTable } from './AdminOdaiTable'
 import { AdminPeriodTabs } from './AdminPeriodTabs'
 import { AdminSummaryTiles } from './AdminSummaryTiles'
 
-/** 一覧に載せるお題の件数 */
-const ODAI_LIMIT = 12
-
 type AdminReportingScreenProps = {
   /** 表示する期間 */
   period: AdminPeriodPreset
@@ -37,7 +34,7 @@ export async function AdminReportingScreen({
 
   const [summary, odaiList] = await Promise.all([
     getAdminSummary(range),
-    getAdminOdaiList({ ...range, limit: ODAI_LIMIT }),
+    getAdminOdaiList(range),
   ])
 
   // 期間外の ID を渡された場合は開かない

@@ -91,17 +91,9 @@ export async function getAdminSummary({ from, to }: PeriodRange) {
 /**
  * 一覧に表示するお題を取得する
  */
-export async function getAdminOdaiList({
-  from,
-  to,
-  limit,
-}: PeriodRange & { limit: number }) {
+export async function getAdminOdaiList({ from, to }: PeriodRange) {
   return fetchAdminApi(
-    createAdminApiUrl('odai', {
-      from: String(from),
-      limit: String(limit),
-      to: String(to),
-    }),
+    createAdminApiUrl('odai', { from: String(from), to: String(to) }),
     adminOdaiListSchema,
   )
 }
