@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatAdminFullDate } from '@/features/reporting/lib/adminFormat'
+import { formatAdminFullDate } from '@/features/shared/lib/adminFormat'
 import { cn } from '@/lib/utils'
 
 import { useAdminOdaiSelection } from './AdminOdaiSelection'

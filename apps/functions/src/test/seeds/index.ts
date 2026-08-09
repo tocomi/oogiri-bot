@@ -529,3 +529,42 @@ export const seedSummaryScenario = async (db: TestDb) => {
     },
   ])
 }
+
+/** ヒートマップの列の上限を超えるお題の数 */
+const MATRIX_LIMIT_ODAI_COUNT = 31
+
+/**
+ * ヒートマップの列の上限を超える数のお題を投入する。
+ * 直近だけに絞り込めることと、絞る前の総数を返せることを検証するために使う。
+ *
+ * TEAM_ID の対象期間: お題 31件。各お題に USER_1 の回答が 1件ずつ
+ * お題は index が大きいほど新しく、絞り込みで index 0 のお題だけが落ちる。
+ */
+export const seedUserMatrixLimitScenario = async (db: TestDb) => {
+  const odaiRows: (typeof odai.$inferInsert)[] = Array.from(
+    { length: MATRIX_LIMIT_ODAI_COUNT },
+    (_, index) => ({
+      id: `odai-many-${String(index).padStart(2, '0')}`,
+      teamId: TEAM_ID,
+      title: `お題 ${index}`,
+      type: 'normal',
+      status: 'posting',
+      dueDate: new Date('2025-02-28').toISOString(),
+      imageUrl: null,
+      createdBy: USER_1,
+      // NOTE: どれが直近かが確定するよう、対象期間に収まる幅で 1 時間ずつずらす
+      createdAt: new Date(Date.UTC(2025, 1, 10, index)).toISOString(),
+    }),
+  )
+  await db.insert(odai).values(odaiRows)
+
+  await db.insert(kotae).values(
+    odaiRows.map((row, index) => ({
+      id: `k-many-${String(index).padStart(2, '0')}`,
+      odaiId: row.id,
+      content: `回答 ${index}`,
+      createdBy: USER_1,
+      createdAt: row.createdAt,
+    })),
+  )
+}

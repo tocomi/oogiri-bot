@@ -3,6 +3,22 @@ import { z } from 'zod'
 const adminApiBaseUrlSchema = z.string().min(1)
 const adminSlackTeamIdSchema = z.string().min(1)
 
+export type AdminPeriodRange = {
+  /** 集計期間の開始（Unix ミリ秒） */
+  from: number
+  /** 集計期間の終了（Unix ミリ秒） */
+  to: number
+}
+
+/**
+ * 期間つきの endpoint に渡す searchParams を組み立てる
+ * from / to の渡し方を endpoint ごとにばらけさせないために使う
+ */
+export const createAdminPeriodParams = ({ from, to }: AdminPeriodRange) => ({
+  from: String(from),
+  to: String(to),
+})
+
 /**
  * 管理画面 API の base URL を取得する
  */

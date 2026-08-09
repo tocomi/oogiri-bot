@@ -14,7 +14,7 @@ import {
   ADMIN_ALL_PERIOD,
   AdminPeriod,
   formatAdminPeriodParam,
-} from '@/features/reporting/lib/adminPeriod'
+} from '@/features/shared/lib/adminPeriod'
 import { cn } from '@/lib/utils'
 
 type AdminPeriodSelectorProps = {
@@ -22,6 +22,11 @@ type AdminPeriodSelectorProps = {
   current: AdminPeriod
   /** 選択できる年。新しい順 */
   availableYears: number[]
+  /**
+   * 期間を切り替えたときの遷移先
+   * 集計とユーザーで同じ選択部品を使うため、どの画面に留まるかは呼び出し側が決める
+   */
+  basePath: string
 }
 
 /**
@@ -31,6 +36,7 @@ type AdminPeriodSelectorProps = {
 export function AdminPeriodSelector({
   current,
   availableYears,
+  basePath,
 }: AdminPeriodSelectorProps) {
   const router = useRouter()
   const isAll = current === ADMIN_ALL_PERIOD
@@ -44,7 +50,7 @@ export function AdminPeriodSelector({
   return (
     <div className="flex items-center gap-2" role="group" aria-label="集計期間">
       <Link
-        href={`/?period=${ADMIN_ALL_PERIOD}`}
+        href={`${basePath}?period=${ADMIN_ALL_PERIOD}`}
         aria-current={isAll ? 'page' : undefined}
         className={cn(
           'rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
@@ -61,7 +67,7 @@ export function AdminPeriodSelector({
         value={isAll ? null : formatAdminPeriodParam(current)}
         onValueChange={(value) => {
           if (typeof value !== 'string') return
-          router.push(`/?period=${value}`)
+          router.push(`${basePath}?period=${value}`)
         }}
       >
         <SelectTrigger

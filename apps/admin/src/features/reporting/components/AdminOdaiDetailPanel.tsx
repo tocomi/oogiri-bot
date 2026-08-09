@@ -4,13 +4,13 @@ import type {
 } from '@/features/reporting/api/adminReporting'
 
 import { Separator } from '@/components/ui/separator'
+import { AdminTruncatedText } from '@/features/shared/components/AdminTruncatedText'
 import {
   formatAdminDateTime,
   formatAdminFullDate,
-} from '@/features/reporting/lib/adminFormat'
+} from '@/features/shared/lib/adminFormat'
 
 import { AdminOdaiStatusBadge } from './AdminOdaiStatusBadge'
-import { AdminTruncatedText } from './AdminTruncatedText'
 
 type RankingProps = {
   /** 見出し */

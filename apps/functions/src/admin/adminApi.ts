@@ -9,7 +9,9 @@ import { AdminOdaiDetailServiceImpl } from './AdminOdaiDetailService'
 import { AdminOdaiListServiceImpl } from './AdminOdaiListService'
 import { AdminReportingPostgresRepositoryImpl } from './AdminReportingPostgresRepositoryImpl'
 import { AdminSummaryServiceImpl } from './AdminSummaryService'
+import { AdminUserMatrixServiceImpl } from './AdminUserMatrixService'
 import { SlackAdminUserNameResolver } from './AdminUserNameResolver'
+import { AdminUserStatsServiceImpl } from './AdminUserStatsService'
 
 type AdminApiHandler = Parameters<typeof functions.https.onRequest>[0]
 type AdminApiRequest = Parameters<AdminApiHandler>[0]
@@ -43,6 +45,11 @@ const adminOdaiListQuerySchema = z
   .object({ slackTeamId: slackTeamIdSchema })
   .and(periodSchema)
 
+/** ユーザー別集計は一覧もヒートマップも同じ絞り込みで引く */
+const adminUserQuerySchema = z
+  .object({ slackTeamId: slackTeamIdSchema })
+  .and(periodSchema)
+
 const adminSummaryService = new AdminSummaryServiceImpl({
   reportingRepository,
 })
@@ -55,9 +62,21 @@ const adminAvailableYearsService = new AdminAvailableYearsServiceImpl({
   reportingRepository,
 })
 
+// NOTE: 解決した表示名をインスタンス内に溜めるため、Slack への問い合わせを減らせるよう共有する
+const userNameResolver = new SlackAdminUserNameResolver()
+
 const adminOdaiDetailService = new AdminOdaiDetailServiceImpl({
   reportingRepository,
-  userNameResolver: new SlackAdminUserNameResolver(),
+  userNameResolver,
+})
+
+const adminUserStatsService = new AdminUserStatsServiceImpl({
+  reportingRepository,
+  userNameResolver,
+})
+
+const adminUserMatrixService = new AdminUserMatrixServiceImpl({
+  reportingRepository,
 })
 
 /**
@@ -161,6 +180,42 @@ adminApp.get('/odai', async (c) => {
   }
 
   return c.json(list)
+})
+
+adminApp.get('/users', async (c) => {
+  const query = adminUserQuerySchema.safeParse({
+    from: c.req.query('from'),
+    slackTeamId: c.req.query('slackTeamId'),
+    to: c.req.query('to'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const stats = await adminUserStatsService.get(query.data)
+  if (hasError(stats)) {
+    return c.json(stats, stats.status)
+  }
+
+  return c.json(stats)
+})
+
+adminApp.get('/users/matrix', async (c) => {
+  const query = adminUserQuerySchema.safeParse({
+    from: c.req.query('from'),
+    slackTeamId: c.req.query('slackTeamId'),
+    to: c.req.query('to'),
+  })
+  if (!query.success) {
+    return c.json(IllegalArgumentError, IllegalArgumentError.status)
+  }
+
+  const matrix = await adminUserMatrixService.get(query.data)
+  if (hasError(matrix)) {
+    return c.json(matrix, matrix.status)
+  }
+
+  return c.json(matrix)
 })
 
 adminApp.get('/odai/:odaiId', async (c) => {

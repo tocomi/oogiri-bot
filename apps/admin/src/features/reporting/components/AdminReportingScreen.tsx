@@ -3,26 +3,27 @@ import { Suspense } from 'react'
 import type { AdminOdaiDetail } from '@/features/reporting/api/adminReporting'
 
 import {
-  getAdminAvailableYears,
   getAdminOdaiDetail,
   getAdminOdaiList,
   getAdminSummary,
 } from '@/features/reporting/api/adminReporting'
-import { truncateAdminNow } from '@/features/reporting/lib/adminCache'
-import { formatAdminFullDate } from '@/features/reporting/lib/adminFormat'
+import { getAdminAvailableYears } from '@/features/shared/api/adminYears'
+import { AdminHeader } from '@/features/shared/components/AdminHeader'
+import { AdminPeriodSelector } from '@/features/shared/components/AdminPeriodSelector'
+import { truncateAdminNow } from '@/features/shared/lib/adminCache'
+import { formatAdminFullDate } from '@/features/shared/lib/adminFormat'
 import {
   ADMIN_ALL_PERIOD,
   createAdminPeriodRange,
   formatAdminPeriodParam,
   parseAdminPeriod,
-} from '@/features/reporting/lib/adminPeriod'
+} from '@/features/shared/lib/adminPeriod'
 
 import { AdminOdaiDetailDrawer } from './AdminOdaiDetailDrawer'
 import { AdminOdaiDetailPanel } from './AdminOdaiDetailPanel'
 import { AdminOdaiDetailSkeleton } from './AdminOdaiDetailSkeleton'
 import { AdminOdaiSelectionProvider } from './AdminOdaiSelection'
 import { AdminOdaiTable } from './AdminOdaiTable'
-import { AdminPeriodSelector } from './AdminPeriodSelector'
 import { AdminSummaryTiles } from './AdminSummaryTiles'
 
 type AdminOdaiDetailContentProps = {
@@ -91,13 +92,14 @@ export async function AdminReportingScreen({
       closeHref={`/?period=${periodValue}`}
     >
       <div className="flex min-h-dvh flex-col bg-background text-foreground">
-        <header className="flex h-11 shrink-0 items-center gap-3 border-b px-3">
-          <span className="text-[13px] font-semibold">Oogiri Bot</span>
-          <span className="text-[13px] text-muted-foreground">集計</span>
-        </header>
+        <AdminHeader current="reporting" period={periodValue} />
 
         <div className="flex flex-wrap items-center gap-3 border-b px-3 py-2">
-          <AdminPeriodSelector current={period} availableYears={years} />
+          <AdminPeriodSelector
+            current={period}
+            availableYears={years}
+            basePath="/"
+          />
           <span className="text-[11px] text-muted-foreground tabular-nums">
             {period === ADMIN_ALL_PERIOD
               ? `${formatAdminFullDate(range.to)} まで`

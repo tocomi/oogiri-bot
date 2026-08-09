@@ -1,13 +1,16 @@
 import { z } from 'zod'
 
+import type { AdminPeriodRange } from '@/features/shared/api/adminApiClient'
+
+import {
+  createAdminApiUrl,
+  createAdminPeriodParams,
+  fetchAdminApi,
+} from '@/features/shared/api/adminApiClient'
 import {
   ADMIN_NO_CACHE_SECONDS,
   ADMIN_REPORTING_REVALIDATE_SECONDS,
-} from '@/features/reporting/lib/adminCache'
-import {
-  createAdminApiUrl,
-  fetchAdminApi,
-} from '@/features/shared/api/adminApiClient'
+} from '@/features/shared/lib/adminCache'
 
 const odaiStatusSchema = z.enum(['posting', 'voting', 'finished'])
 
@@ -23,10 +26,6 @@ const adminSummarySchema = z.object({
   period: z.object({ from: z.number(), to: z.number() }),
   current: summaryCountsSchema,
   previous: summaryCountsSchema.nullable(),
-})
-
-const adminAvailableYearsSchema = z.object({
-  years: z.array(z.number()),
 })
 
 const adminOdaiListItemSchema = z.object({
@@ -79,30 +78,12 @@ export type AdminOdaiListItem = z.infer<typeof adminOdaiListItemSchema>
 export type AdminRankedKotae = z.infer<typeof adminRankedKotaeSchema>
 export type AdminOdaiDetail = z.infer<typeof adminOdaiDetailSchema>
 
-type PeriodRange = {
-  /** 集計期間の開始（Unix ミリ秒） */
-  from: number
-  /** 集計期間の終了（Unix ミリ秒） */
-  to: number
-}
-
-/**
- * 期間選択に並べる年を取得する
- */
-export async function getAdminAvailableYears() {
-  return fetchAdminApi(
-    createAdminApiUrl('years'),
-    adminAvailableYearsSchema,
-    ADMIN_REPORTING_REVALIDATE_SECONDS,
-  )
-}
-
 /**
  * 集計タイルに表示する数値を取得する
  */
-export async function getAdminSummary({ from, to }: PeriodRange) {
+export async function getAdminSummary(range: AdminPeriodRange) {
   return fetchAdminApi(
-    createAdminApiUrl('summary', { from: String(from), to: String(to) }),
+    createAdminApiUrl('summary', createAdminPeriodParams(range)),
     adminSummarySchema,
     ADMIN_REPORTING_REVALIDATE_SECONDS,
   )
@@ -111,9 +92,9 @@ export async function getAdminSummary({ from, to }: PeriodRange) {
 /**
  * 一覧に表示するお題を取得する
  */
-export async function getAdminOdaiList({ from, to }: PeriodRange) {
+export async function getAdminOdaiList(range: AdminPeriodRange) {
   return fetchAdminApi(
-    createAdminApiUrl('odai', { from: String(from), to: String(to) }),
+    createAdminApiUrl('odai', createAdminPeriodParams(range)),
     adminOdaiListSchema,
     ADMIN_REPORTING_REVALIDATE_SECONDS,
   )

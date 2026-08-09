@@ -22,8 +22,15 @@ import {
   AdminOdaiDetailSource,
   AdminReadResult,
   AdminReportingRepository,
+  AdminUserStatsSource,
 } from './AdminReportingRepository'
 import { AdminSummaryCounts } from './AdminSummary'
+import {
+  ADMIN_USER_MATRIX_ODAI_LIMIT,
+  AdminUserMatrix,
+  AdminUserMatrixParams,
+} from './AdminUserMatrix'
+import { AdminUserStatsParams } from './AdminUserStats'
 
 type Db = typeof defaultDb
 
@@ -324,6 +331,200 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
           voteUserCount: new Set(voteRows.map((v) => v.createdBy)).size,
         },
       }
+    } catch (error) {
+      console.error(error)
+      return { status: 'error' }
+    }
+  }
+
+  /**
+   * 指定期間の回答数と投票数をユーザーごとに Postgres から取得する
+   * ユーザー数が増えても往復回数を変えないため、集計は createdBy でまとめて引く
+   */
+  async getUserStats({
+    slackTeamId,
+    from,
+    to,
+  }: AdminUserStatsParams): Promise<AdminReadResult<AdminUserStatsSource>> {
+    const fromAt = new Date(from).toISOString()
+    const toAt = new Date(to).toISOString()
+
+    try {
+      const [odaiRows, kotaeRows, voteRows] = await Promise.all([
+        this.db
+          .select({ count: count() })
+          .from(odai)
+          .where(
+            and(
+              eq(odai.teamId, slackTeamId),
+              gte(odai.createdAt, fromAt),
+              lt(odai.createdAt, toAt),
+            ),
+          ),
+        this.db
+          .select({
+            userId: kotae.createdBy,
+            count: count(),
+            odaiCount: countDistinct(kotae.odaiId),
+          })
+          .from(kotae)
+          .innerJoin(odai, eq(kotae.odaiId, odai.id))
+          .where(
+            and(
+              eq(odai.teamId, slackTeamId),
+              gte(kotae.createdAt, fromAt),
+              lt(kotae.createdAt, toAt),
+            ),
+          )
+          .groupBy(kotae.createdBy),
+        this.db
+          .select({
+            userId: vote.createdBy,
+            count: count(),
+            odaiCount: countDistinct(vote.odaiId),
+          })
+          .from(vote)
+          .innerJoin(odai, eq(vote.odaiId, odai.id))
+          .where(
+            and(
+              eq(odai.teamId, slackTeamId),
+              gte(vote.createdAt, fromAt),
+              lt(vote.createdAt, toAt),
+            ),
+          )
+          .groupBy(vote.createdBy),
+      ])
+
+      // NOTE: 回答だけの人も投票だけの人も一覧に出すため、両方の集計結果から母集団を作る
+      const userIds = [
+        ...new Set([
+          ...kotaeRows.map((row) => row.userId),
+          ...voteRows.map((row) => row.userId),
+        ]),
+      ]
+
+      const users = userIds.map((userId) => {
+        const kotaeStat = kotaeRows.find((row) => row.userId === userId)
+        const voteStat = voteRows.find((row) => row.userId === userId)
+        return {
+          userId,
+          kotaeCount: kotaeStat?.count ?? 0,
+          kotaeOdaiCount: kotaeStat?.odaiCount ?? 0,
+          voteCount: voteStat?.count ?? 0,
+          voteOdaiCount: voteStat?.odaiCount ?? 0,
+        }
+      })
+
+      return {
+        status: 'ok',
+        value: { odaiCount: odaiRows[0].count, users },
+      }
+    } catch (error) {
+      console.error(error)
+      return { status: 'error' }
+    }
+  }
+
+  /**
+   * 指定期間のお題 × ユーザーの回答数と投票数を Postgres から取得する
+   * 列が増えすぎないよう直近のお題だけに絞り、絞る前の総数も併せて返す
+   */
+  async getUserMatrixSource({
+    slackTeamId,
+    from,
+    to,
+  }: AdminUserMatrixParams): Promise<AdminReadResult<AdminUserMatrix>> {
+    const inPeriod = and(
+      eq(odai.teamId, slackTeamId),
+      gte(odai.createdAt, new Date(from).toISOString()),
+      lt(odai.createdAt, new Date(to).toISOString()),
+    )
+
+    try {
+      const [odaiRows, totalRows] = await Promise.all([
+        this.db
+          .select({
+            id: odai.id,
+            title: odai.title,
+            createdAt: odai.createdAt,
+          })
+          .from(odai)
+          .where(inPeriod)
+          // NOTE: createdAt が同じお題があっても並びが揺れないよう id で確定させる
+          .orderBy(desc(odai.createdAt), desc(odai.id))
+          .limit(ADMIN_USER_MATRIX_ODAI_LIMIT),
+        this.db.select({ count: count() }).from(odai).where(inPeriod),
+      ])
+
+      const totalOdaiCount = totalRows[0].count
+
+      if (!odaiRows.length) {
+        return {
+          status: 'ok',
+          value: { odaiList: [], rows: [], totalOdaiCount },
+        }
+      }
+
+      const odaiIds = odaiRows.map((row) => row.id)
+
+      const [kotaeRows, voteRows] = await Promise.all([
+        this.db
+          .select({
+            odaiId: kotae.odaiId,
+            userId: kotae.createdBy,
+            count: count(),
+          })
+          .from(kotae)
+          .where(inArray(kotae.odaiId, odaiIds))
+          .groupBy(kotae.odaiId, kotae.createdBy),
+        this.db
+          .select({
+            odaiId: vote.odaiId,
+            userId: vote.createdBy,
+            count: count(),
+          })
+          .from(vote)
+          .where(inArray(vote.odaiId, odaiIds))
+          .groupBy(vote.odaiId, vote.createdBy),
+      ])
+
+      // NOTE: セル数はお題数 × ユーザー数まで膨らむため、走査ではなく key 引きで組む
+      const toCellKey = (odaiId: string, userId: string) =>
+        `${odaiId} ${userId}`
+      const kotaeCells = new Map(
+        kotaeRows.map((row) => [toCellKey(row.odaiId, row.userId), row.count]),
+      )
+      const voteCells = new Map(
+        voteRows.map((row) => [toCellKey(row.odaiId, row.userId), row.count]),
+      )
+
+      // 画面は左を古いお題として並べるため、取得時の新しい順をここで反転させる
+      const odaiList = odaiRows
+        .map((row) => ({
+          id: row.id,
+          title: row.title,
+          createdAt: new Date(row.createdAt).getTime(),
+        }))
+        .reverse()
+
+      const userIds = [
+        ...new Set([
+          ...kotaeRows.map((row) => row.userId),
+          ...voteRows.map((row) => row.userId),
+        ]),
+      ]
+
+      const rows = userIds.map((userId) => ({
+        userId,
+        kotaeCounts: odaiList.map(
+          (o) => kotaeCells.get(toCellKey(o.id, userId)) ?? 0,
+        ),
+        voteCounts: odaiList.map(
+          (o) => voteCells.get(toCellKey(o.id, userId)) ?? 0,
+        ),
+      }))
+
+      return { status: 'ok', value: { odaiList, rows, totalOdaiCount } }
     } catch (error) {
       console.error(error)
       return { status: 'error' }
