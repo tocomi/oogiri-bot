@@ -9,6 +9,8 @@ export type AdminUserStatsItem = {
   kotaeCount: number
   /** 期間内に投じた投票の数 */
   voteCount: number
+  /** 期間内に出題したお題の数。出題が特定の人に偏っていないかを見るために使う */
+  postedOdaiCount: number
   /** 期間内に 1 回以上回答したお題の数 */
   kotaeOdaiCount: number
   /** 期間内に 1 回以上投票したお題の数 */
@@ -26,7 +28,8 @@ export type AdminUserStatsParams = SlackParams & PeriodParams
 
 /**
  * ユーザーを回答数の多い順に並べる
- * 回答数が同じ場合の並びが実行ごとに揺れないよう、投票数とユーザー ID で確定させる
+ * 意味のある並びは指標ごとに管理画面が決め直すため、ここでの役割は順序を決定的にすることだけ
+ * 回答数が同じ場合は、投票数とユーザー ID で確定させる
  */
 export const compareAdminUserStats = (
   a: AdminUserStatsItem,

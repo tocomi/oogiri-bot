@@ -10,6 +10,7 @@ const items: AdminUserStatsItem[] = Array.from({ length: 12 }, (_, index) => ({
   name: `ユーザー ${index}`,
   kotaeCount: 42 - index * 3,
   voteCount: 45 - index * 2,
+  postedOdaiCount: 8 - (index % 4),
   kotaeOdaiCount: 15 - index,
   voteOdaiCount: 15 - index,
 }))

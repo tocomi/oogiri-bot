@@ -36,7 +36,9 @@ export class AdminUserStatsServiceImpl implements AdminUserStatsService {
 
   /**
    * 管理画面の一覧に表示するユーザー別の集計を取得する
-   * 一覧・散布図・ヒートマップで並びを揃えるため、ここで回答数の多い順に確定させる
+   * 意味のある並びは表示側が指標ごとに決め直すため、ここでは順序を確定させるだけにする
+   * それでも順序が要るのは、散布図が重なった点をこの順で描くため。
+   * 実行ごとに描画順が入れ替わらないよう、回答数の多い順で確定させる
    */
   async get(params: AdminUserStatsParams): Promise<AdminUserStats | ApiError> {
     const source = await this.reportingRepository.getUserStats(params)

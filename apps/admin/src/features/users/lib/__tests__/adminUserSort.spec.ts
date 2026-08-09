@@ -11,6 +11,7 @@ const createItem = (
   name: 'たなか',
   kotaeCount: 0,
   voteCount: 0,
+  postedOdaiCount: 0,
   kotaeOdaiCount: 0,
   voteOdaiCount: 0,
   ...overrides,
@@ -20,6 +21,7 @@ describe('parseAdminUserSort', () => {
   test('指定された並びを受け取る', () => {
     expect(parseAdminUserSort('vote')).toBe('vote')
     expect(parseAdminUserSort('kotae')).toBe('kotae')
+    expect(parseAdminUserSort('odai')).toBe('odai')
   })
 
   test('未指定や不正な値は回答数の並びに倒す', () => {
@@ -51,6 +53,18 @@ describe('sortAdminUsers', () => {
     ])
   })
 
+  test('出題数の多い順に並べる', () => {
+    const withPostedOdai = [
+      createItem({ userId: 'U1', postedOdaiCount: 4 }),
+      createItem({ userId: 'U2', postedOdaiCount: 9 }),
+      createItem({ userId: 'U3', postedOdaiCount: 6 }),
+    ]
+
+    expect(
+      sortAdminUsers(withPostedOdai, 'odai').map((item) => item.userId),
+    ).toEqual(['U2', 'U3', 'U1'])
+  })
+
   test('同数ならもう一方の指標で決める', () => {
     const tied = [
       createItem({ userId: 'U1', kotaeCount: 10, voteCount: 1 }),
@@ -60,6 +74,37 @@ describe('sortAdminUsers', () => {
     expect(sortAdminUsers(tied, 'kotae').map((item) => item.userId)).toEqual([
       'U2',
       'U1',
+    ])
+  })
+
+  test('回答も投票も同数なら出題数で決める', () => {
+    const tied = [
+      createItem({
+        userId: 'U1',
+        kotaeCount: 10,
+        voteCount: 5,
+        postedOdaiCount: 1,
+      }),
+      createItem({
+        userId: 'U2',
+        kotaeCount: 10,
+        voteCount: 5,
+        postedOdaiCount: 3,
+      }),
+    ]
+
+    expect(sortAdminUsers(tied, 'kotae').map((item) => item.userId)).toEqual([
+      'U2',
+      'U1',
+    ])
+  })
+
+  test('すべての指標が同数ならユーザー ID の昇順で決める', () => {
+    const tied = [createItem({ userId: 'U2' }), createItem({ userId: 'U1' })]
+
+    expect(sortAdminUsers(tied, 'odai').map((item) => item.userId)).toEqual([
+      'U1',
+      'U2',
     ])
   })
 

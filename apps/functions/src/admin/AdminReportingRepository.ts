@@ -52,7 +52,7 @@ export type AdminOdaiDetailSource = {
 export type AdminUserStatsSource = {
   /** 期間内に作成されたお題の数 */
   odaiCount: number
-  /** 期間内に回答か投票をしたユーザー。並び順は保証しない */
+  /** 期間内に回答・投票・出題のいずれかをしたユーザー。並び順は保証しない */
   users: Omit<AdminUserStatsItem, 'name'>[]
 }
 
@@ -83,7 +83,7 @@ export interface AdminReportingRepository {
     params: AdminOdaiDetailParams,
   ): Promise<AdminReadResult<AdminOdaiDetailSource>>
   /**
-   * 指定期間の回答数と投票数をユーザーごとに取得する
+   * 指定期間の回答数・投票数・出題数をユーザーごとに取得する
    * 誰がどれだけ参加しているかを一覧するために使う
    */
   getUserStats(

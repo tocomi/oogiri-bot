@@ -338,7 +338,7 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
   }
 
   /**
-   * 指定期間の回答数と投票数をユーザーごとに Postgres から取得する
+   * 指定期間の回答数・投票数・出題数をユーザーごとに Postgres から取得する
    * ユーザー数が増えても往復回数を変えないため、集計は createdBy でまとめて引く
    */
   async getUserStats({
@@ -351,8 +351,13 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
 
     try {
       const [odaiRows, kotaeRows, voteRows] = await Promise.all([
+        // NOTE: お題の総数は createdBy が必須のため出題者別の合計で出せる。
+        //       総数を別に数えると往復が 1 回増えるので、この 1 本にまとめる
         this.db
-          .select({ count: count() })
+          .select({
+            userId: odai.createdBy,
+            count: count(),
+          })
           .from(odai)
           .where(
             and(
@@ -360,7 +365,8 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
               gte(odai.createdAt, fromAt),
               lt(odai.createdAt, toAt),
             ),
-          ),
+          )
+          .groupBy(odai.createdBy),
         this.db
           .select({
             userId: kotae.createdBy,
@@ -395,21 +401,31 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
           .groupBy(vote.createdBy),
       ])
 
-      // NOTE: 回答だけの人も投票だけの人も一覧に出すため、両方の集計結果から母集団を作る
+      // NOTE: ユーザー数が増えても組み立ての手間が増えないよう、走査ではなく userId 引きで組む
+      const kotaeStats = new Map(kotaeRows.map((row) => [row.userId, row]))
+      const voteStats = new Map(voteRows.map((row) => [row.userId, row]))
+      const postedOdaiCounts = new Map(
+        odaiRows.map((row) => [row.userId, row.count]),
+      )
+
+      // NOTE: 回答だけの人も投票だけの人も、出題しかしていない人も一覧に出すため、
+      //       3 つの集計結果すべてから母集団を作る
       const userIds = [
         ...new Set([
-          ...kotaeRows.map((row) => row.userId),
-          ...voteRows.map((row) => row.userId),
+          ...kotaeStats.keys(),
+          ...voteStats.keys(),
+          ...postedOdaiCounts.keys(),
         ]),
       ]
 
       const users = userIds.map((userId) => {
-        const kotaeStat = kotaeRows.find((row) => row.userId === userId)
-        const voteStat = voteRows.find((row) => row.userId === userId)
+        const kotaeStat = kotaeStats.get(userId)
+        const voteStat = voteStats.get(userId)
         return {
           userId,
           kotaeCount: kotaeStat?.count ?? 0,
           kotaeOdaiCount: kotaeStat?.odaiCount ?? 0,
+          postedOdaiCount: postedOdaiCounts.get(userId) ?? 0,
           voteCount: voteStat?.count ?? 0,
           voteOdaiCount: voteStat?.odaiCount ?? 0,
         }
@@ -417,7 +433,10 @@ export class AdminReportingPostgresRepositoryImpl implements AdminReportingRepos
 
       return {
         status: 'ok',
-        value: { odaiCount: odaiRows[0].count, users },
+        value: {
+          odaiCount: odaiRows.reduce((total, row) => total + row.count, 0),
+          users,
+        },
       }
     } catch (error) {
       console.error(error)

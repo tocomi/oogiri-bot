@@ -22,8 +22,8 @@ type AdminUserBarProps = {
   value: number
   /** 同じ列の最大件数。バーの長さの基準になる */
   max: number
-  /** バーの色。回答と投票を明度で区別する */
-  tone: 'kotae' | 'vote'
+  /** バーの色。回答・投票・出題を既存テーマの色で区別する */
+  tone: 'kotae' | 'vote' | 'odai'
 }
 
 /**
@@ -33,15 +33,18 @@ type AdminUserBarProps = {
 function AdminUserBar({ value, max, tone }: AdminUserBarProps) {
   // 全員 0 件の列でも幅の計算が壊れないようにする
   const ratio = max === 0 ? 0 : value / max
+  const toneClass = {
+    kotae: 'bg-primary',
+    vote: 'bg-muted-foreground',
+    odai: 'bg-chart-3',
+  }[tone]
 
   return (
     <div className="flex items-center gap-2">
       <span className="h-2 min-w-14 flex-1 rounded-sm bg-muted">
         <span
           aria-hidden="true"
-          className={`block h-full rounded-r-sm ${
-            tone === 'kotae' ? 'bg-primary' : 'bg-muted-foreground'
-          }`}
+          className={cn('block h-full rounded-r-sm', toneClass)}
           style={{ width: `${Math.round(ratio * 100)}%` }}
         />
       </span>
@@ -75,7 +78,7 @@ function AdminSortableHead({
 
   return (
     <TableHead
-      className="w-[22%]"
+      className="w-[17%]"
       aria-sort={isCurrent ? 'descending' : 'none'}
     >
       <Link
@@ -105,8 +108,8 @@ type AdminUserTableProps = {
 }
 
 /**
- * ユーザーごとの回答数と投票数を一覧する
- * 回答と投票はバーの基準が別なので、見出しにそれぞれの最大値を出して長さの誤読を防ぐ
+ * ユーザーごとの回答数・投票数・出題数を一覧する
+ * 各バーの基準が別なので、見出しにそれぞれの最大値を出して長さの誤読を防ぐ
  */
 export function AdminUserTable({
   items,
@@ -117,13 +120,14 @@ export function AdminUserTable({
   if (!items.length) {
     return (
       <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-        この期間に回答・投票したユーザーはいません。
+        この期間に回答・投票・出題したユーザーはいません。
       </p>
     )
   }
 
   const maxKotae = Math.max(...items.map((item) => item.kotaeCount))
   const maxVote = Math.max(...items.map((item) => item.voteCount))
+  const maxPostedOdai = Math.max(...items.map((item) => item.postedOdaiCount))
 
   return (
     <Table className="text-[13px]">
@@ -142,6 +146,12 @@ export function AdminUserTable({
             current={sort}
             href={createSortHref('vote')}
             label={`投票（最大 ${maxVote}）`}
+          />
+          <AdminSortableHead
+            sort="odai"
+            current={sort}
+            href={createSortHref('odai')}
+            label={`出題（最大 ${maxPostedOdai}）`}
           />
           <TableHead className="w-24 text-right">投票 ÷ 回答</TableHead>
           <TableHead className="w-24 pr-3 text-right">参加お題</TableHead>
@@ -166,6 +176,13 @@ export function AdminUserTable({
             </TableCell>
             <TableCell>
               <AdminUserBar value={item.voteCount} max={maxVote} tone="vote" />
+            </TableCell>
+            <TableCell>
+              <AdminUserBar
+                value={item.postedOdaiCount}
+                max={maxPostedOdai}
+                tone="odai"
+              />
             </TableCell>
             <TableCell className="text-right tabular-nums">
               {formatAdminVoteRatio(item)}

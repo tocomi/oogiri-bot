@@ -14,6 +14,8 @@ const adminUserStatsItemSchema = z.object({
   name: z.string().nullable(),
   kotaeCount: z.number(),
   voteCount: z.number(),
+  /** 期間内にそのユーザーが作成したお題の数。出題したユーザーを一覧に含めるために使う */
+  postedOdaiCount: z.number(),
   kotaeOdaiCount: z.number(),
   voteOdaiCount: z.number(),
 })
@@ -48,7 +50,7 @@ export type AdminUserMatrixRow = z.infer<typeof adminUserMatrixRowSchema>
 export type AdminUserMatrix = z.infer<typeof adminUserMatrixSchema>
 
 /**
- * ユーザーごとの回答数と投票数を取得する
+ * ユーザーごとの回答数・投票数・出題数を取得する
  * 一覧と散布図はこの 1 本で描く
  */
 export async function getAdminUserStats(range: AdminPeriodRange) {

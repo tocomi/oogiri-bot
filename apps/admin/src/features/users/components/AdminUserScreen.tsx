@@ -165,8 +165,8 @@ export async function AdminUserScreen({
         )}
 
         <AdminSectionBar
-          title="ユーザー別の回答・投票"
-          hint="回答か投票の見出しを押すと並べ替わる"
+          title="ユーザー別の回答・投票・出題"
+          hint="回答・投票・出題の見出しを押すと並べ替わる"
         />
         <AdminUserTable
           items={sortedItems}

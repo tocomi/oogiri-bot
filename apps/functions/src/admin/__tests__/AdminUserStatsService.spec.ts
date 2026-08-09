@@ -3,12 +3,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { hasError, InternalServerError } from '../../api/Error'
 import {
   OTHER_TEAM_ID,
+  seedOdai,
   seedSummaryScenario,
   SUMMARY_PERIOD,
   TEAM_ID,
   USER_1,
   USER_2,
   USER_3,
+  USER_4,
 } from '../../test/seeds'
 import {
   clearDb,
@@ -76,6 +78,7 @@ describe('AdminUserStatsServiceImpl', () => {
         name: 'たなか',
         kotaeCount: 2,
         kotaeOdaiCount: 1,
+        postedOdaiCount: 2,
         voteCount: 1,
         voteOdaiCount: 1,
       },
@@ -84,6 +87,7 @@ describe('AdminUserStatsServiceImpl', () => {
         name: 'さとう',
         kotaeCount: 1,
         kotaeOdaiCount: 1,
+        postedOdaiCount: 0,
         voteCount: 2,
         voteOdaiCount: 1,
       },
@@ -92,10 +96,52 @@ describe('AdminUserStatsServiceImpl', () => {
         name: 'すずき',
         kotaeCount: 0,
         kotaeOdaiCount: 0,
+        postedOdaiCount: 0,
         voteCount: 1,
         voteOdaiCount: 1,
       },
     ])
+  })
+
+  it('出題しかしていないユーザーも出題数つきで一覧に残す', async () => {
+    await seedSummaryScenario(testDb)
+    await seedOdai(testDb, {
+      id: 'odai-cur-3',
+      createdBy: USER_4,
+      createdAt: new Date('2025-02-10').toISOString(),
+    })
+
+    const result = await service.get({
+      slackTeamId: TEAM_ID,
+      ...SUMMARY_PERIOD,
+    })
+    if (hasError(result)) throw new Error('stats should be returned')
+
+    expect(result.odaiCount).toBe(3)
+    expect(result.items).toContainEqual({
+      userId: USER_4,
+      name: null,
+      kotaeCount: 0,
+      kotaeOdaiCount: 0,
+      postedOdaiCount: 1,
+      voteCount: 0,
+      voteOdaiCount: 0,
+    })
+  })
+
+  it('期間外・別チームのお題は出題数に数えない', async () => {
+    await seedSummaryScenario(testDb)
+
+    const result = await service.get({
+      slackTeamId: TEAM_ID,
+      ...SUMMARY_PERIOD,
+    })
+    if (hasError(result)) throw new Error('stats should be returned')
+
+    // 前期の odai-prev と別チームの odai-other も USER_1 の出題だが、対象期間の 2 件だけを数える
+    expect(
+      result.items.find((item) => item.userId === USER_1)?.postedOdaiCount,
+    ).toBe(2)
   })
 
   it('別チームのユーザーを含めない', async () => {

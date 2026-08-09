@@ -18,6 +18,7 @@ export const KOTAE_PAST_ID = 'kotae-past' // 過去のお題の回答
 export const USER_1 = 'user-1'
 export const USER_2 = 'user-2'
 export const USER_3 = 'user-3' // 投票者
+export const USER_4 = 'user-4' // 出題のみで回答も投票もしない
 
 // ── 単体シード（上書き可能） ──────────────────────────────────
 
@@ -426,6 +427,8 @@ export const SUMMARY_PERIOD = {
  * TEAM_ID の対象期間: お題 2件 / 回答 3件（2人）/ 投票 4件（3人）
  * TEAM_ID の前期: お題 1件 / 回答 1件（1人）/ 投票 1件（1人）
  * OTHER_TEAM_ID の対象期間: お題 1件 / 回答 1件 / 投票 1件
+ *
+ * お題の出題者はすべて seedOdai の既定である USER_1。
  */
 export const seedSummaryScenario = async (db: TestDb) => {
   const current = new Date('2025-02-10').toISOString()

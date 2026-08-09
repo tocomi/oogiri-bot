@@ -12,6 +12,7 @@ const createItem = (
   name: 'たなか',
   kotaeCount: 42,
   voteCount: 45,
+  postedOdaiCount: 8,
   kotaeOdaiCount: 15,
   voteOdaiCount: 15,
   ...overrides,
