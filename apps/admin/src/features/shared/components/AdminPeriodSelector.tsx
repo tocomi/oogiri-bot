@@ -27,6 +27,8 @@ type AdminPeriodSelectorProps = {
    * 集計とユーザーで同じ選択部品を使うため、どの画面に留まるかは呼び出し側が決める
    */
   basePath: string
+  /** 期間を切り替えても保持する画面固有の検索パラメータ */
+  additionalQueryParams?: Readonly<Record<string, string>>
 }
 
 /**
@@ -34,6 +36,7 @@ type AdminPeriodSelectorProps = {
  * 状態を URL に持たせるため、切り替えは必ず period の searchParams に反映する
  */
 export function AdminPeriodSelector({
+  additionalQueryParams = {},
   current,
   availableYears,
   basePath,
@@ -47,10 +50,18 @@ export function AdminPeriodSelector({
     label: `${year} 年`,
   }))
 
+  const createPeriodHref = (period: string) => {
+    const params = new URLSearchParams({ period })
+    Object.entries(additionalQueryParams).forEach(([key, value]) => {
+      params.set(key, value)
+    })
+    return `${basePath}?${params.toString()}`
+  }
+
   return (
     <div className="flex items-center gap-2" role="group" aria-label="集計期間">
       <Link
-        href={`${basePath}?period=${ADMIN_ALL_PERIOD}`}
+        href={createPeriodHref(ADMIN_ALL_PERIOD)}
         aria-current={isAll ? 'page' : undefined}
         className={cn(
           'rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
@@ -67,7 +78,7 @@ export function AdminPeriodSelector({
         value={isAll ? null : formatAdminPeriodParam(current)}
         onValueChange={(value) => {
           if (typeof value !== 'string') return
-          router.push(`${basePath}?period=${value}`)
+          router.push(createPeriodHref(value))
         }}
       >
         <SelectTrigger

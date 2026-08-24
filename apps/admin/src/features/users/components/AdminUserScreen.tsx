@@ -22,11 +22,18 @@ import {
 } from '@/features/users/api/adminUsers'
 import { formatAdminUserName } from '@/features/users/lib/adminUserFormat'
 import {
+  ADMIN_USER_ANONYMOUS_VALUE,
+  anonymizeAdminUserStats,
+  createAdminUserHref,
+  parseAdminUserAnonymous,
+} from '@/features/users/lib/adminUserPrivacy'
+import {
   AdminUserSort,
   parseAdminUserSort,
   sortAdminUsers,
 } from '@/features/users/lib/adminUserSort'
 
+import { AdminUserAnonymityToggle } from './AdminUserAnonymityToggle'
 import { AdminUserHeatmap } from './AdminUserHeatmap'
 import { AdminUserHeatmapSkeleton } from './AdminUserHeatmapSkeleton'
 import { AdminUserScatter } from './AdminUserScatter'
@@ -102,6 +109,8 @@ async function AdminUserHeatmapContent({
 }
 
 type AdminUserScreenProps = {
+  /** searchParams で匿名モードを指定された値 */
+  anonymousParam: string | null
   /** searchParams で指定された期間。未指定なら null */
   periodParam: string | null
   /** searchParams で指定された一覧の並び。未指定なら null */
@@ -113,6 +122,7 @@ type AdminUserScreenProps = {
  * 俯瞰から個別へ読ませるため、散布図・一覧・ヒートマップの順に並べる
  */
 export async function AdminUserScreen({
+  anonymousParam,
   periodParam,
   sortParam,
 }: AdminUserScreenProps) {
@@ -129,10 +139,12 @@ export async function AdminUserScreen({
 
   const stats = await getAdminUserStats(range)
 
+  const anonymous = parseAdminUserAnonymous(anonymousParam)
+  const displayStats = anonymous ? anonymizeAdminUserStats(stats) : stats
   const sort = parseAdminUserSort(sortParam)
-  const sortedItems = sortAdminUsers(stats.items, sort)
+  const sortedItems = sortAdminUsers(displayStats.items, sort)
   const createSortHref = (next: AdminUserSort) =>
-    `/users?period=${periodValue}&sort=${next}`
+    createAdminUserHref({ anonymous, period: periodValue, sort: next })
 
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
@@ -143,24 +155,40 @@ export async function AdminUserScreen({
           current={period}
           availableYears={years}
           basePath="/users"
+          additionalQueryParams={
+            anonymous ? { anonymous: ADMIN_USER_ANONYMOUS_VALUE } : undefined
+          }
         />
         <span className="text-[11px] text-muted-foreground tabular-nums">
           {period === ADMIN_ALL_PERIOD
             ? `${formatAdminFullDate(range.to)} まで`
             : `${formatAdminFullDate(range.from)} – ${formatAdminFullDate(range.to)}`}
         </span>
+        <span className="ml-auto">
+          <AdminUserAnonymityToggle
+            anonymous={anonymous}
+            period={periodValue}
+            sort={sort}
+          />
+        </span>
       </div>
 
       <main className="min-w-0 flex-1 pb-6">
-        <AdminUserSummaryTiles stats={stats} />
+        {anonymous && (
+          <p className="border-b bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
+            個人名を表示せず、匿名ラベルで表示しています。集計画面には影響しません。
+          </p>
+        )}
 
-        {stats.items.length > 0 && (
+        <AdminUserSummaryTiles stats={displayStats} />
+
+        {displayStats.items.length > 0 && (
           <>
             <AdminSectionBar
               title="回答数 × 投票数（1 点 = 1 ユーザー）"
               hint="対角線より上 = 投票が多い / 下 = 回答が多い"
             />
-            <AdminUserScatter items={stats.items} />
+            <AdminUserScatter items={displayStats.items} />
           </>
         )}
 
@@ -177,9 +205,14 @@ export async function AdminUserScreen({
 
         <AdminSectionBar title="お題ごとの回答数と投票数" />
         <Suspense
-          fallback={<AdminUserHeatmapSkeleton userCount={stats.items.length} />}
+          fallback={
+            <AdminUserHeatmapSkeleton userCount={displayStats.items.length} />
+          }
         >
-          <AdminUserHeatmapContent matrix={matrixPromise} items={stats.items} />
+          <AdminUserHeatmapContent
+            matrix={matrixPromise}
+            items={displayStats.items}
+          />
         </Suspense>
       </main>
     </div>

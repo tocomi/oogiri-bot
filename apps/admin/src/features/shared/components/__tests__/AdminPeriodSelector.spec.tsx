@@ -82,6 +82,27 @@ describe('AdminPeriodSelector', () => {
     expect(push).toHaveBeenCalledWith('/users?period=2024')
   })
 
+  test('画面固有の検索パラメータを期間切り替え後も保持する', async () => {
+    push.mockClear()
+    const screen = await render(
+      <AdminPeriodSelector
+        current={2026}
+        availableYears={AVAILABLE_YEARS}
+        basePath="/users"
+        additionalQueryParams={{ anonymous: '1' }}
+      />,
+    )
+
+    await expect
+      .element(screen.getByRole('link', { name: '全期間' }))
+      .toHaveAttribute('href', '/users?period=all&anonymous=1')
+
+    await screen.getByLabelText('年').click()
+    await screen.getByRole('option', { name: '2024 年' }).click()
+
+    expect(push).toHaveBeenCalledWith('/users?period=2024&anonymous=1')
+  })
+
   test('選べる年がなければ年の選択を無効にする', async () => {
     const screen = await render(
       <AdminPeriodSelector
