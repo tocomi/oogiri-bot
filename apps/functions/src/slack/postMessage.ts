@@ -41,7 +41,7 @@ export const postMessage = async ({
 }: {
   client: WebClient
   blocks: KnownBlock[]
-  options?: Partial<NonNullable<Parameters<typeof client.chat.postMessage>[0]>>
+  options?: { text?: string; thread_ts?: string }
 }): Promise<{ ts: string | undefined }> => {
   const result = await client.chat.postMessage({
     ...options,

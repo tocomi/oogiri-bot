@@ -1,4 +1,4 @@
-import { KnownBlock } from '@slack/bolt'
+import { KnownBlock } from '@slack/types'
 
 export const kotaeCreatedBlocks: (kotae: string) => KnownBlock[] = (
   kotae: string,

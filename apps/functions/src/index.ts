@@ -297,7 +297,7 @@ app.get('/stats/:odaiId', async (req: express.Request, res) => {
   }
 
   const { odaiId } = req.params
-  if (!odaiId) {
+  if (typeof odaiId !== 'string' || !odaiId) {
     return errorResponse(res, IllegalArgumentError)
   }
 

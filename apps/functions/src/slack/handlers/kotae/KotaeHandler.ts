@@ -1,4 +1,5 @@
-import { App, BlockAction, KnownBlock } from '@slack/bolt'
+import { App, BlockAction } from '@slack/bolt'
+import { KnownBlock } from '@slack/types'
 import emojiRegex from 'emoji-regex'
 
 import { hasError } from '../../../api/Error'
