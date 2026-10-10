@@ -39,7 +39,10 @@ import { VoteService, VoteServiceImpl } from './vote/VoteService'
 
 // NOTE: Bolt の ExpressReceiver を作成し既存の Express app と統合する
 const receiver = new ExpressReceiver({
-  signingSecret: config.slack.signingSecret,
+  // NOTE: Firebase CLI はデプロイ時の関数解析で .env を読まずにこのモジュールを評価する
+  // Bolt 4 は signingSecret が空だと初期化時に例外を投げるため、空ならダミー値で初期化する
+  // 署名検証は有効なままなので、本番で未設定でもリクエストは検証エラーで弾かれる
+  signingSecret: config.slack.signingSecret || 'unset',
   endpoints: '/slack/events',
 })
 
