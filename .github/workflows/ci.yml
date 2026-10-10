@@ -65,7 +65,7 @@ jobs:
       - name: Verify deploy-time dependency resolution
         run: |
           DEPLOY_CHECK_DIR="$(mktemp -d)"
-          cp apps/functions/package.json "$DEPLOY_CHECK_DIR/"
+          cp apps/functions/package.json apps/functions/.npmrc "$DEPLOY_CHECK_DIR/"
           npm install \
             --prefix "$DEPLOY_CHECK_DIR" \
             --omit=dev \

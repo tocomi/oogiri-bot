@@ -1,4 +1,5 @@
-import { App, KnownBlock } from '@slack/bolt'
+import { App } from '@slack/bolt'
+import { KnownBlock } from '@slack/types'
 
 import { hasError } from '../../../api/Error'
 import { decodeHtmlEntities } from '../../../util/decodeHtmlEntities'
