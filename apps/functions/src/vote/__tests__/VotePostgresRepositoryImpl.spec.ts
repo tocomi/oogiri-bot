@@ -30,127 +30,61 @@ describe('VotePostgresRepositoryImpl', () => {
     await clearDb()
   })
 
-  // ── checkDuplication ──────────────────────────────────────
+  // ── getMyVotesOfOdai ──────────────────────────────────────
 
-  describe('checkDuplication', () => {
-    it('初めての投票は ok を返す', async () => {
+  describe('getMyVotesOfOdai', () => {
+    it('同一お題における自分の投票を回答内容つきで返す', async () => {
       await seedVotingScenario(testDb)
 
-      // USER_1 は KOTAE_3_ID にまだ投票していない
-      const result = await repo.checkDuplication({
-        slackTeamId: TEAM_ID,
-        votedBy: USER_1,
-        rank: 3,
-        odaiId: ODAI_VOTING_ID,
-        kotaeId: KOTAE_3_ID,
-      })
-
-      expect(result).toBe('ok')
-    })
-
-    it('同じ回答に2回投票すると alreadyVoted を返す', async () => {
-      await seedVotingScenario(testDb)
-
-      // USER_3 はすでに KOTAE_1_ID に vote-u3-k1-r1 で投票済み
-      const result = await repo.checkDuplication({
+      const result = await repo.getMyVotesOfOdai({
         slackTeamId: TEAM_ID,
         votedBy: USER_3,
-        rank: 2,
         odaiId: ODAI_VOTING_ID,
+      })
+
+      expect(result).toHaveLength(3)
+      expect(result).toContainEqual({
+        id: 'vote-u3-k1-r1',
         kotaeId: KOTAE_1_ID,
-      })
-
-      expect(result).toBe('alreadyVoted')
-    })
-
-    it('rank1 を同一お題で2回使うと alreadySameRankVoted を返す', async () => {
-      await seedVotingScenario(testDb)
-
-      // USER_3 はすでに KOTAE_1_ID に rank1 で投票済み
-      // → 別の回答 KOTAE_3_ID に rank1 は使えない
-      const result = await repo.checkDuplication({
-        slackTeamId: TEAM_ID,
-        votedBy: USER_3,
+        kotaeContent: '回答その1',
         rank: 1,
-        odaiId: ODAI_VOTING_ID,
-        kotaeId: KOTAE_3_ID,
       })
-
-      expect(result).toBe('alreadySameRankVoted')
     })
 
-    it('rank2 を同一お題で2回使うと alreadySameRankVoted を返す', async () => {
-      await seedVotingScenario(testDb)
-
-      // USER_3 はすでに KOTAE_2_ID に rank2 で投票済み
-      const result = await repo.checkDuplication({
-        slackTeamId: TEAM_ID,
-        votedBy: USER_3,
-        rank: 2,
-        odaiId: ODAI_VOTING_ID,
-        kotaeId: KOTAE_3_ID,
-      })
-
-      expect(result).toBe('alreadySameRankVoted')
-    })
-
-    it('rank3 は同一お題の別回答に何度でも使える（ok を返す）', async () => {
-      await seedVotingScenario(testDb)
-
-      // USER_3 はすでに KOTAE_2_ID に rank3 で投票済みだが、
-      // KOTAE_3_ID への rank3 投票は許可される
-      const result = await repo.checkDuplication({
-        slackTeamId: TEAM_ID,
-        votedBy: USER_3,
-        rank: 3,
-        odaiId: ODAI_VOTING_ID,
-        kotaeId: KOTAE_3_ID,
-      })
-
-      expect(result).toBe('ok')
-    })
-
-    it('別お題で rank1 を使っていても現在のお題では rank1 を使える', async () => {
+    it('別お題の投票は含まない', async () => {
       await seedVotingScenario(testDb)
       await seedPastOdaiVotes(testDb)
 
-      // USER_1 は ODAI_FINISHED_1_ID で rank1 を使用済みだが、
-      // ODAI_VOTING_ID ではまだ使っていない
-      const result = await repo.checkDuplication({
+      // USER_1 は ODAI_FINISHED_1_ID でのみ投票している
+      const result = await repo.getMyVotesOfOdai({
         slackTeamId: TEAM_ID,
         votedBy: USER_1,
-        rank: 1,
         odaiId: ODAI_VOTING_ID,
-        kotaeId: KOTAE_3_ID,
       })
 
-      expect(result).toBe('ok')
-    })
-
-    it('別お題で投票済みでも現在のお題の回答には投票できる', async () => {
-      await seedVotingScenario(testDb)
-      await seedPastOdaiVotes(testDb)
-
-      // USER_1 は KOTAE_PAST_ID に投票済みだが、別お題の回答なので影響しない
-      const result = await repo.checkDuplication({
-        slackTeamId: TEAM_ID,
-        votedBy: USER_1,
-        rank: 3,
-        odaiId: ODAI_VOTING_ID,
-        kotaeId: KOTAE_1_ID,
-      })
-
-      expect(result).toBe('ok')
+      expect(result).toHaveLength(0)
     })
   })
 
-  // ── create ────────────────────────────────────────────────
+  // ── save ──────────────────────────────────────────────────
 
-  describe('create', () => {
+  describe('save', () => {
+    // NOTE: 票が増えていないこと・既存の票 ID が維持されることも見るため、票を潰さずに返す
+    const getVotes = async (votedBy: string) =>
+      (
+        await repo.getMyVotesOfOdai({
+          slackTeamId: TEAM_ID,
+          votedBy,
+          odaiId: ODAI_VOTING_ID,
+        })
+      )
+        .map(({ id, kotaeId, rank }) => ({ id, kotaeId, rank }))
+        .sort((a, b) => a.id.localeCompare(b.id))
+
     it('投票を作成して Vote オブジェクトを返す', async () => {
       await seedVotingScenario(testDb)
 
-      const result = await repo.create({
+      const result = await repo.save({
         id: 'vote-new',
         slackTeamId: TEAM_ID,
         content: '回答その3',
@@ -159,11 +93,69 @@ describe('VotePostgresRepositoryImpl', () => {
         odaiId: ODAI_VOTING_ID,
         kotaeId: KOTAE_3_ID,
         kotaeCreatedBy: USER_1,
+        demotedVotes: [],
       })
 
       expect(result.votedBy).toBe(USER_2)
       expect(result.rank).toBe(2)
       expect(result.kotaeId).toBe(KOTAE_3_ID)
+      expect(await getVotes(USER_2)).toEqual([
+        { id: 'vote-new', kotaeId: KOTAE_3_ID, rank: 2 },
+        { id: 'vote-u2-k1-r1', kotaeId: KOTAE_1_ID, rank: 1 },
+      ])
+    })
+
+    it('currentVoteId を指定すると新規作成せず賞を付け替える', async () => {
+      await seedVotingScenario(testDb)
+
+      // USER_2 は KOTAE_1_ID に rank1 で投票済み
+      await repo.save({
+        id: 'vote-new',
+        slackTeamId: TEAM_ID,
+        content: '回答その1',
+        votedBy: USER_2,
+        rank: 3,
+        odaiId: ODAI_VOTING_ID,
+        kotaeId: KOTAE_1_ID,
+        kotaeCreatedBy: USER_1,
+        currentVoteId: 'vote-u2-k1-r1',
+        demotedVotes: [],
+      })
+
+      // NOTE: 新規の票は作られず、既存の票の rank だけが変わる
+      expect(await getVotes(USER_2)).toEqual([
+        { id: 'vote-u2-k1-r1', kotaeId: KOTAE_1_ID, rank: 3 },
+      ])
+    })
+
+    it('demotedVotes の票の賞を下げる', async () => {
+      await seedVotingScenario(testDb)
+
+      // USER_2 の KOTAE_1_ID の rank1 を KOTAE_3_ID に入れ直す
+      await repo.save({
+        id: 'vote-new',
+        slackTeamId: TEAM_ID,
+        content: '回答その3',
+        votedBy: USER_2,
+        rank: 1,
+        odaiId: ODAI_VOTING_ID,
+        kotaeId: KOTAE_3_ID,
+        kotaeCreatedBy: USER_1,
+        demotedVotes: [
+          {
+            id: 'vote-u2-k1-r1',
+            kotaeId: KOTAE_1_ID,
+            kotaeContent: '回答その1',
+            from: 1,
+            to: 2,
+          },
+        ],
+      })
+
+      expect(await getVotes(USER_2)).toEqual([
+        { id: 'vote-new', kotaeId: KOTAE_3_ID, rank: 1 },
+        { id: 'vote-u2-k1-r1', kotaeId: KOTAE_1_ID, rank: 2 },
+      ])
     })
   })
 

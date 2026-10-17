@@ -2,7 +2,7 @@ import { KnownBlock } from '@slack/types'
 import { Logger, WebClient } from '@slack/web-api'
 
 import { getCharacterMessage } from '../../message'
-import { convertVoteRankText } from '../../vote/convertVoteValue'
+import { medalEmoji } from '../../vote/util'
 import { VoteCreateRequest } from '../../vote/Vote'
 import { postEphemeral } from '../postMessage'
 
@@ -97,7 +97,7 @@ export const postVoteAcceptedMessage = async ({
     blocks: createTextBlocks(
       `${getCharacterMessage(
         'vote-accepted',
-      )}\n\n${quoteText(content)}\n投票: ${convertVoteRankText(voteRank)}`,
+      )}\n\n${quoteText(content)}\n投票: ${medalEmoji(voteRank)}`,
     ),
   })
 }
