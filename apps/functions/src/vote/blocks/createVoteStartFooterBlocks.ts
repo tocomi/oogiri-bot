@@ -26,7 +26,7 @@ export const createVoteStartFooterBlocks = (): KnownBlock[] => {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: ':warning: 同一回答への複数投票はできません:woman-gesturing-no:',
+        text: ':repeat: 投票はあとから変更できます。投票済みの回答で別の賞を選ぶと付け替わり、:first_place_medal: :second_place_medal: を別の回答に入れ直すと元の回答は一段下がります',
       },
     },
   )

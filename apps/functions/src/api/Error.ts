@@ -64,9 +64,3 @@ export const AlreadyVotedError: ApiError = {
   code: 'alreadyVoted',
   message: 'Already Voted',
 }
-
-export const AlreadySameRankVotedError: ApiError = {
-  status: 400,
-  code: 'alreadySameRankVoted',
-  message: 'Already Same Rank Voted',
-}

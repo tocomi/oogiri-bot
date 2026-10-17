@@ -1,5 +1,4 @@
 export * from './createVoteAlreadyBlocks'
-export * from './createVoteAlreadySameRankBlocks'
 export * from './createVoteCompleteBlocks'
 export * from './createVoteResultContentBlocks'
 export * from './createVoteResultFooterBlocks'

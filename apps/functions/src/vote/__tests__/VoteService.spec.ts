@@ -7,10 +7,12 @@ import { OdaiPostgresRepositoryImpl } from '../../odai/OdaiPostgresRepositoryImp
 import { OdaiServiceImpl } from '../../odai/OdaiService'
 import {
   KOTAE_1_ID,
+  KOTAE_2_ID,
   KOTAE_3_ID,
   ODAI_POSTING_ID,
   TEAM_ID,
   USER_1,
+  USER_2,
   USER_3,
   seedKotae,
   seedOdai,
@@ -88,7 +90,20 @@ describe('VoteService', () => {
       })
     })
 
-    it('同じ回答への再投票は Already Voted を返す', async () => {
+    const getVotedCounts = async () => {
+      const kotaeResult = await kotaeService.getAllOfCurrentOdai({
+        slackTeamId: TEAM_ID,
+      })
+      if (hasError(kotaeResult)) throw new Error(kotaeResult.message)
+      return Object.fromEntries(
+        kotaeResult.kotaeList.map((k) => [
+          k.id,
+          [k.votedFirstCount, k.votedSecondCount, k.votedThirdCount],
+        ]),
+      )
+    }
+
+    it('同じ回答に同じ賞で再投票すると Already Voted を返す', async () => {
       await seedVotingScenario(testDb)
 
       // USER_3 は KOTAE_1_ID（回答その1）に rank1 で投票済み
@@ -97,25 +112,84 @@ describe('VoteService', () => {
         slackTeamId: TEAM_ID,
         content: '回答その1',
         votedBy: USER_3,
-        rank: 3,
+        rank: 1,
       })
 
       expect(result).toMatchObject({ message: 'Already Voted' })
     })
 
-    it('同一お題で rank1 を2回使うと Already Same Rank Voted を返す', async () => {
+    it('投票済みの回答に別の賞を選ぶと賞が付け替わる', async () => {
       await seedVotingScenario(testDb)
 
-      // USER_3 は KOTAE_1_ID に rank1 を使用済み
+      // USER_2 は KOTAE_1_ID（回答その1）に rank1 で投票済み
+      const result = await voteService.create({
+        id: '',
+        slackTeamId: TEAM_ID,
+        content: '回答その1',
+        votedBy: USER_2,
+        rank: 3,
+      })
+
+      expect(result).toMatchObject({ previousRank: 1, demotedVotes: [] })
+      // KOTAE_1_ID: rank1 は USER_3 の 1 票だけ残り、USER_2 の票が rank3 になる
+      expect((await getVotedCounts())[KOTAE_1_ID]).toEqual([1, 0, 1])
+    })
+
+    it('rank1 を別の回答に入れ直すと元の回答は rank2 に下がる', async () => {
+      await seedVotingScenario(testDb)
+
+      // USER_2 は KOTAE_1_ID に rank1 を使用済み
       const result = await voteService.create({
         id: '',
         slackTeamId: TEAM_ID,
         content: '回答その3',
-        votedBy: USER_3,
+        votedBy: USER_2,
         rank: 1,
       })
 
-      expect(result).toMatchObject({ message: 'Already Same Rank Voted' })
+      expect(result).toMatchObject({
+        previousRank: undefined,
+        demotedVotes: [
+          { kotaeId: KOTAE_1_ID, kotaeContent: '回答その1', from: 1, to: 2 },
+        ],
+      })
+      const counts = await getVotedCounts()
+      expect(counts[KOTAE_1_ID]).toEqual([1, 1, 0])
+      expect(counts[KOTAE_3_ID]).toEqual([1, 0, 0])
+    })
+
+    it('銅の回答を金に上げると元の金は銀、元の銀は銅に玉突きで下がる', async () => {
+      await seedVotingScenario(testDb)
+
+      // USER_1 は ODAI_VOTING_ID では未投票。金・銀・銅を 1 票ずつ入れてから付け替える
+      const vote = (content: string, rank: 1 | 2 | 3) =>
+        voteService.create({
+          id: '',
+          slackTeamId: TEAM_ID,
+          content,
+          votedBy: USER_1,
+          rank,
+        })
+      await vote('回答その1', 1)
+      await vote('回答その2', 2)
+      await vote('回答その3', 3)
+      const before = await getVotedCounts()
+
+      const result = await vote('回答その3', 1)
+
+      expect(result).toMatchObject({
+        previousRank: 3,
+        demotedVotes: [
+          { kotaeId: KOTAE_1_ID, from: 1, to: 2 },
+          { kotaeId: KOTAE_2_ID, from: 2, to: 3 },
+        ],
+      })
+      // NOTE: USER_1 の票だけが動き、票数の合計は変わらない
+      const after = await getVotedCounts()
+      const diff = (id: string) => after[id].map((c, i) => c - before[id][i])
+      expect(diff(KOTAE_1_ID)).toEqual([-1, 1, 0])
+      expect(diff(KOTAE_2_ID)).toEqual([0, -1, 1])
+      expect(diff(KOTAE_3_ID)).toEqual([1, 0, -1])
     })
 
     it('別お題で rank1 を使っていても現在のお題では投票できる', async () => {
