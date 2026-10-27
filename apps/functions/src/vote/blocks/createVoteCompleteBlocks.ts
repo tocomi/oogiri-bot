@@ -13,7 +13,7 @@ export const createVoteCompleteBlocks = ({
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `:point_up: 投票を受け付けました！ 回答: ${content} 投票: ${convertVoteRankText(
+      text: `:white_check_mark: *投票の登録が完了しました！* 回答: ${content} 投票: ${convertVoteRankText(
         voteRank,
       )}`,
     },

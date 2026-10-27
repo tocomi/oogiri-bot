@@ -7,7 +7,7 @@ export const kotaeCreatedBlocks: (kotae: string) => KnownBlock[] = (
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `*回答を受け付けました！* :tada:`,
+      text: ':white_check_mark: *回答の登録が完了しました！*',
     },
   },
   {
