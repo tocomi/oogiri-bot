@@ -1,12 +1,8 @@
-import {
-  AlreadySameRankVotedError,
-  AlreadyVotedError,
-  hasError,
-  NoVotingOdaiError,
-} from '../api/Error'
+import { AlreadyVotedError, hasError, NoVotingOdaiError } from '../api/Error'
 import { KotaeService } from '../kotae/KotaeService'
 import { OdaiService } from '../odai/OdaiService'
 import { generateId } from '../util/generateId'
+import { planVote } from './planVote'
 import {
   VoteCreateRequest,
   VoteCountResponse,
@@ -59,20 +55,16 @@ export class VoteServiceImpl implements VoteService {
     })
     if (hasError(kotae)) return kotae
 
-    const duplicationResult = await this.repository.checkDuplication({
+    const myVotes = await this.repository.getMyVotesOfOdai({
       slackTeamId,
       votedBy,
-      rank,
       odaiId: currentOdai.id,
-      kotaeId: kotae.id,
     })
-    if (duplicationResult === 'alreadyVoted') return AlreadyVotedError
-    if (duplicationResult === 'alreadySameRankVoted')
-      return AlreadySameRankVotedError
+    const plan = planVote({ myVotes, kotaeId: kotae.id, rank })
+    if (plan === 'alreadyVoted') return AlreadyVotedError
 
-    const id = generateId()
-    const voteResult = await this.repository.create({
-      id,
+    const voteResult = await this.repository.save({
+      id: generateId(),
       slackTeamId,
       content,
       votedBy,
@@ -80,9 +72,15 @@ export class VoteServiceImpl implements VoteService {
       odaiId: currentOdai.id,
       kotaeId: kotae.id,
       kotaeCreatedBy: kotae.createdBy,
+      currentVoteId: plan.current?.id,
+      demotedVotes: plan.demotedVotes,
     })
 
-    return { vote: voteResult }
+    return {
+      vote: voteResult,
+      previousRank: plan.current?.rank,
+      demotedVotes: plan.demotedVotes,
+    }
   }
 
   async getVoteCount(params: VoteCountParams): Promise<VoteCountResponse> {

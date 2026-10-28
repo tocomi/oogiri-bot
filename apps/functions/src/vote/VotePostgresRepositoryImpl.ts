@@ -3,16 +3,18 @@ import { and, eq } from 'drizzle-orm'
 import { db as defaultDb } from '../db/client'
 import { kotae, vote } from '../db/schema'
 import {
-  VoteCreateRequest,
+  MyVote,
+  MyVotesOfOdaiParams,
   Vote,
   VoteOfCurrentOdaiParams,
   VoteCountByUserParams,
-  VoteCheckDuplicationParams,
   VoteOfCurrentOdaiResponse,
+  VoteRank,
 } from './Vote'
-import { VoteRepository } from './VoteRepository'
+import { VoteRepository, VoteSaveParams } from './VoteRepository'
 
 type Db = typeof defaultDb
+type Tx = Parameters<Parameters<Db['transaction']>[0]>[0]
 
 export class VotePostgresRepositoryImpl implements VoteRepository {
   private db: Db
@@ -21,35 +23,25 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     this.db = db
   }
 
-  async checkDuplication({
+  async getMyVotesOfOdai({
     votedBy,
-    rank,
     odaiId,
-    kotaeId,
-  }: VoteCheckDuplicationParams): Promise<
-    'ok' | 'alreadyVoted' | 'alreadySameRankVoted'
-  > {
-    // NOTE: 同一お題における自分の投票をまとめて取得し、重複判定はメモリ上で行う
-    const myVotes = await this.db
-      .select({ kotaeId: vote.kotaeId, rank: vote.rank })
+  }: MyVotesOfOdaiParams): Promise<MyVote[]> {
+    const rows = await this.db
+      .select({
+        id: vote.id,
+        kotaeId: vote.kotaeId,
+        kotaeContent: kotae.content,
+        rank: vote.rank,
+      })
       .from(vote)
+      .innerJoin(kotae, eq(vote.kotaeId, kotae.id))
       .where(and(eq(vote.odaiId, odaiId), eq(vote.createdBy, votedBy)))
 
-    if (myVotes.some((v) => v.kotaeId === kotaeId)) {
-      console.log('Already voted.')
-      return 'alreadyVoted'
-    }
-
-    // NOTE: rank1 / rank2 は 1 お題につき 1 回のみ
-    if ((rank === 1 || rank === 2) && myVotes.some((v) => v.rank === rank)) {
-      console.log('Already same rank voted.')
-      return 'alreadySameRankVoted'
-    }
-
-    return 'ok'
+    return rows.map((v) => ({ ...v, rank: v.rank as VoteRank }))
   }
 
-  async create({
+  async save({
     id,
     content,
     votedBy,
@@ -57,21 +49,41 @@ export class VotePostgresRepositoryImpl implements VoteRepository {
     odaiId,
     kotaeId,
     kotaeCreatedBy,
-  }: VoteCreateRequest & {
-    odaiId: string
-    kotaeId: string
-    kotaeCreatedBy: string
-  }): Promise<Vote> {
+    currentVoteId,
+    demotedVotes,
+  }: VoteSaveParams): Promise<Vote> {
     const createdAt = new Date()
+    const write = async (executor: Db | Tx) => {
+      if (currentVoteId) {
+        await executor
+          .update(vote)
+          .set({ rank })
+          .where(eq(vote.id, currentVoteId))
+      } else {
+        await executor.insert(vote).values({
+          id,
+          odaiId,
+          kotaeId,
+          rank,
+          createdBy: votedBy,
+          createdAt: createdAt.toISOString(),
+        })
+      }
+      for (const demoted of demotedVotes) {
+        await executor
+          .update(vote)
+          .set({ rank: demoted.to })
+          .where(eq(vote.id, demoted.id))
+      }
+    }
+
     try {
-      await this.db.insert(vote).values({
-        id,
-        odaiId,
-        kotaeId,
-        rank,
-        createdBy: votedBy,
-        createdAt: createdAt.toISOString(),
-      })
+      // NOTE: 書き込みが1回で済む通常の投票ではトランザクションを張らず往復を増やさない
+      if (demotedVotes.length) {
+        await this.db.transaction(write)
+      } else {
+        await write(this.db)
+      }
     } catch (error) {
       console.error(error)
       throw error
