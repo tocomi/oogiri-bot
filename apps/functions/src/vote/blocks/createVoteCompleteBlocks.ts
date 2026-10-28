@@ -16,10 +16,10 @@ export const createVoteCompleteBlocks = ({
 }): KnownBlock[] => {
   const lines = [
     previousRank
-      ? `:point_up: 投票を変更しました！ 回答: ${content} 投票: ${medalEmoji(
+      ? `:white_check_mark: *投票の変更が完了しました！* 回答: ${content} 投票: ${medalEmoji(
           previousRank,
         )} → ${medalEmoji(voteRank)}`
-      : `:point_up: 投票を受け付けました！ 回答: ${content} 投票: ${medalEmoji(
+      : `:white_check_mark: *投票の登録が完了しました！* 回答: ${content} 投票: ${medalEmoji(
           voteRank,
         )}`,
     ...demotedVotes.map(

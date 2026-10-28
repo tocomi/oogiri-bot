@@ -14,7 +14,7 @@ describe('createVoteCompleteBlocks', () => {
     })
 
     expect(texts(blocks)).toEqual([
-      ':point_up: 投票を受け付けました！ 回答: 回答C 投票: :first_place_medal:',
+      ':white_check_mark: *投票の登録が完了しました！* 回答: 回答C 投票: :first_place_medal:',
     ])
   })
 
@@ -30,7 +30,7 @@ describe('createVoteCompleteBlocks', () => {
     })
 
     expect(texts(blocks)).toEqual([
-      ':point_up: 投票を変更しました！ 回答: 回答C 投票: :third_place_medal: → :first_place_medal:',
+      ':white_check_mark: *投票の変更が完了しました！* 回答: 回答C 投票: :third_place_medal: → :first_place_medal:',
       ':arrow_down: 回答: 回答A 投票: :first_place_medal: → :second_place_medal:',
       ':arrow_down: 回答: 回答B 投票: :second_place_medal: → :third_place_medal:',
     ])

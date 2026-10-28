@@ -32,7 +32,7 @@ const createTextBlocks = (text: string): KnownBlock[] => [
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text,
+      text: `:hourglass_flowing_sand: *処理中*\n${text}`,
     },
   },
 ]
