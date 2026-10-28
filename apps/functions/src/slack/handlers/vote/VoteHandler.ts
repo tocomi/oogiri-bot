@@ -7,7 +7,6 @@ import { getSlackUserList } from '../../../util/getSlackUserList'
 import { logResult } from '../../../util/logResult'
 import {
   createVoteAlreadyBlocks,
-  createVoteAlreadySameRankBlocks,
   createVoteCompleteBlocks,
 } from '../../../vote/blocks'
 import { convertVoteRank } from '../../../vote/convertVoteValue'
@@ -65,11 +64,7 @@ export const registerVoteHandlers = ({
       if (hasError(result)) {
         if (result.message === 'Already Voted') {
           logger.warn(result.message)
-          const blocks = createVoteAlreadyBlocks({ content })
-          await postEphemeral({ client, user, blocks })
-        } else if (result.message === 'Already Same Rank Voted') {
-          logger.warn(result.message)
-          const blocks = createVoteAlreadySameRankBlocks({ voteRank })
+          const blocks = createVoteAlreadyBlocks({ content, voteRank })
           await postEphemeral({ client, user, blocks })
         } else {
           logger.error(result.message)
@@ -77,7 +72,12 @@ export const registerVoteHandlers = ({
         }
         return
       }
-      const blocks = createVoteCompleteBlocks({ content, voteRank })
+      const blocks = createVoteCompleteBlocks({
+        content,
+        voteRank,
+        previousRank: result.previousRank,
+        demotedVotes: result.demotedVotes,
+      })
       await postEphemeral({ client, user, blocks })
     },
   )

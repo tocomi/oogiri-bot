@@ -148,7 +148,7 @@ export const seedOdaiSet = async (db: TestDb) => {
 
 /**
  * 投票シナリオ用データを投入する。
- * checkDuplication / getAllOfCurrentOdai / getByContent の境界値テスト用。
+ * getMyVotesOfOdai / getAllOfCurrentOdai / getByContent の境界値テスト用。
  *
  * お題: ODAI_VOTING_ID（status='voting'）
  * 回答:
@@ -156,9 +156,9 @@ export const seedOdaiSet = async (db: TestDb) => {
  *   - KOTAE_2_ID: USER_2 が投稿。rank3 票 × 1
  *   - KOTAE_3_ID: USER_1 が投稿。票なし（0票の境界値）
  * 投票:
- *   - USER_3 → KOTAE_1_ID rank1（checkDuplication: alreadyVoted の前提）
+ *   - USER_3 → KOTAE_1_ID rank1（同じ回答・同じ賞の再投票 → alreadyVoted の前提）
  *   - USER_2 → KOTAE_1_ID rank1（同一kotaeに別ユーザーが rank1 → ok）
- *   - USER_3 → KOTAE_2_ID rank2（USER_3 が rank2 消費済み → alreadySameRankVoted の前提）
+ *   - USER_3 → KOTAE_2_ID rank2（USER_3 が rank2 消費済み）
  *   - USER_3 → KOTAE_2_ID rank3（rank3 は同一odaiで複数可の確認用）
  */
 export const seedVotingScenario = async (db: TestDb) => {
