@@ -18,6 +18,7 @@
     "admin:test": "pnpm --filter @oogiri-bot/admin test",
     "admin:test:watch": "pnpm --filter @oogiri-bot/admin test:watch",
     "serve": "pnpm --filter @oogiri-bot/functions serve",
+    "dev:socket": "pnpm --filter @oogiri-bot/functions dev:socket",
     "build": "pnpm --filter @oogiri-bot/functions build",
     "type-check": "pnpm --filter @oogiri-bot/functions type-check",
     "lint": "pnpm --filter @oogiri-bot/functions lint",
