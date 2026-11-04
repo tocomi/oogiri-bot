@@ -34,6 +34,9 @@ pnpm workspace のモノレポ構成です。現在の主アプリは Firebase F
 # Firebase Emulator で開発起動
 pnpm serve
 
+# Slack Bot を Socket Mode でローカル起動（開発用ワークスペース向け。REST API と定期実行は含まない）
+pnpm dev:socket
+
 # リント実行
 pnpm lint
 
@@ -99,4 +102,6 @@ pnpm migrate
 ### 開発時の注意点
 
 - API は Firebase Functions で動作するため、`pnpm serve` で Firebase Emulator を起動する
+- Slack の操作だけを試すなら `pnpm dev:socket` を使う。`.env.local` に開発用 Socket Mode App の `SLACK_BOT_TOKEN` と `SLACK_APP_TOKEN` が必要
+- 本番は Heroku の維持費を避けるため Firebase Functions の HTTP Mode で動かしている。Socket Mode はローカル開発専用
 - Node.js バージョンは 22.22.1 を使用（mise で管理）

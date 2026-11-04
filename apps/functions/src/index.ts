@@ -6,24 +6,19 @@ import { onSchedule } from 'firebase-functions/v2/scheduler'
 
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
 import { config } from './config'
+import { createServices } from './createServices'
 import {
   KotaeOfCurrentOdaiParams,
   KotaePersonalCommentaryParams,
   KotaePersonalResultParams,
   KotaePostRequestParams,
 } from './kotae/Kotae'
-import { KotaePostgresRepositoryImpl } from './kotae/KotaePostgresRepositoryImpl'
-import { KotaeRepository } from './kotae/KotaeRepository'
-import { KotaeService, KotaeServiceImpl } from './kotae/KotaeService'
 import {
   OdaiCurrentParams,
   OdaiGetAllResultsParams,
   OdaiPostRequestParams,
   OdaiPutStatusParams,
 } from './odai/Odai'
-import { OdaiPostgresRepositoryImpl } from './odai/OdaiPostgresRepositoryImpl'
-import { OdaiRepository } from './odai/OdaiRepository'
-import { OdaiService, OdaiServiceImpl } from './odai/OdaiService'
 import { inspireNewOdai } from './scheduler/inspireNewOdai'
 import { notifyCount } from './scheduler/notifyCount'
 import { getActionLabel } from './slack/getActionLabel'
@@ -33,9 +28,6 @@ import {
   VoteCountParams,
   VoteCreateRequest,
 } from './vote/Vote'
-import { VotePostgresRepositoryImpl } from './vote/VotePostgresRepositoryImpl'
-import { VoteRepository } from './vote/VoteRepository'
-import { VoteService, VoteServiceImpl } from './vote/VoteService'
 
 // NOTE: Bolt の ExpressReceiver を作成し既存の Express app と統合する
 const receiver = new ExpressReceiver({
@@ -70,21 +62,7 @@ app.use((req, _res, next) => {
   next()
 })
 
-const odaiRepository: OdaiRepository = new OdaiPostgresRepositoryImpl()
-const odaiService: OdaiService = new OdaiServiceImpl(odaiRepository)
-
-const kotaeRepository: KotaeRepository = new KotaePostgresRepositoryImpl()
-const kotaeService: KotaeService = new KotaeServiceImpl(
-  kotaeRepository,
-  odaiService,
-)
-
-const voteRepository: VoteRepository = new VotePostgresRepositoryImpl()
-const voteService: VoteService = new VoteServiceImpl(
-  voteRepository,
-  odaiService,
-  kotaeService,
-)
+const { odaiService, kotaeService, voteService } = createServices()
 
 const errorResponse = (res: express.Response, error: ApiError) => {
   console.log(`ERROR: ${error.message}`)
