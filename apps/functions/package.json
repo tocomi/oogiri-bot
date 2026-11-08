@@ -25,12 +25,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^5.0.2",
     "@slack/bolt": "^4.7.3",
     "@slack/web-api": "^7.19.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.0",
-    "dotenv": "^10.0.0",
     "drizzle-orm": "^0.45.2",
     "emoji-regex": "^9.0.0",
     "express": "^5.2.1",
@@ -45,7 +43,6 @@
     "@testcontainers/postgresql": "^11.14.0",
     "@types/cors": "^2.8.10",
     "@types/express": "^5.0.6",
-    "@types/node-fetch": "2.6.7",
     "@types/pg": "^8.20.0",
     "@types/uuid": "^10",
     "concurrently": "^10.0.3",
