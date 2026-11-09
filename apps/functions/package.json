@@ -9,9 +9,9 @@
     "node": "22"
   },
   "scripts": {
-    "serve": "tsgo && concurrently --kill-others --names tsc,emulator \"tsgo --watch\" \"firebase emulators:start --only functions --config ../../firebase.json\"",
-    "dev:socket": "tsgo && concurrently --kill-others --names tsc,bot \"tsgo --watch\" \"node --watch --env-file=.env.local lib/dev.js\"",
-    "build": "tsgo",
+    "serve": "tsdown && concurrently --kill-others --names bundle,emulator \"tsdown --watch\" \"firebase emulators:start --only functions --config ../../firebase.json\"",
+    "dev:socket": "tsdown && concurrently --kill-others --names bundle,bot \"tsdown --watch\" \"node --watch --env-file=.env.local lib/dev.js\"",
+    "build": "tsgo --noEmit && tsdown",
     "type-check": "echo '# type-check' && tsgo --noEmit --diagnostics",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -48,6 +48,7 @@
     "concurrently": "^10.0.3",
     "drizzle-kit": "^0.31.10",
     "testcontainers": "^11.14.0",
+    "tsdown": "^0.23.7",
     "vitest": "^4.0.0"
   },
   "private": true

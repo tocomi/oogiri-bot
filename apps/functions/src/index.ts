@@ -29,6 +29,9 @@ import {
   VoteCreateRequest,
 } from './vote/Vote'
 
+// NOTE: コールドスタートの内訳を測る。評価開始の記録は tsdown.config.mts の banner で出している
+console.log(`[startup] imports done: ${process.uptime().toFixed(3)}s`)
+
 // NOTE: Bolt の ExpressReceiver を作成し既存の Express app と統合する
 const receiver = new ExpressReceiver({
   // NOTE: Firebase CLI はデプロイ時の関数解析で .env を読まずにこのモジュールを評価する
