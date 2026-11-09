@@ -1,7 +1,9 @@
 import { App, ExpressReceiver } from '@slack/bolt'
 import cors from 'cors'
 import express from 'express'
-import * as functions from 'firebase-functions'
+// NOTE: ルートの 'firebase-functions' は使わないトリガーの実装まで読み込みコールドスタートが重くなるため、使うサブパスだけを import する
+import { onRequest } from 'firebase-functions/v2/https'
+import { setGlobalOptions } from 'firebase-functions/v2/options'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 
 import { ApiError, hasError, IllegalArgumentError } from './api/Error'
@@ -301,9 +303,9 @@ registerHandlers({
   voteService,
 })
 
-functions.setGlobalOptions({ region: 'asia-northeast1' })
+setGlobalOptions({ region: 'asia-northeast1' })
 
-exports.api = functions.https.onRequest(app)
+exports.api = onRequest(app)
 
 // NOTE: 毎日 9 時にカウント通知
 exports.scheduledNotifyCount = onSchedule(

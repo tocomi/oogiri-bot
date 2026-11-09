@@ -16,7 +16,8 @@ import path from 'node:path'
 // package.json の dependencies には現れないが、コードが直接読み込むサブパス。
 // src/index.ts の import に合わせて増減させる。
 const SUBPATH_ENTRIES = [
-  'firebase-functions/v2',
+  'firebase-functions/v2/https',
+  'firebase-functions/v2/options',
   'firebase-functions/v2/scheduler',
 ]
 
