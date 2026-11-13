@@ -40,16 +40,7 @@ export const tanukichi: CharacterMessages = {
   'request-accepted': [
     '処理を進めているだなも。完了まで少々お待ちくださいだなも！',
   ],
-  'aggregation-processing': [
-    '集計しているだなも、少々お待ちください⌛\n数分かかる場合があるだなも。',
-  ],
   'commentary-processing': [
     '講評しているだなも、少々お待ちください⌛\n講評の生成も含めて、数分かかる場合があるだなも。',
-  ],
-  'kotae-accepted': [
-    '回答を登録しているだなも。完了まで少々お待ちくださいだなも！',
-  ],
-  'vote-accepted': [
-    '投票を反映しているだなも。完了まで少々お待ちくださいだなも！',
   ],
 }

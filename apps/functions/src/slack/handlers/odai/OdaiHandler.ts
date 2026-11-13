@@ -33,6 +33,7 @@ import {
   postInternalErrorMessage,
   postMessage,
 } from '../../postMessage'
+import { ackAfterProcessing } from '../ackAfterProcessing'
 import { postRequestAcceptedMessage } from '../processingMessage'
 import {
   create,
@@ -63,69 +64,84 @@ export const registerOdaiHandlers = ({
 }) => {
   // NOTE: ショートカット/ボタンからのお題作成モーダルオープン
   app.shortcut(CREATE_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
-    await ack()
-    await create({ body, client, logger })
+    await ackAfterProcessing(
+      `shortcut ${CREATE_ODAI_ACTION_ID}`,
+      ack,
+      async () => {
+        await create({ body, client, logger })
+      },
+    )
   })
   app.action(CREATE_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
-    await ack()
-    if ('trigger_id' in body) await create({ body, client, logger })
+    await ackAfterProcessing(
+      `action ${CREATE_ODAI_ACTION_ID}`,
+      ack,
+      async () => {
+        if ('trigger_id' in body) await create({ body, client, logger })
+      },
+    )
   })
 
   // NOTE: 通常のお題の作成
   app.view(
     CREATE_ODAI_CALLBACK_ID,
     async ({ ack, view, client, body, logger }) => {
-      await ack()
-      const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
-      const dueDate =
-        view.state.values[DUE_DATE_BLOCK_ID][DUE_DATE_ACTION_ID].selected_date
-      const imageUrl =
-        view.state.values[IMAGE_URL_BLOCK_ID][IMAGE_URL_ACTION_ID].value || ''
+      await ackAfterProcessing(
+        `view ${CREATE_ODAI_CALLBACK_ID}`,
+        ack,
+        async () => {
+          const title = view.state.values[TITLE_BLOCK_ID][TITLE_ACTION_ID].value
+          const dueDate =
+            view.state.values[DUE_DATE_BLOCK_ID][DUE_DATE_ACTION_ID]
+              .selected_date
+          const imageUrl =
+            view.state.values[IMAGE_URL_BLOCK_ID][IMAGE_URL_ACTION_ID].value ||
+            ''
 
-      if (!title || !dueDate) {
-        logger.error(view.state.values)
-        postInternalErrorMessage({ client, user: body.user.id })
-        return
-      }
+          if (!title || !dueDate) {
+            logger.error(view.state.values)
+            await postInternalErrorMessage({ client, user: body.user.id })
+            return
+          }
 
-      if (imageUrl && !isImageUrl(imageUrl)) {
-        logger.error(view.state.values)
-        postInternalErrorMessage({
-          client,
-          user: body.user.id,
-          overrideMessage:
-            ':warning: URLは画像の拡張子(.jpg等)で終わるもののみが有効です :warning:',
-        })
-        return
-      }
+          if (imageUrl && !isImageUrl(imageUrl)) {
+            logger.error(view.state.values)
+            await postInternalErrorMessage({
+              client,
+              user: body.user.id,
+              overrideMessage:
+                ':warning: URLは画像の拡張子(.jpg等)で終わるもののみが有効です :warning:',
+            })
+            return
+          }
 
-      await postRequestAcceptedMessage({ client, user: body.user.id, logger })
+          const result = logResult(
+            'odaiService.create',
+            await odaiService.create({
+              type: 'normal',
+              slackTeamId: view.team_id,
+              title,
+              imageUrl,
+              dueDate: new Date(dueDate).getTime(),
+              createdBy: body.user.id,
+            }),
+          )
+          if (hasError(result)) {
+            if (result.message === 'Odai Duplication') {
+              logger.warn(result.message)
+              const blocks = createOdaiDuplicationBlocks()
+              await postEphemeral({ client, user: body.user.id, blocks })
+            } else {
+              logger.error(result.message)
+              await postInternalErrorMessage({ client, user: body.user.id })
+            }
+            return
+          }
 
-      const result = logResult(
-        'odaiService.create',
-        await odaiService.create({
-          type: 'normal',
-          slackTeamId: view.team_id,
-          title,
-          imageUrl,
-          dueDate: new Date(dueDate).getTime(),
-          createdBy: body.user.id,
-        }),
+          const blocks = createOdaiCreateBlocks({ title, dueDate, imageUrl })
+          await postMessage({ client, blocks })
+        },
       )
-      if (hasError(result)) {
-        if (result.message === 'Odai Duplication') {
-          logger.warn(result.message)
-          const blocks = createOdaiDuplicationBlocks()
-          await postEphemeral({ client, user: body.user.id, blocks })
-        } else {
-          logger.error(result.message)
-          await postInternalErrorMessage({ client, user: body.user.id })
-        }
-        return
-      }
-
-      const blocks = createOdaiCreateBlocks({ title, dueDate, imageUrl })
-      await postMessage({ client, blocks })
     },
   )
 
@@ -133,98 +149,122 @@ export const registerOdaiHandlers = ({
   app.shortcut(
     START_VOTING_ACTION_ID,
     async ({ ack, body, client, logger }) => {
-      await ack()
-      await start({ body, client, logger })
+      await ackAfterProcessing(
+        `shortcut ${START_VOTING_ACTION_ID}`,
+        ack,
+        async () => {
+          await start({ body, client, logger })
+        },
+      )
     },
   )
   app.action(START_VOTING_ACTION_ID, async ({ ack, body, client, logger }) => {
-    await ack()
-    if ('trigger_id' in body) await start({ body, client, logger })
+    await ackAfterProcessing(
+      `action ${START_VOTING_ACTION_ID}`,
+      ack,
+      async () => {
+        if ('trigger_id' in body) await start({ body, client, logger })
+      },
+    )
   })
 
   // NOTE: 投票開始
   app.view(
     START_VOTING_CALLBACK_ID,
     async ({ ack, view, client, body, logger }) => {
-      await ack()
-      await postRequestAcceptedMessage({ client, user: body.user.id, logger })
+      await ackAfterProcessing(
+        `view ${START_VOTING_CALLBACK_ID}`,
+        ack,
+        async () => {
+          const slackTeamId = view.team_id
 
-      const slackTeamId = view.team_id
+          const kotaeResult = logResult(
+            'kotaeService.getAllOfCurrentOdai',
+            await kotaeService.getAllOfCurrentOdai({ slackTeamId }),
+          )
+          if (hasError(kotaeResult)) {
+            if (
+              kotaeResult.message === 'No Active Odai' ||
+              kotaeResult.message === 'No Posting Odai'
+            ) {
+              logger.warn(kotaeResult.message)
+              const blocks = createOdaiDuplicationBlocks()
+              await postEphemeral({ client, user: body.user.id, blocks })
+            } else {
+              logger.error(kotaeResult.message)
+              await postInternalErrorMessage({ client, user: body.user.id })
+            }
+            return
+          }
 
-      const kotaeResult = logResult(
-        'kotaeService.getAllOfCurrentOdai',
-        await kotaeService.getAllOfCurrentOdai({ slackTeamId }),
-      )
-      if (hasError(kotaeResult)) {
-        if (
-          kotaeResult.message === 'No Active Odai' ||
-          kotaeResult.message === 'No Posting Odai'
-        ) {
-          logger.warn(kotaeResult.message)
-          const blocks = createOdaiDuplicationBlocks()
-          await postEphemeral({ client, user: body.user.id, blocks })
-        } else {
-          logger.error(kotaeResult.message)
-          await postInternalErrorMessage({ client, user: body.user.id })
-        }
-        return
-      }
+          const putResult = logResult(
+            'odaiService.startVoting',
+            await odaiService.startVoting({ slackTeamId }),
+          )
+          if (hasError(putResult)) {
+            if (
+              putResult.message === 'No Active Odai' ||
+              putResult.message === 'No Posting Odai'
+            ) {
+              logger.warn(putResult.message)
+              const blocks = createOdaiDuplicationBlocks()
+              await postEphemeral({ client, user: body.user.id, blocks })
+            } else {
+              logger.error(putResult.message)
+              await postInternalErrorMessage({ client, user: body.user.id })
+            }
+            return
+          }
 
-      const putResult = logResult(
-        'odaiService.startVoting',
-        await odaiService.startVoting({ slackTeamId }),
-      )
-      if (hasError(putResult)) {
-        if (
-          putResult.message === 'No Active Odai' ||
-          putResult.message === 'No Posting Odai'
-        ) {
-          logger.warn(putResult.message)
-          const blocks = createOdaiDuplicationBlocks()
-          await postEphemeral({ client, user: body.user.id, blocks })
-        } else {
-          logger.error(putResult.message)
-          await postInternalErrorMessage({ client, user: body.user.id })
-        }
-        return
-      }
+          if (!kotaeResult.odaiTitle || !kotaeResult.kotaeList.length) return
 
-      if (!kotaeResult.odaiTitle || !kotaeResult.kotaeList.length) return
-
-      const headerBlocks = createVoteStartHeaderBlocks({
-        title: kotaeResult.odaiTitle,
-        imageUrl: kotaeResult.odaiImageUrl,
-      })
-      await postMessage({ client, blocks: headerBlocks })
-
-      await Promise.all(
-        kotaeResult.kotaeList.map(async (kotae) => {
-          const blocks = createVoteSectionBlocks({
-            kotaeContent: kotae.content,
+          const headerBlocks = createVoteStartHeaderBlocks({
+            title: kotaeResult.odaiTitle,
+            imageUrl: kotaeResult.odaiImageUrl,
           })
-          await postMessage({ client, blocks })
-        }),
-      )
+          await postMessage({ client, blocks: headerBlocks })
 
-      const footerBlocks = createVoteStartFooterBlocks()
-      await postMessage({ client, blocks: footerBlocks })
+          await Promise.all(
+            kotaeResult.kotaeList.map(async (kotae) => {
+              const blocks = createVoteSectionBlocks({
+                kotaeContent: kotae.content,
+              })
+              await postMessage({ client, blocks })
+            }),
+          )
+
+          const footerBlocks = createVoteStartFooterBlocks()
+          await postMessage({ client, blocks: footerBlocks })
+        },
+      )
     },
   )
 
   // NOTE: 結果発表モーダルオープン
   app.shortcut(FINISH_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
-    await ack()
-    await finish({ body, client, logger })
+    await ackAfterProcessing(
+      `shortcut ${FINISH_ODAI_ACTION_ID}`,
+      ack,
+      async () => {
+        await finish({ body, client, logger })
+      },
+    )
   })
   app.action(FINISH_ODAI_ACTION_ID, async ({ ack, body, client, logger }) => {
-    await ack()
-    if ('trigger_id' in body) await finish({ body, client, logger })
+    await ackAfterProcessing(
+      `action ${FINISH_ODAI_ACTION_ID}`,
+      ack,
+      async () => {
+        if ('trigger_id' in body) await finish({ body, client, logger })
+      },
+    )
   })
 
   // NOTE: 結果発表
   app.view(
     FINISH_ODAI_CALLBACK_ID,
     async ({ ack, view, client, body, logger }) => {
+      // NOTE: AI 講評は 3 秒以内に終わらないため先に ack する。今後 Cloud Tasks に移す予定
       await ack()
       await postRequestAcceptedMessage({ client, user: body.user.id, logger })
 
@@ -352,12 +392,9 @@ export const registerOdaiHandlers = ({
   )
 
   // NOTE: コマンドから新しいお題への呼びかけ
-  app.command(
-    '/oogiri-inspire-new-odai',
-    async ({ ack, body, client, logger }) => {
-      await ack()
-      await postRequestAcceptedMessage({ client, user: body.user_id, logger })
+  app.command('/oogiri-inspire-new-odai', async ({ ack, body, client }) => {
+    await ackAfterProcessing('/oogiri-inspire-new-odai', ack, async () => {
       await inspireNewOdai({ slackTeamId: body.team_id, client, odaiService })
-    },
-  )
+    })
+  })
 }

@@ -23,12 +23,7 @@ export const shizue: CharacterMessages = {
     '個人の結果は `/oogiri-check-my-result` で確認できます！ (他の人には見えません:ok_woman:)',
   ],
   'request-accepted': ['処理を進めています。完了まで少々お待ちくださいね！'],
-  'aggregation-processing': [
-    '集計しています、少々お待ちください⌛\n数分かかる場合があります。',
-  ],
   'commentary-processing': [
     '講評しています、少々お待ちください⌛\n講評の生成も含めて、数分かかる場合があります。',
   ],
-  'kotae-accepted': ['回答を登録しています。完了まで少々お待ちくださいね！'],
-  'vote-accepted': ['投票を反映しています。完了まで少々お待ちくださいね！'],
 }
