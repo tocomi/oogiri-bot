@@ -15,11 +15,8 @@ import {
   CREATE_KOTAE_ACTION_ID,
 } from '../../actionIds'
 import { postEphemeral, postInternalErrorMessage } from '../../postMessage'
-import {
-  postAggregationProcessingMessage,
-  postCommentaryProcessingMessage,
-  postKotaeAcceptedMessage,
-} from '../processingMessage'
+import { ackAfterProcessing } from '../ackAfterProcessing'
+import { postCommentaryProcessingMessage } from '../processingMessage'
 import { countKotae } from './action/countKotae'
 import {
   kotaeCreateView,
@@ -39,25 +36,35 @@ export const registerKotaeHandlers = ({
   app.shortcut(
     CREATE_KOTAE_ACTION_ID,
     async ({ ack, body, client, logger }) => {
-      await ack()
-      const result = await client.views
-        .open(kotaeCreateView(body.trigger_id))
-        .catch(async (e) => {
-          logger.error(e)
-        })
-      if (result && result.error) logger.error(result.error)
+      await ackAfterProcessing(
+        `shortcut ${CREATE_KOTAE_ACTION_ID}`,
+        ack,
+        async () => {
+          const result = await client.views
+            .open(kotaeCreateView(body.trigger_id))
+            .catch(async (e) => {
+              logger.error(e)
+            })
+          if (result && result.error) logger.error(result.error)
+        },
+      )
     },
   )
   app.action(CREATE_KOTAE_ACTION_ID, async ({ ack, body, client, logger }) => {
-    await ack()
-    if ('trigger_id' in body) {
-      const result = await client.views
-        .open(kotaeCreateView(body.trigger_id))
-        .catch(async (e) => {
-          logger.error(e)
-        })
-      if (result && result.error) logger.error(result.error)
-    }
+    await ackAfterProcessing(
+      `action ${CREATE_KOTAE_ACTION_ID}`,
+      ack,
+      async () => {
+        if ('trigger_id' in body) {
+          const result = await client.views
+            .open(kotaeCreateView(body.trigger_id))
+            .catch(async (e) => {
+              logger.error(e)
+            })
+          if (result && result.error) logger.error(result.error)
+        }
+      },
+    )
   })
 
   // NOTE: 回答の作成
@@ -86,61 +93,55 @@ export const registerKotaeHandlers = ({
         return
       }
 
-      await ack()
-      await postKotaeAcceptedMessage({
-        client,
-        user: body.user.id,
-        logger,
-        content: kotae,
-      })
+      await ackAfterProcessing(
+        `view ${KOTAE_CREATE_CALLBACK_ID}`,
+        ack,
+        async () => {
+          const result = logResult(
+            'kotaeService.create',
+            await kotaeService.create({
+              id: '',
+              slackTeamId: view.team_id,
+              content: kotae,
+              createdBy: body.user.id,
+            }),
+          )
+          if (hasError(result)) {
+            if (result.message === 'No Active Odai') {
+              logger.warn(result.message)
+              const blocks: KnownBlock[] = [
+                {
+                  type: 'section',
+                  text: {
+                    type: 'mrkdwn',
+                    text: ':warning: お題が開始されていません :warning:',
+                  },
+                },
+              ]
+              await postEphemeral({ client, user: body.user.id, blocks })
+            } else {
+              logger.error(result.message)
+              await postInternalErrorMessage({ client, user: body.user.id })
+            }
+            return
+          }
 
-      const result = logResult(
-        'kotaeService.create',
-        await kotaeService.create({
-          id: '',
-          slackTeamId: view.team_id,
-          content: kotae,
-          createdBy: body.user.id,
-        }),
-      )
-      if (hasError(result)) {
-        if (result.message === 'No Active Odai') {
-          logger.warn(result.message)
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: ':warning: お題が開始されていません :warning:',
-              },
-            },
-          ]
+          const blocks: KnownBlock[] = kotaeCreatedBlocks(kotae)
           await postEphemeral({ client, user: body.user.id, blocks })
-        } else {
-          logger.error(result.message)
-          await postInternalErrorMessage({ client, user: body.user.id })
-        }
-        return
-      }
-
-      const blocks: KnownBlock[] = kotaeCreatedBlocks(kotae)
-      await postEphemeral({ client, user: body.user.id, blocks })
+        },
+      )
     },
   )
 
   // NOTE: 回答数の確認コマンド
-  app.command('/oogiri-count-kotae', async ({ ack, body, client, logger }) => {
-    await ack()
-    await postAggregationProcessingMessage({
-      client,
-      user: body.user_id,
-      logger,
-    })
-    await countKotae({
-      slackTeamId: body.team_id,
-      userId: body.user_id,
-      client,
-      kotaeService,
+  app.command('/oogiri-count-kotae', async ({ ack, body, client }) => {
+    await ackAfterProcessing('/oogiri-count-kotae', ack, async () => {
+      await countKotae({
+        slackTeamId: body.team_id,
+        userId: body.user_id,
+        client,
+        kotaeService,
+      })
     })
   })
 
@@ -148,137 +149,133 @@ export const registerKotaeHandlers = ({
   app.command(
     '/oogiri-check-my-result',
     async ({ ack, body, client, logger }) => {
-      await ack()
-      await postAggregationProcessingMessage({
-        client,
-        user: body.user_id,
-        logger,
-      })
-      const result = logResult(
-        'kotaeService.getPersonalResult',
-        await kotaeService.getPersonalResult({
-          slackTeamId: body.team_id,
-          userId: body.user_id,
-        }),
-      )
-      if (hasError(result)) {
-        if (result.message === 'No Finished Odai') {
-          logger.warn(result.message)
+      await ackAfterProcessing('/oogiri-check-my-result', ack, async () => {
+        const result = logResult(
+          'kotaeService.getPersonalResult',
+          await kotaeService.getPersonalResult({
+            slackTeamId: body.team_id,
+            userId: body.user_id,
+          }),
+        )
+        if (hasError(result)) {
+          if (result.message === 'No Finished Odai') {
+            logger.warn(result.message)
+            const blocks: KnownBlock[] = [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: ':warning: 結果を表示するお題がありません :warning:',
+                },
+              },
+            ]
+            await postEphemeral({ client, user: body.user_id, blocks })
+          } else {
+            logger.error(result.message)
+            await postInternalErrorMessage({ client, user: body.user_id })
+          }
+          return
+        }
+
+        if (!result.kotaeList.length) {
           const blocks: KnownBlock[] = [
             {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: ':warning: 結果を表示するお題がありません :warning:',
+                text: ':warning: 直近のお題の結果がありません :warning:',
               },
             },
           ]
           await postEphemeral({ client, user: body.user_id, blocks })
-        } else {
-          logger.error(result.message)
-          await postInternalErrorMessage({ client, user: body.user_id })
+          return
         }
-        return
-      }
 
-      if (!result.kotaeList.length) {
-        const blocks: KnownBlock[] = [
+        const headerBlocks: KnownBlock[] = [
           {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: ':warning: 直近のお題の結果がありません :warning:',
+              text: `:bar_chart: :bar_chart: :bar_chart: *直近のあなたの回答結果* :bar_chart: :bar_chart: :bar_chart:`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
             },
           },
         ]
-        await postEphemeral({ client, user: body.user_id, blocks })
-        return
-      }
 
-      const headerBlocks: KnownBlock[] = [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: `:bar_chart: :bar_chart: :bar_chart: *直近のあなたの回答結果* :bar_chart: :bar_chart: :bar_chart:`,
-          },
-        },
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: `:speech_balloon: *お題: ${result.odaiTitle}*`,
-          },
-        },
-      ]
-
-      const userIdList = result.kotaeList
-        .map((kotae) => kotae.votedByList)
-        .flat()
-        .map((votedBy) => votedBy.votedBy)
-      const userInfoMap = await getSlackUserList({ client, userIdList })
-      const resultBlocks: KnownBlock[] = makePointRanking({
-        kotaeList: result.kotaeList,
-        removeNoVoteKotae: false,
-        filterTopKotae: false,
-      })
-        .map((kotae) => {
-          const blocks: KnownBlock[] = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `:dart: *${kotae.point}ポイント* - :first_place_medal:${kotae.votedFirstCount}票 :second_place_medal:${kotae.votedSecondCount}票 :third_place_medal:${kotae.votedThirdCount}票 - ${kotae.content}`,
-              },
-            },
-          ]
-          if (kotae.votedByList.length > 0) {
-            kotae.votedByList
-              .sort((a, b) => a.rank - b.rank)
-              .forEach((votedBy) => {
-                const user = userInfoMap[votedBy.votedBy]
-                if (!user) return
-
-                blocks.push({
-                  type: 'context',
-                  elements: [
-                    {
-                      type: 'mrkdwn',
-                      text: `${medalEmoji(votedBy.rank)}`,
-                    },
-                    {
-                      type: 'image',
-                      image_url: user.profile?.image_32 || '',
-                      alt_text: 'user_image',
-                    },
-                    {
-                      type: 'mrkdwn',
-                      text: `*${user.profile?.display_name}*`,
-                    },
-                  ],
-                })
-              })
-          }
-          return blocks
+        const userIdList = result.kotaeList
+          .map((kotae) => kotae.votedByList)
+          .flat()
+          .map((votedBy) => votedBy.votedBy)
+        const userInfoMap = await getSlackUserList({ client, userIdList })
+        const resultBlocks: KnownBlock[] = makePointRanking({
+          kotaeList: result.kotaeList,
+          removeNoVoteKotae: false,
+          filterTopKotae: false,
         })
-        .flat()
+          .map((kotae) => {
+            const blocks: KnownBlock[] = [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: `:dart: *${kotae.point}ポイント* - :first_place_medal:${kotae.votedFirstCount}票 :second_place_medal:${kotae.votedSecondCount}票 :third_place_medal:${kotae.votedThirdCount}票 - ${kotae.content}`,
+                },
+              },
+            ]
+            if (kotae.votedByList.length > 0) {
+              kotae.votedByList
+                .sort((a, b) => a.rank - b.rank)
+                .forEach((votedBy) => {
+                  const user = userInfoMap[votedBy.votedBy]
+                  if (!user) return
 
-      const commentaryButtonBlock: KnownBlock = {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: ':microphone: 講評してもらう(他の人には見えません)',
+                  blocks.push({
+                    type: 'context',
+                    elements: [
+                      {
+                        type: 'mrkdwn',
+                        text: `${medalEmoji(votedBy.rank)}`,
+                      },
+                      {
+                        type: 'image',
+                        image_url: user.profile?.image_32 || '',
+                        alt_text: 'user_image',
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*${user.profile?.display_name}*`,
+                      },
+                    ],
+                  })
+                })
+            }
+            return blocks
+          })
+          .flat()
+
+        const commentaryButtonBlock: KnownBlock = {
+          type: 'actions',
+          elements: [
+            {
+              type: 'button',
+              text: {
+                type: 'plain_text',
+                text: ':microphone: 講評してもらう(他の人には見えません)',
+              },
+              action_id: CHECK_PERSONAL_COMMENTARY_ACTION_ID,
+              style: 'primary',
             },
-            action_id: CHECK_PERSONAL_COMMENTARY_ACTION_ID,
-            style: 'primary',
-          },
-        ],
-      }
-      const blocks = [...headerBlocks, ...resultBlocks, commentaryButtonBlock]
-      await postEphemeral({ client, user: body.user_id, blocks })
+          ],
+        }
+        const blocks = [...headerBlocks, ...resultBlocks, commentaryButtonBlock]
+        await postEphemeral({ client, user: body.user_id, blocks })
+      })
     },
   )
 
@@ -286,6 +283,7 @@ export const registerKotaeHandlers = ({
   app.action(
     CHECK_PERSONAL_COMMENTARY_ACTION_ID,
     async ({ ack, body, client, logger }) => {
+      // NOTE: AI 講評は 3 秒以内に終わらないため先に ack する。今後 Cloud Tasks に移す予定
       await ack()
       const blockAction = body as BlockAction
       const slackTeamId = blockAction.team?.id

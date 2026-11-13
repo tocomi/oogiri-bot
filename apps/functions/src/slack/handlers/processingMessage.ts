@@ -2,8 +2,6 @@ import { KnownBlock } from '@slack/types'
 import { Logger, WebClient } from '@slack/web-api'
 
 import { getCharacterMessage } from '../../message'
-import { medalEmoji } from '../../vote/util'
-import { VoteCreateRequest } from '../../vote/Vote'
 import { postEphemeral } from '../postMessage'
 
 type ProcessingMessageParams = {
@@ -37,12 +35,6 @@ const createTextBlocks = (text: string): KnownBlock[] => [
   },
 ]
 
-const quoteText = (text: string) =>
-  text
-    .split('\n')
-    .map((line) => `> ${line}`)
-    .join('\n')
-
 export const postRequestAcceptedMessage = async (
   params: ProcessingMessageParams,
 ) => {
@@ -52,52 +44,11 @@ export const postRequestAcceptedMessage = async (
   })
 }
 
-export const postAggregationProcessingMessage = async (
-  params: ProcessingMessageParams,
-) => {
-  await postProcessingMessage({
-    ...params,
-    blocks: createTextBlocks(getCharacterMessage('aggregation-processing')),
-  })
-}
-
 export const postCommentaryProcessingMessage = async (
   params: ProcessingMessageParams,
 ) => {
   await postProcessingMessage({
     ...params,
     blocks: createTextBlocks(getCharacterMessage('commentary-processing')),
-  })
-}
-
-export const postKotaeAcceptedMessage = async ({
-  content,
-  ...params
-}: ProcessingMessageParams & {
-  content: string
-}) => {
-  await postProcessingMessage({
-    ...params,
-    blocks: createTextBlocks(
-      `${getCharacterMessage('kotae-accepted')}\n\n${quoteText(content)}`,
-    ),
-  })
-}
-
-export const postVoteAcceptedMessage = async ({
-  content,
-  voteRank,
-  ...params
-}: ProcessingMessageParams & {
-  content: string
-  voteRank: VoteCreateRequest['rank']
-}) => {
-  await postProcessingMessage({
-    ...params,
-    blocks: createTextBlocks(
-      `${getCharacterMessage(
-        'vote-accepted',
-      )}\n\n${quoteText(content)}\n投票: ${medalEmoji(voteRank)}`,
-    ),
   })
 }

@@ -14,10 +14,7 @@ export type CHARACTER_MESSAGE_KEYS =
   | 'vote-result-002'
   | 'vote-result-003'
   | 'request-accepted'
-  | 'aggregation-processing'
   | 'commentary-processing'
-  | 'kotae-accepted'
-  | 'vote-accepted'
 
 export type CharacterMessages = {
   // NOTE: 空配列を許容しないようにしている
